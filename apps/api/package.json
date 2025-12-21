@@ -1,0 +1,29 @@
+{
+  "name": "@seo-impact-os/api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-analytics/data": "^4.3.0",
+    "@hono/node-server": "^1.13.7",
+    "@repo/db": "*",
+    "@repo/integrations": "*",
+    "@repo/types": "*",
+    "cron": "^3.1.6",
+    "dotenv": "^16.4.7",
+    "googleapis": "^131.0.0",
+    "hono": "^4.6.14",
+    "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "@types/cron": "^2.4.0",
+    "@types/node": "^20.10.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
