@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
-import { db, tasks, eq, and, type NewTask } from '@repo/db';
+import { db, tasks, eq, type NewTask } from '@repo/db';
+import { logger } from '../utils/logger';
+
+const log = logger.child('Tasks');
 
 const app = new Hono();
 
@@ -35,7 +38,7 @@ app.get('/', async (c) => {
       count: allTasks.length,
     });
   } catch (error) {
-    console.error('Error fetching tasks:', error);
+    log.error('Error fetching tasks', error);
     return c.json(
       {
         success: false,
@@ -82,7 +85,7 @@ app.get('/:id', async (c) => {
       data: task[0],
     });
   } catch (error) {
-    console.error('Error fetching task:', error);
+    log.error('Error fetching task', error);
     return c.json(
       {
         success: false,
@@ -153,7 +156,7 @@ app.post('/', async (c) => {
       201
     );
   } catch (error) {
-    console.error('Error creating task:', error);
+    log.error('Error creating task', error);
     return c.json(
       {
         success: false,
@@ -232,7 +235,7 @@ app.put('/:id', async (c) => {
       message: 'Task updated successfully',
     });
   } catch (error) {
-    console.error('Error updating task:', error);
+    log.error('Error updating task', error);
     return c.json(
       {
         success: false,
@@ -285,7 +288,7 @@ app.delete('/:id', async (c) => {
       message: 'Task deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting task:', error);
+    log.error('Error deleting task', error);
     return c.json(
       {
         success: false,

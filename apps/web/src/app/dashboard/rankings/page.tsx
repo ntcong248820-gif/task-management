@@ -1,11 +1,7 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { TrendingUp } from "lucide-react"
+'use client';
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart3 } from 'lucide-react';
 
 export default function RankingsPage() {
   return (
@@ -13,32 +9,26 @@ export default function RankingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Keyword Rankings</h1>
         <p className="text-muted-foreground">
-          Track keyword position changes from Ahrefs
+          Track keyword position changes from GSC data
         </p>
       </div>
-
       <Card>
         <CardHeader>
-          <CardTitle>Ranking History</CardTitle>
-          <CardDescription>
-            Monitor your keyword positions over time
-          </CardDescription>
+          <CardTitle>Rankings Dashboard</CardTitle>
+          <CardDescription>View keyword performance over time</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex h-[400px] items-center justify-center rounded-lg border border-dashed">
+          <div className="flex h-[350px] items-center justify-center rounded-lg border border-dashed">
             <div className="flex flex-col items-center gap-1 text-center">
-              <TrendingUp className="h-10 w-10 text-muted-foreground" />
-              <h3 className="text-xl font-semibold">Rankings Dashboard</h3>
+              <BarChart3 className="h-10 w-10 text-muted-foreground" />
+              <h3 className="text-xl font-semibold">Coming in Phase 4</h3>
               <p className="text-sm text-muted-foreground max-w-sm">
-                Keyword ranking tracking will be available after Ahrefs API integration
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Phase 3 - Ahrefs Integration
+                Keyword ranking tracking using GSC query data will be available soon.
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,6 +1,6 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
-import { db, oauthTokens, gscData, eq, sql, and } from '@repo/db';
+import { db, oauthTokens, eq } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 
 // Inline GSCClient for cron job
@@ -69,7 +69,7 @@ export const gscSyncJob = new CronJob(
             // Calculate yesterday's date
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
+            const _dateStr = yesterday.toISOString().split('T')[0];
 
             for (const connection of connections) {
                 try {
@@ -78,7 +78,7 @@ export const gscSyncJob = new CronJob(
                     // Get valid access token (auto-refresh if expired)
                     const validAccessToken = await getValidAccessToken(connection);
 
-                    const client = new GSCClient(validAccessToken, connection.refreshToken);
+                    const _client = new GSCClient(validAccessToken, connection.refreshToken);
 
                     // TODO: Get siteUrl from project settings or gsc_sites table
                     // For now, we'll need to store siteUrl somewhere

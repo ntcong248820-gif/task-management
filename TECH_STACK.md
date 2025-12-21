@@ -36,10 +36,9 @@
 ### Key Features
 1. ✅ **Correlation Dashboard:** Visual correlation between completed tasks and traffic metrics
 2. ✅ **Task Management:** Kanban board with integrated time tracking
-3. ✅ **Multi-channel Analytics:** GSC + GA4 + Ahrefs data in one place
-4. ✅ **Keyword Rankings:** Track position changes from Ahrefs
-5. ✅ **Backlink Monitor:** New/lost backlinks detection
-6. ✅ **Competitor Tracking:** Share of voice analysis
+3. ✅ **Multi-channel Analytics:** GSC + GA4 data in one place
+4. ✅ **Keyword Rankings:** Track position changes from GSC data
+5. ✅ **URL Performance:** Traffic decline detection and analysis
 
 ---
 
@@ -86,7 +85,7 @@ Auth: None (Internal use - localhost)
 │  │   (SSR)      │  │  (Client)    │  │   (SSR)      │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  Backlinks   │  │ Competitors  │  │  Analytics   │ │
+│  │     URLs     │  │ Correlation  │  │  Analytics   │ │
 │  │   (SSR)      │  │   (SSR)      │  │   (SSR)      │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 └────────────────────────┬────────────────────────────────┘
@@ -94,7 +93,7 @@ Auth: None (Internal use - localhost)
 ┌────────────────────────▼────────────────────────────────┐
 │                  BACKEND API (Hono)                      │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │ /api/tasks   │  │ /api/metrics │  │ /api/ahrefs  │ │
+│  │ /api/tasks   │  │ /api/metrics │  │/api/correlat │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
 │  │ /api/gsc     │  │ /api/ga4     │  │ /api/export  │ │
@@ -107,24 +106,24 @@ Auth: None (Internal use - localhost)
 │  │   projects   │  │    tasks     │  │  gsc_data    │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  ga4_data    │  │ahrefs_metrics│  │ time_logs    │ │
+│  │  ga4_data    │  │ integrations │  │  time_logs   │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │              EXTERNAL APIs (Integrations)                │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  Google GSC  │  │  Google GA4  │  │   Ahrefs     │ │
-│  │   (Free)     │  │   (Free)     │  │  ($199/mo)   │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘ │
+│  ┌──────────────┐  ┌──────────────┐                    │
+│  │  Google GSC  │  │  Google GA4  │                    │
+│  │   (Free)     │  │   (Free)     │                    │
+│  └──────────────┘  └──────────────┘                    │
 └─────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────┐
 │                   CRON JOBS (Daily)                      │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  Sync GSC    │  │  Sync GA4    │  │ Sync Ahrefs  │ │
-│  │  (2:00 AM)   │  │  (2:30 AM)   │  │  (3:00 AM)   │ │
-│  └──────────────┘  └──────────────┘  └──────────────┘ │
+│  ┌──────────────┐  ┌──────────────┐                    │
+│  │  Sync GSC    │  │  Sync GA4    │                    │
+│  │  (2:00 AM)   │  │  (2:30 AM)   │                    │
+│  └──────────────┘  └──────────────┘                    │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -264,11 +263,11 @@ app.use('*', prettyJSON());
 // Routes
 import metricsRoutes from './routes/metrics';
 import tasksRoutes from './routes/tasks';
-import ahrefsRoutes from './routes/ahrefs';
+import correlationRoutes from './routes/correlation';
 
 app.route('/api', metricsRoutes);
 app.route('/api', tasksRoutes);
-app.route('/api', ahrefsRoutes);
+app.route('/api', correlationRoutes);
 
 export default app;
 ```
@@ -371,11 +370,10 @@ Total: 2min (33% faster)
 |-----|---------|------|-------|----------|-------------|
 | **Google Search Console** | Clicks, Impressions, CTR, Position | Free | 2,000 queries/day | ✅ Must | OAuth 2.0 |
 | **Google Analytics 4** | Sessions, Conversions, Revenue | Free | 10M events/month | ✅ Must | OAuth 2.0 |
-| **Ahrefs** | Rankings, Backlinks, DR, Competitors | $199/mo | 10,000 rows/month | ✅ Must | API Key |
 | **PageSpeed Insights** | Core Web Vitals, Performance | Free | 25,000 queries/day | ⚠️ Nice | None |
 | **OpenAI GPT-4** | AI Insights Generation | ~$5/mo | Pay per token | ⚠️ Future | API Key |
 
-**Total Cost:** $0 incremental (Ahrefs already paid)
+**Total Cost:** $0 (GSC + GA4 are free)
 
 ---
 
@@ -563,132 +561,6 @@ const GA4_METRICS = {
 
 ---
 
-### 3. Ahrefs API (NEW)
-
-**Authentication:**
-
-```typescript
-// packages/integrations/src/ahrefs/client.ts
-export class AhrefsClient {
-  private apiKey: string;
-  private baseUrl = 'https://api.ahrefs.com/v3';
-  
-  constructor(apiKey: string) {
-    this.apiKey = apiKey;
-  }
-  
-  private async request(endpoint: string, body: any) {
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Ahrefs API error: ${response.statusText}`);
-    }
-    
-    return response.json();
-  }
-}
-```
-
-**Available Endpoints:**
-
-```typescript
-// 1. Site Metrics
-async getSiteMetrics(domain: string) {
-  return this.request('/site-explorer/metrics', {
-    target: domain,
-    mode: 'domain',
-  });
-  // Returns: DR, UR, organic_traffic, organic_keywords, refdomains
-}
-
-// 2. Keyword Rankings
-async getRankings(domain: string, keywords: string[]) {
-  return this.request('/rank-tracker/ranking-history', {
-    target: domain,
-    keywords: keywords,
-    date_from: '2024-01-01',
-    date_to: '2024-12-31',
-  });
-  // Returns: position history for each keyword
-}
-
-// 3. Backlinks
-async getBacklinks(domain: string) {
-  return this.request('/site-explorer/backlinks', {
-    target: domain,
-    mode: 'domain',
-    limit: 1000,
-  });
-  // Returns: source_url, target_url, anchor, DR, first_seen
-}
-
-// 4. Organic Keywords
-async getOrganicKeywords(domain: string) {
-  return this.request('/site-explorer/organic-keywords', {
-    target: domain,
-    mode: 'domain',
-    limit: 5000,
-    order_by: 'traffic:desc',
-  });
-  // Returns: keyword, position, volume, traffic, url
-}
-
-// 5. Competitors
-async getCompetitors(domain: string) {
-  return this.request('/site-explorer/competing-domains', {
-    target: domain,
-    mode: 'domain',
-    limit: 10,
-  });
-  // Returns: competitor domains with metrics
-}
-```
-
-**Rate Limit Handling:**
-
-```typescript
-// Track API usage to avoid hitting quota
-export class AhrefsRateLimiter {
-  private usageToday = 0;
-  private readonly DAILY_LIMIT = 10000;
-  
-  async checkQuota(): Promise<boolean> {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const usage = await db
-      .select({ total: sql<number>`sum(rows_used)` })
-      .from(ahrefsApiUsage)
-      .where(eq(ahrefsApiUsage.date, today));
-    
-    this.usageToday = usage[0]?.total || 0;
-    
-    if (this.usageToday > this.DAILY_LIMIT * 0.9) {
-      console.warn('⚠️ Ahrefs quota at 90%');
-      return false;
-    }
-    
-    return true;
-  }
-  
-  async logUsage(endpoint: string, rowsUsed: number) {
-    await db.insert(ahrefsApiUsage).values({
-      date: new Date().toISOString().split('T')[0],
-      endpoint,
-      rowsUsed,
-    });
-  }
-}
-```
-
----
-
 ## Database Schema
 
 ### Schema Overview
@@ -714,10 +586,6 @@ export class AhrefsRateLimiter {
          │
 ┌────────▼────────┐
 │  ga4_data       │ (Google Analytics 4 metrics)
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│ ahrefs_metrics  │ (Ahrefs site/keyword/backlink data)
 └────────┬────────┘
          │
 ┌────────▼────────┐
@@ -922,134 +790,6 @@ export const ga4Data = pgTable('ga4_data', {
     table.projectId,
     table.date,
     table.channelGroup
-  ),
-}));
-```
-
----
-
-### Ahrefs Tables
-
-#### 6. Ahrefs Site Metrics
-
-```typescript
-// packages/db/schema/ahrefs-site-metrics.ts
-export const ahrefsSiteMetrics = pgTable('ahrefs_site_metrics', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id')
-    .references(() => projects.id)
-    .notNull(),
-  
-  domain: text('domain').notNull(),
-  date: date('date').notNull(),
-  
-  // Ahrefs metrics
-  domainRating: integer('domain_rating'), // DR (0-100)
-  urlRating: integer('url_rating'), // UR (0-100)
-  organicTraffic: integer('organic_traffic'),
-  organicKeywords: integer('organic_keywords'),
-  refDomains: integer('ref_domains'),
-  backlinks: integer('backlinks'),
-  
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  projectDateIdx: index('ahrefs_site_metrics_project_date_idx').on(
-    table.projectId,
-    table.date
-  ),
-}));
-```
-
----
-
-#### 7. Ahrefs Keyword Rankings
-
-```typescript
-// packages/db/schema/ahrefs-keyword-rankings.ts
-export const ahrefsKeywordRankings = pgTable('ahrefs_keyword_rankings', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id')
-    .references(() => projects.id)
-    .notNull(),
-  
-  keyword: text('keyword').notNull(),
-  date: date('date').notNull(),
-  
-  // Ranking data
-  position: integer('position'),
-  previousPosition: integer('previous_position'),
-  url: text('url'), // Which page ranks
-  searchVolume: integer('search_volume'),
-  traffic: integer('traffic'), // Est. traffic from keyword
-  cpc: real('cpc'),
-  
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  projectKeywordDateIdx: index('ahrefs_keyword_rankings_idx').on(
-    table.projectId,
-    table.keyword,
-    table.date
-  ),
-}));
-```
-
----
-
-#### 8. Ahrefs Backlinks
-
-```typescript
-// packages/db/schema/ahrefs-backlinks.ts
-export const ahrefsBacklinks = pgTable('ahrefs_backlinks', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id')
-    .references(() => projects.id)
-    .notNull(),
-  
-  // Backlink info
-  sourceUrl: text('source_url').notNull(),
-  targetUrl: text('target_url').notNull(),
-  anchorText: text('anchor_text'),
-  domainRating: integer('domain_rating'), // DR of source
-  firstSeenAt: timestamp('first_seen_at'),
-  lastSeenAt: timestamp('last_seen_at'),
-  linkType: text('link_type'), // 'dofollow' | 'nofollow'
-  
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  projectSourceIdx: index('ahrefs_backlinks_project_source_idx').on(
-    table.projectId,
-    table.sourceUrl
-  ),
-}));
-```
-
----
-
-#### 9. Ahrefs Competitors
-
-```typescript
-// packages/db/schema/ahrefs-competitors.ts
-export const ahrefsCompetitors = pgTable('ahrefs_competitors', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id')
-    .references(() => projects.id)
-    .notNull(),
-  
-  competitorDomain: text('competitor_domain').notNull(),
-  date: date('date').notNull(),
-  
-  // Comparative metrics
-  domainRating: integer('domain_rating'),
-  organicKeywords: integer('organic_keywords'),
-  organicTraffic: integer('organic_traffic'),
-  commonKeywords: integer('common_keywords'), // Keywords both rank for
-  
-  createdAt: timestamp('created_at').defaultNow(),
-}, (table) => ({
-  projectCompetitorDateIdx: index('ahrefs_competitors_idx').on(
-    table.projectId,
-    table.competitorDomain,
-    table.date
   ),
 }));
 ```

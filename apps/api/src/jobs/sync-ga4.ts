@@ -1,6 +1,6 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
-import { db, oauthTokens, ga4Data, eq, sql, and } from '@repo/db';
+import { db, oauthTokens, eq } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 
 // Inline GA4Client for cron job
@@ -85,7 +85,7 @@ export const ga4SyncJob = new CronJob(
             // Calculate yesterday's date
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            const dateStr = yesterday.toISOString().split('T')[0];
+            const _dateStr = yesterday.toISOString().split('T')[0];
 
             for (const connection of connections) {
                 try {
@@ -94,7 +94,7 @@ export const ga4SyncJob = new CronJob(
                     // Get valid access token (auto-refresh if expired)
                     const validAccessToken = await getValidAccessToken(connection);
 
-                    const client = new GA4Client(validAccessToken, connection.refreshToken);
+                    const _client = new GA4Client(validAccessToken, connection.refreshToken);
 
                     // TODO: Get propertyId from project settings or ga4_properties table
                     // For now, we'll need to store propertyId somewhere

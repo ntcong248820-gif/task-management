@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { db, gscData, ga4Data, eq, sql, and, gte, lte } from '@repo/db';
+import { logger } from '../utils/logger';
+
+const log = logger.child('Analytics');
 
 const app = new Hono();
 
@@ -120,7 +123,7 @@ app.get('/gsc', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('Analytics GSC error:', error);
+        log.error('Analytics GSC error', error);
         return c.json({ success: false, error: error.message }, 500);
     }
 });
@@ -270,7 +273,7 @@ app.get('/ga4', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('Analytics GA4 error:', error);
+        log.error('Analytics GA4 error', error);
         return c.json({ success: false, error: error.message }, 500);
     }
 });

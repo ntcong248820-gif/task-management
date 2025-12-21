@@ -1,9 +1,9 @@
 # SEO Impact OS - Master Project Plan
 
-> **Last Updated:** 2025-12-21 19:10  
-> **Current Phase:** Phase 3.5 - Correlation Dashboard - COMPLETED ✅  
-> **Overall Progress:** ~55% Complete  
-> **Audit Date:** 2025-12-21
+> **Last Updated:** 2025-12-21 22:23  
+> **Current Phase:** Phase 4 - UI Screens (NEXT)  
+> **Overall Progress:** ~60% Complete  
+> **Note:** Ahrefs integration removed from scope
 
 ---
 
@@ -170,60 +170,37 @@
 - GSC: 271K clicks, 2M impressions, 47% CTR, position 3.0
 - GA4: 2.7M sessions, 2.2M users, 123K conversions
 
-> ⚠️ **AUDIT NOTE:** Analytics Dashboard metrics work BUT missing core **Correlation Dashboard** with:
+> ✅ **Correlation Dashboard completed in Phase 3.5** with:
 > - Layer Controls (GSC/Ahrefs/DR toggles)
 > - ReferenceArea impact windows
 > - Task markers linked to chart
 
-**Phase 3 Status:** 🟡 **70% Complete** - Need Correlation Dashboard
+**Phase 3 Status:** ✅ **100% Complete** (including Phase 3.5)
 
 ---
 
-## 🔗 **Phase 4: Ahrefs Integration** (NOT STARTED)
+## � **Phase 4: Complete UI Screens** (NOT STARTED)
 
-### **4.1 Ahrefs Setup**
-- [ ] Get Ahrefs API key
-- [ ] Create AhrefsClient class
-- [ ] Implement rate limiter (10,000 rows/month)
-- [ ] Test Ahrefs API connection
+> **Note:** Rankings, Backlinks, Competitors screens will use GSC data only (no Ahrefs integration).
 
-### **4.2 Ahrefs Schemas**
-- [ ] Create schema: `ahrefs_site_metrics.ts` (DR, UR, organic_traffic)
-- [ ] Create schema: `ahrefs_keyword_rankings.ts`
-- [ ] Create schema: `ahrefs_backlinks.ts`
-- [ ] Create schema: `ahrefs_competitors.ts`
-
-### **4.3 Ahrefs Data Fetching**
-- [ ] Implement `getSiteMetrics()`
-- [ ] Implement `getRankings()`
-- [ ] Implement `getBacklinks()`
-- [ ] Implement `getCompetitors()`
-- [ ] Create cron job: `sync-ahrefs.ts` (3:00 AM)
-- [ ] Log API usage to database
-
-### **4.4 Rankings Dashboard**
+### **4.1 Rankings Dashboard**
 - [ ] Create `/dashboard/rankings` page
-- [ ] Build Top Movers section (Gainers & Losers)
-- [ ] Build keyword ranking chart
+- [ ] Build Top Movers section (queries with biggest position gains/losses from GSC)
+- [ ] Build keyword ranking chart (from GSC queries)
 - [ ] Build All Keywords table with search & filter
 - [ ] Build Position Distribution chart
 - [ ] Add keyword detail modal
 
-### **4.5 Backlinks Monitor**
-- [ ] Create `/dashboard/backlinks` page
-- [ ] Build backlink growth chart (stacked area)
-- [ ] Build New Backlinks list
-- [ ] Build Lost Backlinks alert section
-- [ ] Build Backlink Quality Distribution chart
-- [ ] Add DR badges & link type indicators
+### **4.2 URL Performance Dashboard**
+- [ ] Create `/dashboard/urls` page
+- [ ] Build Declining URLs section (severity badges: -10%, -25%, -40%)
+- [ ] Build All URLs table with search & filters
+- [ ] Build URL detail view with traffic history
 
-### **4.6 Competitors Dashboard**
+### **4.3 Competitors Dashboard** (Placeholder)
 - [ ] Create `/dashboard/competitors` page
-- [ ] Build Share of Voice pie chart
-- [ ] Build Competitive Metrics table
-- [ ] Build Keyword Overlap analysis
-- [ ] Build Content Gap Opportunities section
-- [ ] Add "Create Tasks from Gaps" feature
+- [ ] Build placeholder UI (future integration with other tools)
+- [ ] Add manual competitor input form
 
 **Phase 4 Status:** ⚪ **0% Complete**
 
@@ -411,26 +388,23 @@
 
 ---
 
-## 📊 **Progress Summary** (Updated per Audit 2025-12-21)
+## 📊 **Progress Summary** (Updated 2025-12-21)
 
 | Phase | Status | Progress | Priority |
 |-------|--------|----------|----------|
 | Phase 1: Foundation | ✅ Complete | 100% | - |
 | Phase 2: GSC + GA4 Integration | ✅ Complete | 98% | - |
-| Phase 3: Analytics Dashboard UI | 🟡 Partial | 70% | - |
-| **Phase 3.5: Correlation Dashboard** | 🔥 **NEXT** | 0% | **🔥 CRITICAL** |
-| Phase 4: Rankings/Backlinks/Competitors UI | ⚪ Not Started | 0% | MEDIUM |
-| Phase 5: Ahrefs Integration | ⚪ Not Started | 0% | LOW |
-| Phase 6: URL & Keyword Analysis | ⚪ Not Started | 0% | LOW |
-| Phase 7: Polish & Testing | ⚪ Not Started | 0% | MEDIUM |
+| Phase 3: Analytics Dashboard + Correlation | ✅ Complete | 100% | - |
+| **Phase 4: UI Screens (Rankings/URLs)** | ⚪ **NEXT** | 0% | **HIGH** |
+| Phase 5: URL & Keyword Drill Down | ⚪ Not Started | 0% | MEDIUM |
+| Phase 6: Polish & Testing | ⚪ Not Started | 0% | LOW |
 
-**Overall Project Progress:** ~45% Complete
+**Overall Project Progress:** ~60% Complete
 
-### 🎯 **Recommended Priority Order (Post-Audit):**
-1. **Phase 3.5: Correlation Dashboard** (4-6 hours) - CORE PITCHING FEATURE
-2. **Phase 4: Rankings/Backlinks/Competitors Views** (6 hours) - Complete UI screens
-3. **Phase 5: Ahrefs Integration** (Optional) - Requires API key
-4. Phase 6-7: Polish
+### 🎯 **Recommended Priority Order:**
+1. **Phase 4: UI Screens** (4-6 hours) - Rankings + URL Performance dashboards
+2. **Phase 5: URL Drill Down** (4-6 hours) - Detail pages with keyword analysis
+3. Phase 6: Polish & Testing
 
 ---
 

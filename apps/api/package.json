@@ -6,7 +6,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google-analytics/data": "^4.3.0",
@@ -23,7 +26,9 @@
   "devDependencies": {
     "@types/cron": "^2.4.0",
     "@types/node": "^20.10.6",
+    "@vitest/coverage-v8": "^4.0.16",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.16"
   }
 }

@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { db, timeLogs, eq, desc } from '@repo/db';
+import { logger } from '../utils/logger';
+
+const log = logger.child('TimeLogs');
 
 const app = new Hono();
 
@@ -34,7 +37,7 @@ app.get('/', async (c) => {
             count: logs.length,
         });
     } catch (error) {
-        console.error('Error fetching time logs:', error);
+        log.error('Error fetching time logs', error);
         return c.json(
             {
                 success: false,
@@ -79,7 +82,7 @@ app.post('/', async (c) => {
             message: 'Time log created successfully',
         });
     } catch (error) {
-        console.error('Error creating time log:', error);
+        log.error('Error creating time log', error);
         return c.json(
             {
                 success: false,
@@ -116,7 +119,7 @@ app.delete('/:id', async (c) => {
             message: 'Time log deleted successfully',
         });
     } catch (error) {
-        console.error('Error deleting time log:', error);
+        log.error('Error deleting time log', error);
         return c.json(
             {
                 success: false,

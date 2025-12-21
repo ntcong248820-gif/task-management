@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { db, projects, eq, type NewProject } from '@repo/db';
+import { logger } from '../utils/logger';
+
+const log = logger.child('Projects');
 
 const app = new Hono();
 
@@ -14,7 +17,7 @@ app.get('/', async (c) => {
       count: allProjects.length,
     });
   } catch (error) {
-    console.error('Error fetching projects:', error);
+    log.error('Error fetching projects', error);
     return c.json(
       {
         success: false,
@@ -61,7 +64,7 @@ app.get('/:id', async (c) => {
       data: project[0],
     });
   } catch (error) {
-    console.error('Error fetching project:', error);
+    log.error('Error fetching project', error);
     return c.json(
       {
         success: false,
@@ -112,7 +115,7 @@ app.post('/', async (c) => {
       201
     );
   } catch (error) {
-    console.error('Error creating project:', error);
+    log.error('Error creating project', error);
     return c.json(
       {
         success: false,
@@ -181,7 +184,7 @@ app.put('/:id', async (c) => {
       message: 'Project updated successfully',
     });
   } catch (error) {
-    console.error('Error updating project:', error);
+    log.error('Error updating project', error);
     return c.json(
       {
         success: false,
@@ -234,7 +237,7 @@ app.delete('/:id', async (c) => {
       message: 'Project deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting project:', error);
+    log.error('Error deleting project', error);
     return c.json(
       {
         success: false,

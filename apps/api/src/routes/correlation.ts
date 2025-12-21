@@ -1,5 +1,8 @@
 import { Hono } from 'hono';
 import { db, gscData, tasks, eq, and, gte, lte, sql } from '@repo/db';
+import { logger } from '../utils/logger';
+
+const log = logger.child('Correlation');
 
 const app = new Hono();
 
@@ -9,8 +12,6 @@ interface CorrelationDataPoint {
     clicks: number;
     impressions: number;
     position: number;
-    ahrefsTraffic: number;
-    drScore: number;
     completedTasks: {
         id: number;
         title: string;
@@ -86,24 +87,14 @@ app.get('/', async (c) => {
         // Create GSC data map for quick lookup
         const gscDataMap = new Map<string, typeof gscDataResult[0]>();
         gscDataResult.forEach(d => {
-            const dateStr = typeof d.date === 'string' ? d.date : d.date.toISOString().split('T')[0];
+            const dateStr = String(d.date);
             gscDataMap.set(dateStr, d);
         });
-
-        // Mock Ahrefs data (will be replaced when Ahrefs integration is done)
-        let baseDR = 65;
-        let baseAhrefsTraffic = 50000;
 
         while (currentDate <= endDate) {
             const dateStr = currentDate.toISOString().split('T')[0];
             const gscDay = gscDataMap.get(dateStr);
             const tasksOnDay = tasksByDate.get(dateStr) || [];
-
-            // Simulate DR increase when backlink tasks are completed
-            tasksOnDay.forEach(t => {
-                if (t.taskType === 'backlink') baseDR += 0.5;
-            });
-            baseAhrefsTraffic += (Math.random() - 0.4) * 2000; // Random walk
 
             correlationData.push({
                 date: dateStr,
@@ -111,8 +102,6 @@ app.get('/', async (c) => {
                 clicks: Number(gscDay?.clicks) || 0,
                 impressions: Number(gscDay?.impressions) || 0,
                 position: Number(gscDay?.position) || 0,
-                ahrefsTraffic: Math.round(baseAhrefsTraffic),
-                drScore: Math.min(100, Math.round(baseDR * 10) / 10),
                 completedTasks: tasksOnDay.map(t => ({
                     id: t.id,
                     title: t.title,
@@ -159,7 +148,6 @@ app.get('/', async (c) => {
                     avgPosition: Math.round(avgPosition * 10) / 10,
                     tasksCompleted,
                     trafficGrowth: Math.round(trafficGrowth * 10) / 10,
-                    currentDR: correlationData[correlationData.length - 1]?.drScore || 65,
                 },
                 recentImpactTasks: completedTasks.slice(0, 5).map(t => ({
                     id: t.id,
@@ -171,7 +159,7 @@ app.get('/', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('Correlation API error:', error);
+        log.error('Correlation API error', error);
         return c.json({
             success: false,
             error: error.message,
