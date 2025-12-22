@@ -9,8 +9,7 @@ import {
   ListTodo,
   BarChart3,
   TrendingUp,
-  Link2,
-  Users,
+  FileText,
   FolderKanban,
   Plug,
 } from "lucide-react"
@@ -42,14 +41,9 @@ const navigation = [
     icon: TrendingUp,
   },
   {
-    name: "Backlinks",
-    href: "/dashboard/backlinks",
-    icon: Link2,
-  },
-  {
-    name: "Competitors",
-    href: "/dashboard/competitors",
-    icon: Users,
+    name: "URL Performance",
+    href: "/dashboard/urls",
+    icon: FileText,
   },
   {
     name: "Projects",

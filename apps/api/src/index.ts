@@ -12,6 +12,8 @@ import ga4Routes from './routes/integrations/ga4';
 import integrationsRoutes from './routes/integrations/index';
 import analyticsRoutes from './routes/analytics';
 import correlationRoutes from './routes/correlation';
+import rankingsRoutes from './routes/rankings';
+import urlsRoutes from './routes/urls';
 
 
 const app = new Hono();
@@ -41,6 +43,7 @@ app.get('/', (c) => {
       tasks: '/api/tasks',
       timeLogs: '/api/time-logs',
       analytics: '/api/analytics',
+      rankings: '/api/rankings',
       integrations: {
         gsc: '/api/integrations/gsc',
         ga4: '/api/integrations/ga4',
@@ -55,6 +58,8 @@ app.route('/api/tasks', tasksRoutes);
 app.route('/api/time-logs', timeLogsRoutes);
 app.route('/api/analytics', analyticsRoutes);
 app.route('/api/correlation', correlationRoutes);
+app.route('/api/rankings', rankingsRoutes);
+app.route('/api/urls', urlsRoutes);
 app.route('/api/integrations', integrationsRoutes);
 app.route('/api/integrations/gsc', gscRoutes);
 app.route('/api/integrations/ga4', ga4Routes);
