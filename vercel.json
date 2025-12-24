@@ -3,5 +3,6 @@
     "devCommand": "cd apps/web && npm run dev",
     "installCommand": "npm install",
     "framework": "nextjs",
-    "outputDirectory": "apps/web/.next"
+    "outputDirectory": "apps/web/.next",
+    "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web"
 }
