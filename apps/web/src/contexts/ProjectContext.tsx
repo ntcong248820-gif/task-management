@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 interface ProjectContextType {
@@ -10,11 +10,15 @@ interface ProjectContextType {
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
-export function ProjectProvider({ children }: { children: ReactNode }) {
+// Component that handles URL params - must be wrapped in Suspense
+function ProjectInitializer({
+    setSelectedProjectIdState
+}: {
+    setSelectedProjectIdState: (id: number | null) => void
+}) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const [selectedProjectId, setSelectedProjectIdState] = useState<number | null>(null);
 
     // Initialize from URL or localStorage
     useEffect(() => {
@@ -33,20 +37,33 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             params.set('projectId', id.toString());
             router.replace(`${pathname}?${params.toString()}`);
         }
-    }, [searchParams, pathname, router]);
+    }, [searchParams, pathname, router, setSelectedProjectIdState]);
+
+    return null;
+}
+
+export function ProjectProvider({ children }: { children: ReactNode }) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const [selectedProjectId, setSelectedProjectIdState] = useState<number | null>(null);
 
     const setSelectedProjectId = (id: number) => {
         setSelectedProjectIdState(id);
         localStorage.setItem('selectedProjectId', id.toString());
 
-        // Update URL
-        const params = new URLSearchParams(searchParams.toString());
-        params.set('projectId', id.toString());
-        router.push(`${pathname}?${params.toString()}`);
+        // Update URL - we need to get current search params
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            params.set('projectId', id.toString());
+            router.push(`${pathname}?${params.toString()}`);
+        }
     };
 
     return (
         <ProjectContext.Provider value={{ selectedProjectId, setSelectedProjectId }}>
+            <Suspense fallback={null}>
+                <ProjectInitializer setSelectedProjectIdState={setSelectedProjectIdState} />
+            </Suspense>
             {children}
         </ProjectContext.Provider>
     );
