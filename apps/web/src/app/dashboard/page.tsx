@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Download, TrendingUp, ListTodo, BarChart3, Activity } from 'lucide-react';
 import {
@@ -85,7 +85,7 @@ function useCorrelationData(dateRange: number) {
   return { chartData, metrics, recentTasks, loading };
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
   const [dateRange, setDateRange] = useState(30);
   const [layers, setLayers] = useState<LayerState>({
     clicks: true,
@@ -178,5 +178,13 @@ export default function DashboardPage() {
       {/* Recent High-Impact Tasks */}
       <RecentTasksTable tasks={recentTasks} />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="animate-pulse">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
