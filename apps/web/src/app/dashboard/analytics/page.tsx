@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MousePointerClick, Eye, Target, TrendingUp, Activity, Users, ShoppingCart } from 'lucide-react';
@@ -13,7 +14,7 @@ import {
 } from '@/components/features/analytics';
 import { useProject } from '@/contexts/ProjectContext';
 
-export default function AnalyticsDashboard() {
+function AnalyticsDashboardContent() {
   const { selectedProjectId } = useProject();
   const { gscData, ga4Data, loading, error } = useAnalyticsData(selectedProjectId || 1);
 
@@ -127,5 +128,13 @@ export default function AnalyticsDashboard() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+export default function AnalyticsDashboard() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <AnalyticsDashboardContent />
+    </Suspense>
   );
 }
