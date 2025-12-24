@@ -11,9 +11,11 @@ import {
   TrafficSourcesTable,
   LoadingSkeleton,
 } from '@/components/features/analytics';
+import { useProject } from '@/contexts/ProjectContext';
 
 export default function AnalyticsDashboard() {
-  const { gscData, ga4Data, loading, error } = useAnalyticsData(1);
+  const { selectedProjectId } = useProject();
+  const { gscData, ga4Data, loading, error } = useAnalyticsData(selectedProjectId || 1);
 
   if (loading) {
     return (

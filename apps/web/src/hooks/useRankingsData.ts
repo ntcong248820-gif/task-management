@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useDateContext } from '@/contexts/DateContext';
+import { format } from 'date-fns';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-interface KeywordMover {
+export interface KeywordMover {
     query: string;
     position: number;
     previousPosition: number | null;
@@ -13,7 +15,7 @@ interface KeywordMover {
     impressions: number;
 }
 
-interface Summary {
+export interface Summary {
     totalKeywords: number;
     improved: number;
     declined: number;
@@ -21,7 +23,7 @@ interface Summary {
     avgPosition: number;
 }
 
-interface OverviewData {
+export interface OverviewData {
     topMovers: {
         gainers: KeywordMover[];
         losers: KeywordMover[];
@@ -29,7 +31,7 @@ interface OverviewData {
     summary: Summary;
 }
 
-interface Keyword {
+export interface Keyword {
     query: string;
     position: number;
     clicks: number;
@@ -37,41 +39,41 @@ interface Keyword {
     ctr: number;
 }
 
-interface Pagination {
+export interface Pagination {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
 }
 
-interface KeywordsData {
+export interface KeywordsData {
     keywords: Keyword[];
     pagination: Pagination;
 }
 
-interface ChartDataPoint {
+export interface ChartDataPoint {
     date: string;
     displayDate: string;
     [key: string]: number | string;
 }
 
-interface ChartData {
+export interface ChartData {
     chartData: ChartDataPoint[];
     keywords: string[];
 }
 
-interface DistributionBucket {
+export interface DistributionBucket {
     name: string;
     count: number;
     percentage: number;
 }
 
-interface DistributionData {
+export interface DistributionData {
     distribution: DistributionBucket[];
     totalKeywords: number;
 }
 
-interface UseRankingsDataReturn {
+export interface UseRankingsDataReturn {
     overview: OverviewData | null;
     keywordsData: KeywordsData | null;
     chartData: ChartData | null;
@@ -88,7 +90,8 @@ interface UseRankingsDataReturn {
     refetch: () => void;
 }
 
-export function useRankingsData(projectId: number = 1, days: number = 30): UseRankingsDataReturn {
+export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
+    const { dateRange } = useDateContext();
     const [overview, setOverview] = useState<OverviewData | null>(null);
     const [keywordsData, setKeywordsData] = useState<KeywordsData | null>(null);
     const [chartData, setChartData] = useState<ChartData | null>(null);
@@ -96,9 +99,12 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const startDate = format(dateRange.from, 'yyyy-MM-dd');
+    const endDate = format(dateRange.to, 'yyyy-MM-dd');
+
     const fetchOverview = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/overview?projectId=${projectId}&days=${days}`);
+            const res = await fetch(`${API_BASE}/api/rankings/overview?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
             const json = await res.json();
             if (json.success) {
                 setOverview(json.data);
@@ -116,7 +122,7 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
     } = {}) => {
         try {
             const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1 } = params;
-            const url = `${API_BASE}/api/rankings/keywords?projectId=${projectId}&days=${days}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`;
+            const url = `${API_BASE}/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`;
             const res = await fetch(url);
             const json = await res.json();
             if (json.success) {
@@ -125,11 +131,11 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
         } catch (err) {
             console.error('Failed to fetch keywords:', err);
         }
-    }, [projectId, days]);
+    }, [projectId, startDate, endDate]);
 
     const fetchChart = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/chart?projectId=${projectId}&days=${days}&limit=5`);
+            const res = await fetch(`${API_BASE}/api/rankings/chart?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=5`);
             const json = await res.json();
             if (json.success) {
                 setChartData(json.data);
@@ -141,7 +147,7 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
 
     const fetchDistribution = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/distribution?projectId=${projectId}&days=${days}`);
+            const res = await fetch(`${API_BASE}/api/rankings/distribution?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
             const json = await res.json();
             if (json.success) {
                 setDistributionData(json.data);
@@ -170,7 +176,7 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
 
     useEffect(() => {
         fetchAll();
-    }, [projectId, days]);
+    }, [projectId, startDate, endDate]);
 
     return {
         overview,
@@ -183,6 +189,3 @@ export function useRankingsData(projectId: number = 1, days: number = 30): UseRa
         refetch: fetchAll,
     };
 }
-
-// Export types
-export type { KeywordMover, Summary, Keyword, Pagination, ChartDataPoint, DistributionBucket };

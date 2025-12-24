@@ -49,6 +49,10 @@ export function GSCChart({ data }: GSCChartProps) {
                         <Legend />
                         <Area type="monotone" dataKey="clicks" stroke="#3b82f6" fillOpacity={1} fill="url(#colorClicks)" name="Clicks" />
                         <Area type="monotone" dataKey="impressions" stroke="#10b981" fillOpacity={1} fill="url(#colorImpressions)" name="Impressions" />
+
+                        {/* Comparison Lines (Dotted) */}
+                        <Area type="monotone" dataKey="prevClicks" stroke="#3b82f6" strokeDasharray="5 5" fillOpacity={0} name="Previous Clicks" />
+                        <Area type="monotone" dataKey="prevImpressions" stroke="#10b981" strokeDasharray="5 5" fillOpacity={0} name="Previous Impressions" />
                     </AreaChart>
                 </ResponsiveContainer>
             </CardContent>

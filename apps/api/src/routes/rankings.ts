@@ -11,21 +11,33 @@ const app = new Hono();
  */
 app.get('/overview', async (c) => {
     try {
-        const { projectId, days = '30' } = c.req.query();
+        const { projectId, days, startDate, endDate } = c.req.query();
 
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
 
-        const numDays = parseInt(days);
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - numDays);
+        let start: string;
+        let end: string;
 
-        const prevEndDate = new Date(startDate);
-        prevEndDate.setDate(prevEndDate.getDate() - 1);
-        const prevStartDate = new Date(prevEndDate);
-        prevStartDate.setDate(prevStartDate.getDate() - numDays);
+        if (startDate && endDate) {
+            start = startDate;
+            end = endDate;
+        } else {
+            const numDays = parseInt(days || '30');
+            const dEnd = new Date();
+            const dStart = new Date();
+            dStart.setDate(dStart.getDate() - numDays);
+            start = dStart.toISOString().split('T')[0];
+            end = dEnd.toISOString().split('T')[0];
+        }
+
+        // Calculate previous period
+        const daysDiff = Math.ceil((new Date(end).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24));
+        const prevEnd = new Date(start);
+        prevEnd.setDate(prevEnd.getDate() - 1);
+        const prevStart = new Date(prevEnd);
+        prevStart.setDate(prevStart.getDate() - daysDiff);
 
         // Get current period keyword performance
         const currentPeriod = await db
@@ -39,8 +51,8 @@ app.get('/overview', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0])
+                    gte(gscData.date, start),
+                    lte(gscData.date, end)
                 )
             )
             .groupBy(gscData.query)
@@ -57,8 +69,8 @@ app.get('/overview', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, prevStartDate.toISOString().split('T')[0]),
-                    lte(gscData.date, prevEndDate.toISOString().split('T')[0])
+                    gte(gscData.date, prevStart.toISOString().split('T')[0]),
+                    lte(gscData.date, prevEnd.toISOString().split('T')[0])
                 )
             )
             .groupBy(gscData.query);
@@ -112,8 +124,8 @@ app.get('/overview', async (c) => {
                     avgPosition: Math.round(avgPosition * 10) / 10,
                 },
                 dateRange: {
-                    start: startDate.toISOString().split('T')[0],
-                    end: endDate.toISOString().split('T')[0],
+                    start,
+                    end,
                 },
             },
         });
@@ -136,21 +148,33 @@ app.get('/keywords', async (c) => {
             sortOrder = 'desc',
             page = '1',
             limit = '20',
-            days = '30'
+            days,
+            startDate,
+            endDate
         } = c.req.query();
 
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
 
-        const numDays = parseInt(days);
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const offset = (pageNum - 1) * limitNum;
 
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - numDays);
+        let start: string;
+        let end: string;
+
+        if (startDate && endDate) {
+            start = startDate;
+            end = endDate;
+        } else {
+            const numDays = parseInt(days || '30');
+            const dEnd = new Date();
+            const dStart = new Date();
+            dStart.setDate(dStart.getDate() - numDays);
+            start = dStart.toISOString().split('T')[0];
+            end = dEnd.toISOString().split('T')[0];
+        }
 
         // Build query with optional search
         let baseQuery = db
@@ -165,8 +189,8 @@ app.get('/keywords', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0]),
+                    gte(gscData.date, start),
+                    lte(gscData.date, end),
                     search ? sql`${gscData.query} ILIKE ${'%' + search + '%'}` : undefined
                 )
             )
@@ -179,8 +203,8 @@ app.get('/keywords', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0]),
+                    gte(gscData.date, start),
+                    lte(gscData.date, end),
                     search ? sql`${gscData.query} ILIKE ${'%' + search + '%'}` : undefined
                 )
             );
@@ -238,17 +262,27 @@ app.get('/keywords', async (c) => {
  */
 app.get('/chart', async (c) => {
     try {
-        const { projectId, days = '30', limit = '5' } = c.req.query();
+        const { projectId, days, limit = '5', startDate, endDate } = c.req.query();
 
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
 
-        const numDays = parseInt(days);
         const keywordLimit = parseInt(limit);
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - numDays);
+        let start: string;
+        let end: string;
+
+        if (startDate && endDate) {
+            start = startDate;
+            end = endDate;
+        } else {
+            const numDays = parseInt(days || '30');
+            const dEnd = new Date();
+            const dStart = new Date();
+            dStart.setDate(dStart.getDate() - numDays);
+            start = dStart.toISOString().split('T')[0];
+            end = dEnd.toISOString().split('T')[0];
+        }
 
         // Get top keywords by clicks
         const topKeywords = await db
@@ -260,8 +294,8 @@ app.get('/chart', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0])
+                    gte(gscData.date, start),
+                    lte(gscData.date, end)
                 )
             )
             .groupBy(gscData.query)
@@ -288,8 +322,8 @@ app.get('/chart', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0]),
+                    gte(gscData.date, start),
+                    lte(gscData.date, end),
                     sql`${gscData.query} IN (${sql.join(keywordList.map(k => sql`${k}`), sql`, `)})`
                 )
             )
@@ -333,16 +367,26 @@ app.get('/chart', async (c) => {
  */
 app.get('/distribution', async (c) => {
     try {
-        const { projectId, days = '30' } = c.req.query();
+        const { projectId, days, startDate, endDate } = c.req.query();
 
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
 
-        const numDays = parseInt(days);
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - numDays);
+        let start: string;
+        let end: string;
+
+        if (startDate && endDate) {
+            start = startDate;
+            end = endDate;
+        } else {
+            const numDays = parseInt(days || '30');
+            const dEnd = new Date();
+            const dStart = new Date();
+            dStart.setDate(dStart.getDate() - numDays);
+            start = dStart.toISOString().split('T')[0];
+            end = dEnd.toISOString().split('T')[0];
+        }
 
         // Get keywords with their average positions
         const keywords = await db
@@ -354,8 +398,8 @@ app.get('/distribution', async (c) => {
             .where(
                 and(
                     eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0])
+                    gte(gscData.date, start),
+                    lte(gscData.date, end)
                 )
             )
             .groupBy(gscData.query);

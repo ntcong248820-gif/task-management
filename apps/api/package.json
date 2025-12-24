@@ -9,7 +9,9 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "backfill-gsc": "tsx src/scripts/backfill-gsc.ts",
+    "backfill-gsc-agg": "tsx src/scripts/backfill-gsc-aggregated.ts"
   },
   "dependencies": {
     "@google-analytics/data": "^4.3.0",
@@ -26,7 +28,9 @@
   "devDependencies": {
     "@types/cron": "^2.4.0",
     "@types/node": "^20.10.6",
+    "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.16",
+    "supertest": "^7.1.4",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^4.0.16"

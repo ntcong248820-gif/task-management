@@ -1,6 +1,6 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
-import { db, oauthTokens, eq } from '@repo/db';
+import { db, oauthTokens, ga4Data, ga4Properties, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 
 // Inline GA4Client for cron job
@@ -19,6 +19,57 @@ class GA4Client {
             refresh_token: refreshToken,
         });
         this.analyticsdata = google.analyticsdata('v1beta');
+    }
+
+    async getOrDiscoverPropertyId(projectId: number): Promise<string | null> {
+        // 1. Check DB for configured property
+        const configuredProp = await db
+            .select()
+            .from(ga4Properties)
+            .where(eq(ga4Properties.projectId, projectId))
+            .limit(1);
+
+        if (configuredProp.length > 0) {
+            return configuredProp[0].propertyId;
+        }
+
+        // 2. If not found, list properties from API
+        try {
+            // Try v1beta first
+            const admin = google.analyticsadmin({ version: 'v1beta', auth: this.oauth2Client });
+
+            // We need to list accounts first, or account summaries to find properties
+            // efficiently. But let's try 'accountSummaries' which gives a hierarchy
+            const response = await admin.accountSummaries.list();
+            const summaries = response.data.accountSummaries || [];
+
+            const allProperties: any[] = [];
+            summaries.forEach((account: any) => {
+                if (account.propertySummaries) {
+                    allProperties.push(...account.propertySummaries);
+                }
+            });
+
+            if (allProperties.length === 0) {
+                console.warn(`[GA4 Client] No properties found for project ${projectId}`);
+                return null;
+            }
+
+            if (allProperties.length === 1) {
+                // property string is like "properties/12345"
+                const propertyId = allProperties[0].property.split('/')[1];
+                console.log(`[GA4 Client] Auto-discovered single property for project ${projectId}: ${propertyId}`);
+                return propertyId;
+            }
+
+            // If multiple, warning
+            console.warn(`[GA4 Client] Multiple properties found for project ${projectId}. Please configure manually.`);
+            return null;
+
+        } catch (error) {
+            console.error(`[GA4 Client] Error listing properties for project ${projectId}:`, error);
+            return null;
+        }
     }
 
     async fetchAnalyticsData(options: any) {
@@ -64,62 +115,125 @@ class GA4Client {
 }
 
 /**
+ * Run GA4 Sync Logic
+ */
+export const runGA4Sync = async () => {
+    console.log('🔄 [GA4 Cron] Starting daily GA4 sync...');
+
+    try {
+        // Get all GA4 connections
+        const connections = await db
+            .select()
+            .from(oauthTokens)
+            .where(eq(oauthTokens.provider, 'google_analytics'));
+
+        console.log(`[GA4 Cron] Found ${connections.length} GA4 connections`);
+
+        // Calculate yesterday's date
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const dateStr = yesterday.toISOString().split('T')[0];
+
+        for (const connection of connections) {
+            try {
+                console.log(`[GA4 Cron] Syncing project ${connection.projectId}...`);
+
+                // Get valid access token (auto-refresh if expired)
+                const validAccessToken = await getValidAccessToken(connection);
+
+                const client = new GA4Client(validAccessToken, connection.refreshToken);
+
+                // Auto-discover propertyId
+                const propertyId = await client.getOrDiscoverPropertyId(connection.projectId);
+
+                if (!propertyId) {
+                    console.error(`❌ [GA4 Cron] No propertyId found for project ${connection.projectId}. Skipping.`);
+                    continue;
+                }
+
+                console.log(`[GA4 Cron] Fetching data for property: ${propertyId}`);
+
+                const data = await client.fetchAnalyticsData({
+                    propertyId,
+                    startDate: dateStr,
+                    endDate: dateStr,
+                });
+
+                if (data.length === 0) {
+                    console.log(`⚠️ [GA4 Cron] No data available for project ${connection.projectId} on ${dateStr}`);
+                    continue;
+                }
+
+                // Batch insert/upsert
+                const batchSize = 1000;
+                let totalInserted = 0;
+
+                for (let i = 0; i < data.length; i += batchSize) {
+                    const batch = data.slice(i, i + batchSize);
+                    const rows = batch.map((row: any) => ({
+                        projectId: connection.projectId,
+                        date: row.date,
+                        sessions: row.sessions,
+                        users: row.users,
+                        newUsers: row.newUsers,
+                        engagementRate: row.engagementRate.toString(),
+                        averageSessionDuration: row.averageSessionDuration.toString(),
+                        conversions: row.conversions,
+                        conversionRate: row.conversions > 0 ? (row.conversions / row.sessions).toFixed(4) : '0',
+                        revenue: row.revenue.toString(),
+                        source: row.source,
+                        medium: row.medium,
+                        deviceCategory: row.deviceCategory,
+                    }));
+
+                    await db
+                        .insert(ga4Data)
+                        .values(rows)
+                        .onConflictDoUpdate({
+                            target: [
+                                ga4Data.projectId,
+                                ga4Data.date,
+                                ga4Data.source,
+                                ga4Data.medium,
+                                ga4Data.deviceCategory,
+                            ],
+                            set: {
+                                sessions: sql`EXCLUDED.sessions`,
+                                users: sql`EXCLUDED.users`,
+                                newUsers: sql`EXCLUDED.new_users`,
+                                engagementRate: sql`EXCLUDED.engagement_rate`,
+                                averageSessionDuration: sql`EXCLUDED.average_session_duration`,
+                                conversions: sql`EXCLUDED.conversions`,
+                                conversionRate: sql`EXCLUDED.conversion_rate`,
+                                revenue: sql`EXCLUDED.revenue`,
+                                updatedAt: sql`NOW()`,
+                            },
+                        });
+
+                    totalInserted += rows.length;
+                }
+
+                console.log(`✅ [GA4 Cron] Synced ${totalInserted} rows for project ${connection.projectId}`);
+
+            } catch (error: any) {
+                console.error(`❌ [GA4 Cron] Error syncing project ${connection.projectId}:`, error.message);
+            }
+        }
+
+        console.log('✅ [GA4 Cron] Daily GA4 sync completed');
+    } catch (error) {
+        console.error('❌ [GA4 Cron] Error in GA4 sync job:', error);
+    }
+};
+
+/**
  * GA4 Sync Cron Job
  * Runs daily at 2:30 AM
  * Syncs yesterday's GA4 data for all connected projects
  */
 export const ga4SyncJob = new CronJob(
     '30 2 * * *', // Run at 2:30 AM every day
-    async () => {
-        console.log('🔄 [GA4 Cron] Starting daily GA4 sync...');
-
-        try {
-            // Get all GA4 connections
-            const connections = await db
-                .select()
-                .from(oauthTokens)
-                .where(eq(oauthTokens.provider, 'google_analytics'));
-
-            console.log(`[GA4 Cron] Found ${connections.length} GA4 connections`);
-
-            // Calculate yesterday's date
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const _dateStr = yesterday.toISOString().split('T')[0];
-
-            for (const connection of connections) {
-                try {
-                    console.log(`[GA4 Cron] Syncing project ${connection.projectId}...`);
-
-                    // Get valid access token (auto-refresh if expired)
-                    const validAccessToken = await getValidAccessToken(connection);
-
-                    const _client = new GA4Client(validAccessToken, connection.refreshToken);
-
-                    // TODO: Get propertyId from project settings or ga4_properties table
-                    // For now, we'll need to store propertyId somewhere
-                    // const propertyId = await getPropertyIdForProject(connection.projectId);
-
-                    // Example: sync data (uncomment when propertyId is available)
-                    // const data = await client.fetchAnalyticsData({
-                    //     propertyId,
-                    //     startDate: dateStr,
-                    //     endDate: dateStr,
-                    // });
-
-                    // console.log(`✅ [GA4 Cron] Synced ${data.length} rows for project ${connection.projectId}`);
-                    console.log(`✅ [GA4 Cron] Project ${connection.projectId} token valid, ready for sync`);
-
-                } catch (error: any) {
-                    console.error(`❌ [GA4 Cron] Error syncing project ${connection.projectId}:`, error.message);
-                }
-            }
-
-            console.log('✅ [GA4 Cron] Daily GA4 sync completed');
-        } catch (error) {
-            console.error('❌ [GA4 Cron] Error in GA4 sync job:', error);
-        }
-    },
+    runGA4Sync,
     null,
     false, // Don't auto-start
     'Asia/Ho_Chi_Minh' // Vietnam timezone

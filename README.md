@@ -1,11 +1,37 @@
-# Task Management System
+# SEO Impact OS
 
-> A modern, full-stack task management application with Kanban board, time tracking, and real-time updates.
+> Comprehensive SEO task management and analytics platform that correlates SEO tasks with traffic and ranking changes.
 
 ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Next.js](https://img.shields.io/badge/Next.js_15-000000?style=flat&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React_18-20232A?style=flat&logo=react&logoColor=61DAFB)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)
+![Hono](https://img.shields.io/badge/Hono-E36002?style=flat&logo=hono&logoColor=white)
+
+---
+
+## 🎯 Project Status
+
+**Current Phase:** Phase 7 - Testing, Performance & Production Deployment  
+**Overall Progress:** 95% Complete (MVP Ready)  
+**Last Updated:** December 23, 2025
+
+### ✅ Completed Phases (1-6)
+- ✅ Phase 1: Foundation (Kanban, Time Tracking, Task Management)
+- ✅ Phase 2: Google Search Console & GA4 Integration
+- ✅ Phase 3: Analytics Dashboard UI
+- ✅ Phase 4: Rankings & URL Performance Dashboards
+- ✅ Phase 5: Correlation Dashboard
+- ✅ Phase 6: Advanced Features (Keyword Details, AI Diagnosis)
+
+### 🚀 Current Phase: Phase 7
+**Focus:** Production readiness, testing, security, and deployment
+
+📚 **Phase 7 Documentation:**
+- [Implementation Plan](./PHASE7_IMPLEMENTATION_PLAN.md) - Complete 4-week roadmap
+- [Quick Start Guide](./PHASE7_QUICK_START.md) - Get started immediately
+- [Testing Setup](./PHASE7_WEEK1_TESTING_SETUP.md) - Comprehensive testing guide
+- [Security Guide](./PHASE7_SECURITY_GUIDE.md) - Security hardening steps
 
 ---
 
@@ -18,24 +44,42 @@
 - [Development](#-development)
 - [Project Structure](#-project-structure)
 - [API Documentation](#-api-documentation)
+- [Phase 7 Next Steps](#-phase-7-next-steps)
 - [Troubleshooting](#-troubleshooting)
 
 ---
 
 ## ✨ Features
 
-### Core Functionality
-- ✅ **Kanban Board** - Drag & drop tasks between columns (To Do, In Progress, Done)
-- ✅ **Time Tracking** - Start/pause/resume/stop timer with automatic time logging
-- ✅ **Task Management** - Create, edit, delete tasks with rich metadata
-- ✅ **Filtering & Search** - Filter by project, status, and search by title/description
-- ✅ **Persistence** - All data saved to PostgreSQL with optimistic updates
+### 📊 Analytics & Integrations
+- ✅ **Google Search Console Integration** - OAuth 2.0 flow, automated daily sync
+- ✅ **Google Analytics 4 Integration** - Sessions, users, conversions, revenue tracking
+- ✅ **Real Data Sync** - 25,000+ GSC rows, 3,600+ GA4 rows synced
+- ✅ **Automated Cron Jobs** - Daily sync at 2:00 AM (GSC) and 2:30 AM (GA4)
 
-### User Experience
-- ✅ **Loading States** - Skeleton loaders for better perceived performance
-- ✅ **Empty States** - Helpful messages when no data is available
-- ✅ **Responsive Design** - Works on desktop and mobile devices
-- ✅ **Real-time Updates** - Optimistic UI updates with error rollback
+### 📈 Dashboards
+- ✅ **Correlation Dashboard** - Visualize task impact on traffic with shaded impact windows
+- ✅ **Analytics Dashboard** - GSC + GA4 metrics with date range filtering
+- ✅ **Rankings Dashboard** - Keyword position tracking, top movers, position distribution
+- ✅ **URL Performance** - Declining URLs detection, traffic history
+- ✅ **Keyword Details** - Position history, SERP competitors, AI diagnosis
+
+### 🎯 Task Management
+- ✅ **Kanban Board** - Drag & drop tasks between columns (To Do, In Progress, Done)
+- ✅ **Time Tracking** - Start/pause/resume/stop timer with persistence
+- ✅ **Task Correlation** - Link tasks to traffic changes with impact windows (7-28 days)
+- ✅ **Project Management** - Multi-project support with filtering
+
+### 🤖 AI Features
+- ✅ **AI Diagnosis** - Rule-based recommendations for declining keywords
+- ✅ **Content Freshness Detection** - Identify outdated content
+- ✅ **Quick Actions** - Create recovery tasks from recommendations
+
+### 📊 Data Visualization
+- ✅ **Recharts Integration** - Area charts, line charts, bar charts
+- ✅ **Multi-layer Charts** - Toggle GSC/GA4/Tasks layers
+- ✅ **Interactive Tooltips** - Detailed metrics on hover
+- ✅ **Date Range Filters** - 7D, 30D, 90D views
 
 ---
 
@@ -46,27 +90,37 @@
 - **Language:** TypeScript
 - **UI Library:** React 18
 - **Styling:** Tailwind CSS
-- **Components:** shadcn/ui
+- **Components:** shadcn/ui (Radix UI primitives)
+- **Charts:** Recharts
 - **Drag & Drop:** @dnd-kit
 - **State Management:** Zustand
+- **Date Handling:** date-fns
 
 ### Backend
-- **Framework:** Hono
-- **Runtime:** Bun
-- **Database:** PostgreSQL
+- **Framework:** Hono (lightweight web framework)
+- **Runtime:** Node.js (switched from Bun for compatibility)
+- **Database:** PostgreSQL 16
 - **ORM:** Drizzle ORM
+- **Cron Jobs:** node-cron
+
+### Integrations
+- **Google Search Console API** - Search analytics data
+- **Google Analytics 4 API** - Traffic and conversion data
+- **OAuth 2.0** - Google authentication flow
 
 ### Monorepo
 - **Build System:** Turborepo
-- **Package Manager:** Bun
+- **Package Manager:** npm
+- **Workspaces:** apps/api, apps/web, packages/db, packages/types
 
 ---
 
 ## 📦 Prerequisites
 
-- **Bun** >= 1.0.0
+- **Node.js** >= 20.0.0
+- **npm** >= 10.0.0
 - **PostgreSQL** >= 14
-- **Node.js** >= 18 (for compatibility)
+- **Google Cloud Project** (for GSC & GA4 integration)
 
 ---
 
@@ -80,7 +134,7 @@ cd task-management
 
 ### 2. Install Dependencies
 ```bash
-bun install
+npm install
 ```
 
 ### 3. Setup PostgreSQL Database
@@ -96,10 +150,24 @@ CREATE DATABASE task_management;
 
 ### 4. Configure Environment Variables
 
+**Root `.env`:**
+```bash
+DATABASE_URL="postgresql://localhost:5432/task_management"
+```
+
 **Backend (`apps/api/.env`):**
 ```bash
 DATABASE_URL="postgresql://localhost:5432/task_management"
-PORT=3001
+API_PORT=3001
+NODE_ENV=development
+
+# Google OAuth (get from Google Cloud Console)
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+GOOGLE_REDIRECT_URI="http://localhost:3002/dashboard/integrations"
+
+# Encryption (generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+ENCRYPTION_KEY="your-64-character-hex-string"
 ```
 
 **Frontend (`apps/web/.env.local`):**
@@ -107,12 +175,26 @@ PORT=3001
 NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
-### 5. Run Database Migrations
+### 5. Setup Google Cloud Project
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing
+3. Enable APIs:
+   - Google Search Console API
+   - Google Analytics Data API
+4. Create OAuth 2.0 credentials:
+   - Application type: Web application
+   - Authorized redirect URIs: `http://localhost:3002/dashboard/integrations`
+5. Copy Client ID and Client Secret to `.env`
+
+### 6. Run Database Migrations
 ```bash
-cd packages/db
-bun run db:generate
-bun run db:migrate
-cd ../..
+npm run db:push
+```
+
+### 7. (Optional) Open Database Studio
+```bash
+npm run db:studio
 ```
 
 ---
@@ -121,42 +203,89 @@ cd ../..
 
 ### Start All Services
 ```bash
-bun run dev
+npm run dev
 ```
 
 This starts:
 - **Frontend:** http://localhost:3002
 - **Backend API:** http://localhost:3001
+- **Cron Jobs:** Running in background
 
 ### Start Services Individually
 ```bash
 # Terminal 1 - Backend
 cd apps/api
-bun run dev
+npm run dev
 
 # Terminal 2 - Frontend
 cd apps/web
-bun run dev
+npm run dev
 ```
+
+### Access the Application
+- **Frontend:** http://localhost:3002
+- **API:** http://localhost:3001/api
+- **Database Studio:** Run `npm run db:studio` (opens on http://localhost:4983)
 
 ---
 
 ## 📁 Project Structure
 
 ```
-task-management/
+seo-impact-os/
 ├── apps/
-│   ├── api/                    # Hono backend
-│   │   └── src/routes/        # API routes
-│   └── web/                    # Next.js frontend
-│       └── src/
-│           ├── components/    # React components
-│           ├── hooks/         # Custom hooks
-│           ├── stores/        # Zustand stores
-│           └── types/         # TypeScript types
+│   ├── api/                        # Hono backend
+│   │   ├── src/
+│   │   │   ├── routes/            # API routes
+│   │   │   │   ├── analytics.ts   # GSC + GA4 analytics
+│   │   │   │   ├── correlation.ts # Task-traffic correlation
+│   │   │   │   ├── diagnosis.ts   # AI diagnosis
+│   │   │   │   ├── integrations/  # OAuth flows
+│   │   │   │   ├── keywords.ts    # Keyword details
+│   │   │   │   ├── projects.ts    # Project CRUD
+│   │   │   │   ├── rankings.ts    # Keyword rankings
+│   │   │   │   ├── tasks.ts       # Task CRUD
+│   │   │   │   ├── time-logs.ts   # Time tracking
+│   │   │   │   └── urls.ts        # URL performance
+│   │   │   ├── jobs/              # Cron jobs
+│   │   │   │   ├── sync-gsc.ts    # GSC daily sync
+│   │   │   │   └── sync-ga4.ts    # GA4 daily sync
+│   │   │   ├── utils/             # Utilities
+│   │   │   └── index.ts           # Server entry
+│   │   └── package.json
+│   └── web/                        # Next.js frontend
+│       ├── src/
+│       │   ├── app/
+│       │   │   └── dashboard/     # Dashboard pages
+│       │   │       ├── page.tsx           # Correlation
+│       │   │       ├── analytics/         # GSC + GA4
+│       │   │       ├── rankings/          # Keywords
+│       │   │       ├── urls/              # URL performance
+│       │   │       ├── keywords/          # Keyword details
+│       │   │       ├── tasks/             # Kanban board
+│       │   │       ├── integrations/      # OAuth
+│       │   │       └── projects/          # Projects
+│       │   ├── components/        # React components
+│       │   ├── hooks/             # Custom hooks
+│       │   ├── stores/            # Zustand stores
+│       │   └── types/             # TypeScript types
+│       └── package.json
 ├── packages/
-│   └── db/                     # Database package
-│       └── src/schema/        # Drizzle schemas
+│   ├── db/                         # Database package
+│   │   └── src/
+│   │       └── schema/            # Drizzle schemas
+│   │           ├── projects.ts
+│   │           ├── tasks.ts
+│   │           ├── time-logs.ts
+│   │           ├── oauth-tokens.ts
+│   │           ├── gsc-data.ts
+│   │           ├── ga4-data.ts
+│   │           └── ...
+│   └── types/                      # Shared types
+├── PHASE7_IMPLEMENTATION_PLAN.md   # 4-week roadmap
+├── PHASE7_QUICK_START.md           # Quick start guide
+├── PHASE7_WEEK1_TESTING_SETUP.md   # Testing guide
+├── PHASE7_SECURITY_GUIDE.md        # Security guide
 └── README.md
 ```
 
@@ -178,7 +307,7 @@ http://localhost:3001/api
 - `DELETE /api/projects/:id` - Delete project
 
 #### Tasks
-- `GET /api/tasks` - List all tasks
+- `GET /api/tasks` - List all tasks (with filters)
 - `POST /api/tasks` - Create task
 - `PUT /api/tasks/:id` - Update task
 - `DELETE /api/tasks/:id` - Delete task
@@ -187,6 +316,77 @@ http://localhost:3001/api
 - `GET /api/time-logs` - List time logs
 - `POST /api/time-logs` - Create time log
 - `DELETE /api/time-logs/:id` - Delete time log
+
+#### Analytics
+- `GET /api/analytics` - Get GSC + GA4 combined metrics
+  - Query params: `projectId`, `startDate`, `endDate`
+
+#### Correlation
+- `GET /api/correlation` - Get task-traffic correlation data
+  - Query params: `projectId`, `startDate`, `endDate`
+
+#### Rankings
+- `GET /api/rankings` - Get keyword rankings from GSC
+  - Query params: `projectId`, `startDate`, `endDate`
+
+#### URLs
+- `GET /api/urls` - Get URL performance from GSC
+  - Query params: `projectId`, `startDate`, `endDate`
+
+#### Keywords
+- `GET /api/keywords/:keyword` - Get keyword details
+  - Query params: `projectId`
+
+#### Diagnosis
+- `GET /api/diagnosis/:keyword` - Get AI diagnosis for keyword
+  - Query params: `projectId`
+
+#### Integrations
+- `GET /api/integrations/gsc/auth` - Start GSC OAuth flow
+- `GET /api/integrations/gsc/callback` - GSC OAuth callback
+- `POST /api/integrations/gsc/sync` - Manual GSC sync
+- `GET /api/integrations/ga4/auth` - Start GA4 OAuth flow
+- `GET /api/integrations/ga4/callback` - GA4 OAuth callback
+- `POST /api/integrations/ga4/sync` - Manual GA4 sync
+
+---
+
+## 🚀 Phase 7 Next Steps
+
+### Week 1: Testing & Security (Current)
+1. **Setup Testing Infrastructure**
+   - Install dependencies: `cd apps/api && npm install --save-dev supertest @types/supertest`
+   - Create vitest configs
+   - Write first tests
+
+2. **Implement Security**
+   - Generate encryption key
+   - Encrypt OAuth tokens
+   - Add rate limiting
+   - Implement request validation
+
+📚 **See detailed guides:**
+- [Quick Start](./PHASE7_QUICK_START.md) - Start here!
+- [Testing Setup](./PHASE7_WEEK1_TESTING_SETUP.md)
+- [Security Guide](./PHASE7_SECURITY_GUIDE.md)
+
+### Week 2: Integration Tests & Performance
+- Write integration tests for OAuth flows
+- Add database indexes
+- Implement pagination
+- Optimize queries
+
+### Week 3: Documentation & Export
+- Complete API documentation (Swagger)
+- Write user guides
+- Implement CSV export
+- Add chart export
+
+### Week 4: Deployment
+- Deploy to Vercel/Railway
+- Setup monitoring (Sentry, UptimeRobot)
+- Configure cron jobs
+- Production verification
 
 ---
 
@@ -199,15 +399,47 @@ pg_isready
 
 # Restart PostgreSQL
 brew services restart postgresql  # macOS
+sudo systemctl restart postgresql # Linux
 ```
 
 ### Port Already in Use
 ```bash
-# Find process
+# Find process using port 3001
 lsof -i :3001
 
 # Kill process
 kill -9 <PID>
+```
+
+### OAuth Issues
+```bash
+# Check environment variables
+cd apps/api
+cat .env | grep GOOGLE
+
+# Verify redirect URI matches Google Cloud Console
+# Should be: http://localhost:3002/dashboard/integrations
+```
+
+### Cron Jobs Not Running
+```bash
+# Check cron job logs
+cd apps/api
+npm run dev
+
+# Look for "Cron jobs initialized" message
+# GSC sync: 2:00 AM daily
+# GA4 sync: 2:30 AM daily
+```
+
+### Test Failures
+```bash
+# Clear test cache
+rm -rf apps/api/coverage apps/web/coverage
+
+# Run tests with verbose output
+cd apps/api
+npm run test -- --reporter=verbose
 ```
 
 ---
@@ -216,17 +448,64 @@ kill -9 <PID>
 
 ```bash
 # Development
-bun run dev          # Start all services
+npm run dev          # Start all services (API + Web)
+npm run build        # Build all packages
+npm run lint         # Lint all packages
+npm run type-check   # TypeScript type checking
+npm run test         # Run all tests
 
 # Database
-bun run db:generate  # Generate migrations
-bun run db:migrate   # Run migrations
-bun run db:studio    # Open Drizzle Studio
+npm run db:generate  # Generate migrations
+npm run db:push      # Push schema to database
+npm run db:studio    # Open Drizzle Studio
 
-# Build
-bun run build        # Build all packages
+# Testing
+npm run test         # Run tests
+npm run test:watch   # Watch mode
+npm run test:coverage # With coverage report
+
+# API (from apps/api)
+cd apps/api
+npm run dev          # Start API server
+npm run build        # Build API
+npm run test         # Run API tests
+
+# Web (from apps/web)
+cd apps/web
+npm run dev          # Start Next.js dev server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run test         # Run frontend tests
 ```
 
 ---
 
-**Built with ❤️ using modern web technologies**
+## 📚 Additional Documentation
+
+- [Master Project Plan](./PROJECT_MASTER_PLAN.md) - Complete project overview
+- [Tech Stack Details](./TECH_STACK.md) - Detailed technology documentation
+- [Visual Features](./VISUAL_FEATURES.md) - UI/UX documentation
+- [Phase 1 Complete](./PHASE1_DAY3_COMPLETE.md) - Foundation phase
+- [Phase 2 Complete](./PHASE1_DAY4_COMPLETE.md) - Integration phase
+
+---
+
+## 🎯 Current Status
+
+**Phase 7 is ready to begin!** 🚀
+
+The application is 95% complete with all core features working:
+- ✅ Task management with Kanban board
+- ✅ Google Search Console integration (25K+ rows synced)
+- ✅ Google Analytics 4 integration (3.6K+ rows synced)
+- ✅ Correlation dashboard with task impact visualization
+- ✅ Rankings, URLs, and Keyword dashboards
+- ✅ AI diagnosis and recommendations
+
+**Next steps:** Follow the [Phase 7 Quick Start Guide](./PHASE7_QUICK_START.md) to prepare for production deployment.
+
+---
+
+**Built with ❤️ for SEO professionals**  
+**Last Updated:** December 23, 2025
+

@@ -4,6 +4,7 @@ export * from './tasks';
 export * from './time-logs';
 export * from './integrations';
 export * from './gsc_data';
+export * from './gsc_data_aggregated';
 export * from './ga4_data';
 
 // Future schemas will be exported here:

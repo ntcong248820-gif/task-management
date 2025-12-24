@@ -56,14 +56,29 @@ export default function IntegrationsPage() {
         try {
             // Check URL params for OAuth callback
             const params = new URLSearchParams(window.location.search)
+            const success = params.get("success")
+            const error = params.get("error")
 
-            if (params.get("gsc") === "success" || params.get("ga4") === "success") {
-                // Clear URL params
+            // Show success/error messages
+            if (success === "gsc_connected") {
+                console.log("✅ GSC connected successfully!")
+                // Could show a toast notification here
+            } else if (success === "ga4_connected") {
+                console.log("✅ GA4 connected successfully!")
+                // Could show a toast notification here
+            } else if (error) {
+                console.error("❌ OAuth error:", error)
+                // Could show error toast here
+            }
+
+            // Clear URL params after handling
+            if (success || error) {
                 window.history.replaceState({}, '', '/dashboard/integrations')
             }
 
             // Fetch actual connection status from API
-            const projectId = 1 // TODO: Get from context
+            // Get projectId from localStorage or use default
+            const projectId = localStorage.getItem('selectedProjectId') || '27'
             const response = await fetch(getApiUrl(`/api/integrations/status?projectId=${projectId}`))
             const data = await response.json()
 
@@ -101,7 +116,7 @@ export default function IntegrationsPage() {
         try {
             setConnecting(integration.id)
 
-            const projectId = 1
+            const projectId = localStorage.getItem('selectedProjectId') || '27'
             const response = await fetch(
                 getApiUrl(`/api/integrations/${integration.id}/authorize?projectId=${projectId}`)
             )
@@ -125,7 +140,7 @@ export default function IntegrationsPage() {
         try {
             setDisconnecting(integration.id)
 
-            const projectId = 1
+            const projectId = localStorage.getItem('selectedProjectId') || '27'
             const response = await fetch(
                 getApiUrl(`/api/integrations/${integration.id}/disconnect?projectId=${projectId}`),
                 { method: 'DELETE' }

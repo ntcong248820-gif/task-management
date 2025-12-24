@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -89,7 +90,12 @@ export function KeywordTable({
                                 keywords.map((kw, i) => (
                                     <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-800/50 transition-colors">
                                         <td className="py-3 px-4 text-white font-medium max-w-xs truncate" title={kw.query}>
-                                            {kw.query}
+                                            <Link
+                                                href={`/dashboard/keywords/${encodeURIComponent(kw.query)}`}
+                                                className="hover:text-blue-400 hover:underline transition-colors"
+                                            >
+                                                {kw.query}
+                                            </Link>
                                         </td>
                                         <td className="text-right py-3 px-4">
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${kw.position <= 3 ? 'bg-emerald-500/20 text-emerald-400' :

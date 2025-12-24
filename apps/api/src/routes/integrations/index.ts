@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, oauthTokens, eq } from '@repo/db';
+import { db, oauthTokens, eq, and } from '@repo/db';
 
 const app = new Hono();
 
@@ -87,8 +87,10 @@ app.delete('/:provider/disconnect', async (c) => {
         await db
             .delete(oauthTokens)
             .where(
-                eq(oauthTokens.projectId, parseInt(projectId))
-                && eq(oauthTokens.provider, dbProvider)
+                and(
+                    eq(oauthTokens.projectId, parseInt(projectId)),
+                    eq(oauthTokens.provider, dbProvider)
+                )
             );
 
         return c.json({

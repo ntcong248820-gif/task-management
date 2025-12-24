@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Plus, Bell } from "lucide-react"
 import { getApiUrl } from "@/lib/config"
+import { useProject } from "@/contexts/ProjectContext"
 
 interface Project {
   id: number
@@ -23,10 +24,12 @@ interface Project {
   updatedAt: string
 }
 
+import { DateRangePicker } from "@/components/features/date-picker/DateRangePicker";
+
 export function Header() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [selectedProject, setSelectedProject] = useState<string>("")
   const [loading, setLoading] = useState(true)
+  const { selectedProjectId, setSelectedProjectId } = useProject()
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -36,8 +39,9 @@ export function Header() {
 
         if (data.success) {
           setProjects(data.data)
-          if (data.data.length > 0) {
-            setSelectedProject(data.data[0].id.toString())
+          // Set first project as default if no project is selected
+          if (data.data.length > 0 && !selectedProjectId) {
+            setSelectedProjectId(data.data[0].id)
           }
         }
       } catch (error) {
@@ -48,7 +52,7 @@ export function Header() {
     }
 
     fetchProjects()
-  }, [])
+  }, [selectedProjectId, setSelectedProjectId])
 
   if (loading) {
     return (
@@ -63,7 +67,10 @@ export function Header() {
       {/* Left: Project Selector */}
       <div className="flex items-center gap-4">
         <div className="min-w-[280px]">
-          <Select value={selectedProject} onValueChange={setSelectedProject}>
+          <Select
+            value={selectedProjectId?.toString() || ""}
+            onValueChange={(value) => setSelectedProjectId(parseInt(value))}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select project" />
             </SelectTrigger>
@@ -88,6 +95,11 @@ export function Header() {
         </Button>
       </div>
 
+      {/* Middle: Date Range Picker */}
+      <div className="flex-1 flex justify-center">
+        <DateRangePicker />
+      </div>
+
       {/* Right: Actions */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" className="relative">
@@ -99,7 +111,7 @@ export function Header() {
           <div className="text-sm">
             <p className="font-medium">Current Project</p>
             <p className="text-xs text-muted-foreground">
-              {projects.find((p) => p.id.toString() === selectedProject)?.domain || "N/A"}
+              {projects.find((p) => p.id === selectedProjectId)?.domain || "N/A"}
             </p>
           </div>
         </div>

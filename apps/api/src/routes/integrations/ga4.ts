@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
-import { db, oauthTokens, ga4Data, eq, sql, and } from '@repo/db';
+import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 
@@ -138,18 +138,37 @@ app.get('/authorize', async (c) => {
  */
 app.get('/callback', async (c) => {
     try {
-        const { code, error } = c.req.query();
+        const { code, state, error } = c.req.query();
 
-        console.log('[GA4 Callback] Received:', { code: code?.substring(0, 20) + '...', error });
+        console.log('[GA4 Callback] Received:', { code: code?.substring(0, 20) + '...', error, state: state?.substring(0, 20) + '...' });
 
+        // Handle OAuth error
         if (error) {
             console.error('[GA4 Callback] OAuth error:', error);
-            return c.json({ success: false, error: `OAuth error: ${error}` }, 400);
+            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=${encodeURIComponent(error)}`);
         }
 
         if (!code) {
             console.error('[GA4 Callback] No code provided');
-            return c.json({ success: false, error: 'Authorization code is required' }, 400);
+            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=no_code`);
+        }
+
+        // Parse state to get projectId
+        let projectId: number;
+        try {
+            if (!state) {
+                throw new Error('State parameter missing');
+            }
+            const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
+            projectId = parseInt(stateData.projectId);
+
+            if (!projectId || isNaN(projectId)) {
+                throw new Error('Invalid projectId in state');
+            }
+            console.log('[GA4 Callback] Project ID from state:', projectId);
+        } catch (stateError) {
+            console.error('[GA4 Callback] State parsing error:', stateError);
+            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=invalid_state`);
         }
 
         // Create OAuth2 client
@@ -161,23 +180,18 @@ app.get('/callback', async (c) => {
 
         console.log('[GA4 Callback] Exchanging code for tokens...');
 
-        // Manual logging since logToFile is broken
-        console.log('Attempting to exchange code for tokens', { code: code?.substring(0, 10) });
-
         // Exchange code for tokens
         const { tokens } = await oauth2Client.getToken(code);
 
-        console.log('Tokens received', {
-            hasAccess: !!tokens.access_token,
-            hasRefresh: !!tokens.refresh_token,
-            expiry: tokens.expiry_date
-        });
-
-        console.log('[GA4 Callback] Tokens received details:', {
+        console.log('[GA4 Callback] Tokens received:', {
             hasAccessToken: !!tokens.access_token,
             hasRefreshToken: !!tokens.refresh_token,
             expiryDate: tokens.expiry_date,
         });
+
+        if (!tokens.access_token || !tokens.refresh_token) {
+            throw new Error('Missing tokens from Google OAuth');
+        }
 
         // Get user info (email)
         oauth2Client.setCredentials(tokens);
@@ -189,41 +203,161 @@ app.get('/callback', async (c) => {
 
         console.log('[GA4 Callback] User email:', accountEmail);
 
-        // TODO: Get projectId from state storage
-        const projectId = 1;
+        // Check if token already exists for this project
+        const existingToken = await db
+            .select()
+            .from(oauthTokens)
+            .where(
+                and(
+                    eq(oauthTokens.projectId, projectId),
+                    eq(oauthTokens.provider, 'google_analytics')
+                )
+            )
+            .limit(1);
 
-        console.log('[GA4 Callback] Storing tokens in database...');
+        console.log('[GA4 Callback] Storing tokens in database for project', projectId);
 
-        // Store tokens in database
-        await db.insert(oauthTokens).values({
-            projectId,
-            provider: 'google_analytics',
-            accessToken: tokens.access_token!,
-            refreshToken: tokens.refresh_token!,
-            expiresAt: new Date(tokens.expiry_date!),
-            tokenType: tokens.token_type!,
-            scope: tokens.scope!,
-            accountEmail,
-        });
+        if (existingToken.length > 0) {
+            // Update existing token
+            await db
+                .update(oauthTokens)
+                .set({
+                    accessToken: tokens.access_token,
+                    refreshToken: tokens.refresh_token,
+                    expiresAt: new Date(tokens.expiry_date!),
+                    tokenType: tokens.token_type || 'Bearer',
+                    scope: tokens.scope || '',
+                    accountEmail,
+                    updatedAt: new Date(),
+                })
+                .where(eq(oauthTokens.id, existingToken[0].id));
+        } else {
+            // Insert new token
+            await db.insert(oauthTokens).values({
+                projectId,
+                provider: 'google_analytics',
+                accessToken: tokens.access_token,
+                refreshToken: tokens.refresh_token,
+                expiresAt: new Date(tokens.expiry_date!),
+                tokenType: tokens.token_type || 'Bearer',
+                scope: tokens.scope || '',
+                accountEmail,
+            });
+        }
 
-        console.log('[GA4 Callback] Success! Tokens stored.');
+        console.log(`✅ GA4 connected successfully for project ${projectId}`);
 
-        return c.json({ success: true, message: 'Google Analytics connected successfully' });
+        // Redirect back to integrations page with success
+        return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?success=ga4_connected`);
     } catch (error: any) {
         const errorDetails = {
             message: error.message,
             code: error.code,
             status: error.status,
             response: error.response?.data,
-            stack: error.stack
         };
         console.error('[GA4 Callback] Error:', errorDetails);
 
-        // Return detailed error for debugging
+        // Redirect with error
+        return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=connection_failed`);
+    }
+});
+
+/**
+ * GET /api/integrations/ga4/properties
+ * Discover and list available GA4 properties
+ */
+app.get('/properties', async (c) => {
+    try {
+        const { projectId, save } = c.req.query();
+
+        if (!projectId) {
+            return c.json({ success: false, error: 'projectId is required' }, 400);
+        }
+
+        // Get OAuth tokens
+        const [tokenRecord] = await db
+            .select()
+            .from(oauthTokens)
+            .where(
+                and(
+                    eq(oauthTokens.projectId, parseInt(projectId)),
+                    eq(oauthTokens.provider, 'google_analytics')
+                )
+            )
+            .limit(1);
+
+        if (!tokenRecord) {
+            return c.json({ success: false, error: 'GA4 not connected' }, 404);
+        }
+
+        // Get valid access token (auto-refresh if expired)
+        const validAccessToken = await getValidAccessToken(tokenRecord);
+
+        // Create OAuth2 client
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.GOOGLE_CLIENT_ID!,
+            process.env.GOOGLE_CLIENT_SECRET!,
+            process.env.GOOGLE_REDIRECT_URI!
+        );
+        oauth2Client.setCredentials({
+            access_token: validAccessToken,
+            refresh_token: tokenRecord.refreshToken,
+        });
+
+        // List properties using Admin API
+        const analyticsadmin = google.analyticsadmin({ version: 'v1beta', auth: oauth2Client });
+        const response = await analyticsadmin.properties.list();
+
+        const properties = response.data.properties || [];
+
+        // Optionally save to database
+        if (save === 'true' && properties.length > 0) {
+            for (const property of properties) {
+                // Extract property ID from name (format: properties/123456789)
+                const propertyId = property.name?.split('/')[1] || '';
+
+                if (!propertyId) continue;
+
+                // Check if property already exists
+                const existing = await db
+                    .select()
+                    .from(ga4Properties)
+                    .where(
+                        and(
+                            eq(ga4Properties.projectId, parseInt(projectId)),
+                            eq(ga4Properties.propertyId, propertyId)
+                        )
+                    )
+                    .limit(1);
+
+                if (existing.length === 0) {
+                    // Insert new property
+                    await db.insert(ga4Properties).values({
+                        projectId: parseInt(projectId),
+                        propertyId,
+                        propertyName: property.displayName || null,
+                    });
+                }
+            }
+        }
+
+        return c.json({
+            success: true,
+            data: {
+                properties: properties.map(p => ({
+                    propertyId: p.name?.split('/')[1] || '',
+                    propertyName: p.displayName,
+                    name: p.name,
+                })),
+                saved: save === 'true',
+            },
+        });
+    } catch (error: any) {
+        console.error('GA4 properties discovery error:', error);
         return c.json({
             success: false,
-            error: 'Failed to connect Google Analytics',
-            details: errorDetails
+            error: error.message || 'Failed to discover GA4 properties',
         }, 500);
     }
 });

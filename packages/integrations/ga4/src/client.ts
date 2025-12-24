@@ -30,8 +30,8 @@ export class GA4Client {
                     endDate: query.endDate,
                 },
             ],
-            metrics: query.metrics.map((name) => ({ name })),
-            dimensions: query.dimensions?.map((name) => ({ name })),
+            metrics: query.metrics.map((name: string) => ({ name })),
+            dimensions: query.dimensions?.map((name: string) => ({ name })),
             limit: query.limit || 10000,
         });
 
@@ -81,8 +81,7 @@ export class GA4Client {
      */
     async getPageMetrics(
         startDate: string,
-        endDate: string,
-        pagePath?: string
+        endDate: string
     ): Promise<GA4Response> {
         const query: GA4MetricQuery = {
             propertyId: `properties/${this.propertyId}`,

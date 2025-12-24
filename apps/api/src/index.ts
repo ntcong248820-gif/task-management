@@ -14,6 +14,8 @@ import analyticsRoutes from './routes/analytics';
 import correlationRoutes from './routes/correlation';
 import rankingsRoutes from './routes/rankings';
 import urlsRoutes from './routes/urls';
+import diagnosisRoutes from './routes/diagnosis';
+import keywordsRoutes from './routes/keywords';
 
 
 const app = new Hono();
@@ -60,6 +62,8 @@ app.route('/api/analytics', analyticsRoutes);
 app.route('/api/correlation', correlationRoutes);
 app.route('/api/rankings', rankingsRoutes);
 app.route('/api/urls', urlsRoutes);
+app.route('/api/diagnosis', diagnosisRoutes);
+app.route('/api/keywords', keywordsRoutes);
 app.route('/api/integrations', integrationsRoutes);
 app.route('/api/integrations/gsc', gscRoutes);
 app.route('/api/integrations/ga4', ga4Routes);

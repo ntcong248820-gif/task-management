@@ -72,7 +72,7 @@ export default function RankingsPage() {
     loading,
     error,
     fetchKeywords,
-  } = useRankingsData(1, 30);
+  } = useRankingsData(1);
 
   const handleSearch = useCallback((newSearch: string) => {
     setSearch(newSearch);
