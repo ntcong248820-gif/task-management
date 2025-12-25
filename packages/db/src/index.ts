@@ -5,12 +5,23 @@ import * as schema from './schema';
 // Get database URL from environment variable
 const databaseUrl = process.env.DATABASE_URL || 'postgresql://kong.peterpan@localhost:5432/seo_impact_os';
 
+// Log sanitized URL for debugging (hide password)
+const sanitizedUrl = databaseUrl.replace(/:[^:@]+@/, ':***@');
+console.log('[DB] Connecting to:', sanitizedUrl);
+console.log('[DB] SSL enabled:', databaseUrl.includes('supabase.com'));
+
 // Create PostgreSQL connection with SSL support for Supabase
 const queryClient = postgres(databaseUrl, {
     ssl: databaseUrl.includes('supabase.com') ? 'require' : false,
     max: 10, // Connection pool size
     idle_timeout: 20,
     connect_timeout: 10,
+    debug: (_connection, query, _params) => {
+        console.log('[DB Debug] Query:', query?.substring(0, 100));
+    },
+    onnotice: (notice) => {
+        console.log('[DB Notice]', notice);
+    },
 });
 
 // Create Drizzle instance

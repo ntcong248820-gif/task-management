@@ -34,6 +34,63 @@ app.get('/health', (c) => {
   });
 });
 
+// Debug endpoint - test database connection directly
+app.get('/debug/db', async (c) => {
+  try {
+    const { db, sql } = await import('@repo/db');
+
+    // Test with raw SQL query
+    const result = await db.execute(sql`SELECT 1 as test, current_database() as database, current_user as user`);
+
+    return c.json({
+      success: true,
+      message: 'Database connection successful',
+      result: result,
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        dbUrlPreview: process.env.DATABASE_URL?.replace(/:[^:@]+@/, ':***@').substring(0, 80) + '...',
+      }
+    });
+  } catch (error: unknown) {
+    // Capture the FULL error chain
+    const errorDetails: Record<string, unknown> = {};
+
+    if (error instanceof Error) {
+      errorDetails.name = error.name;
+      errorDetails.message = error.message;
+      errorDetails.stack = error.stack;
+
+      // Check for cause (nested error)
+      if ('cause' in error && error.cause) {
+        const cause = error.cause as Error;
+        errorDetails.cause = {
+          name: cause.name,
+          message: cause.message,
+          stack: cause.stack,
+        };
+      }
+
+      // Postgres-specific error properties
+      const pgError = error as unknown as Record<string, unknown>;
+      if (pgError.code) errorDetails.pgCode = pgError.code;
+      if (pgError.severity) errorDetails.severity = pgError.severity;
+      if (pgError.detail) errorDetails.detail = pgError.detail;
+      if (pgError.hint) errorDetails.hint = pgError.hint;
+    }
+
+    return c.json({
+      success: false,
+      error: 'Database connection failed',
+      details: errorDetails,
+      rawError: String(error),
+      env: {
+        hasDbUrl: !!process.env.DATABASE_URL,
+        dbUrlPreview: process.env.DATABASE_URL?.replace(/:[^:@]+@/, ':***@').substring(0, 80) + '...',
+      }
+    }, 500);
+  }
+});
+
 // Root endpoint
 app.get('/', (c) => {
   return c.json({

@@ -145,7 +145,7 @@ After backend is deployed:
 - [ ] Test API endpoints
 
 ### Phase 3: Frontend Update ✅
-- [ ] Update `NEXT_PUBLIC_API_URL` in Vercel
+- [ ] Update `NEXT_PUBLIC_API_URL` in Vercel/ Render.    
 - [ ] Update `NEXT_PUBLIC_GOOGLE_CLIENT_ID` in Vercel
 - [ ] Redeploy frontend
 - [ ] Test frontend-backend connection
