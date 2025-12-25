@@ -1,0 +1,21 @@
+services:
+  # Backend API Service
+  - type: web
+    name: seo-impact-api
+    runtime: node
+    region: oregon # or singapore for closer to Vietnam
+    plan: free
+    buildCommand: cd apps/api && npm install && npm run build
+    startCommand: cd apps/api && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      # Add these via Render Dashboard (sensitive data)
+      # - DATABASE_URL
+      # - GOOGLE_CLIENT_ID
+      # - GOOGLE_CLIENT_SECRET
+      # - GOOGLE_REDIRECT_URI
+      # - FRONTEND_URL
+    healthCheckPath: /api/health
