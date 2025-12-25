@@ -5,8 +5,8 @@ services:
     runtime: node
     region: oregon # or singapore for closer to Vietnam
     plan: free
-    buildCommand: cd apps/api && npm install && npm run build
-    startCommand: cd apps/api && npm start
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -18,4 +18,4 @@ services:
       # - GOOGLE_CLIENT_SECRET
       # - GOOGLE_REDIRECT_URI
       # - FRONTEND_URL
-    healthCheckPath: /api/health
+    healthCheckPath: /health
