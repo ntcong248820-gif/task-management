@@ -11,8 +11,12 @@ console.log('[DB] Connecting to:', sanitizedUrl);
 console.log('[DB] SSL enabled:', databaseUrl.includes('supabase.com'));
 
 // Create PostgreSQL connection with SSL support for Supabase
+// IMPORTANT: Supabase's connection pooler (port 6543) uses PgBouncer in transaction mode
+// which does NOT support prepared statements. We must disable them with prepare: false
+const isSupabase = databaseUrl.includes('supabase.com');
 const queryClient = postgres(databaseUrl, {
-    ssl: databaseUrl.includes('supabase.com') ? 'require' : false,
+    ssl: isSupabase ? 'require' : false,
+    prepare: false, // Required for Supabase pooler (PgBouncer transaction mode)
     max: 10, // Connection pool size
     idle_timeout: 20,
     connect_timeout: 10,
