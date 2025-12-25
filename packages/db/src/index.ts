@@ -29,7 +29,12 @@ const queryClient = postgres(databaseUrl, {
 });
 
 // Create Drizzle instance
-export const db = drizzle(queryClient, { schema });
+// IMPORTANT: Database uses snake_case (created_at) but schema uses camelCase (createdAt)
+// Enable casing conversion to map between them
+export const db = drizzle(queryClient, {
+    schema,
+    casing: 'snake_case', // Convert camelCase to snake_case for DB queries
+});
 
 // Export all schemas
 export * from './schema/projects';
