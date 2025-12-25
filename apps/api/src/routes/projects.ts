@@ -9,7 +9,9 @@ const app = new Hono();
 // GET /api/projects - List all projects
 app.get('/', async (c) => {
   try {
+    log.info('Fetching all projects...');
     const allProjects = await db.select().from(projects);
+    log.info(`Successfully fetched ${allProjects.length} projects`);
 
     return c.json({
       success: true,
@@ -17,11 +19,12 @@ app.get('/', async (c) => {
       count: allProjects.length,
     });
   } catch (error) {
-    log.error('Error fetching projects', error);
+    log.error('CRITICAL: Error fetching projects from database', error);
     return c.json(
       {
         success: false,
         error: 'Failed to fetch projects',
+        details: error instanceof Error ? error.message : String(error)
       },
       500
     );
