@@ -14,18 +14,18 @@ console.log('[DB] SSL enabled:', databaseUrl.includes('supabase.com'));
 // IMPORTANT: Supabase's connection pooler (port 6543) uses PgBouncer in transaction mode
 // which does NOT support prepared statements. We must disable them with prepare: false
 const isSupabase = databaseUrl.includes('supabase.com');
+const isPooler = databaseUrl.includes(':6543') || databaseUrl.includes('pooler');
+
+console.log('[DB] Supabase detected:', isSupabase);
+console.log('[DB] Pooler detected:', isPooler);
+console.log('[DB] Prepared statements:', !isPooler ? 'ENABLED' : 'DISABLED');
+
 const queryClient = postgres(databaseUrl, {
     ssl: isSupabase ? 'require' : false,
-    prepare: false, // Required for Supabase pooler (PgBouncer transaction mode)
+    prepare: isPooler ? false : undefined, // CRITICAL: Disable for Supabase pooler (PgBouncer transaction mode)
     max: 10, // Connection pool size
     idle_timeout: 20,
     connect_timeout: 10,
-    debug: (_connection, query, _params) => {
-        console.log('[DB Debug] Query:', query?.substring(0, 100));
-    },
-    onnotice: (notice) => {
-        console.log('[DB Notice]', notice);
-    },
 });
 
 // Create Drizzle instance
