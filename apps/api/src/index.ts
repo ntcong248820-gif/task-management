@@ -69,7 +69,7 @@ app.route('/api/integrations/gsc', gscRoutes);
 app.route('/api/integrations/ga4', ga4Routes);
 
 // Start server
-const port = parseInt(process.env.API_PORT || '3001');
+const port = parseInt(process.env.PORT || process.env.API_PORT || '3001');
 
 serve({
   fetch: app.fetch,
