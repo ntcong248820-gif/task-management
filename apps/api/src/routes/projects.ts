@@ -20,11 +20,21 @@ app.get('/', async (c) => {
     });
   } catch (error) {
     log.error('CRITICAL: Error fetching projects from database', error);
+
+    // Log full error details for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
+
     return c.json(
       {
         success: false,
         error: 'Failed to fetch projects',
-        details: error instanceof Error ? error.message : String(error)
+        details: error instanceof Error ? error.message : String(error),
+        errorType: error instanceof Error ? error.name : typeof error,
       },
       500
     );

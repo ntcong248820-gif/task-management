@@ -76,7 +76,7 @@ const port = parseInt(process.env.PORT || process.env.API_PORT || '3001');
 serve({
   fetch: app.fetch,
   port,
-}, () => {
+}, async () => {
   console.log(`🚀 Hono API running on port ${port}`);
 
   // Check Database Connection
@@ -84,6 +84,21 @@ serve({
     console.warn('⚠️ WARNING: DATABASE_URL is not set. Using local default which may fail in production.');
   } else {
     console.log('✅ DATABASE_URL is detected');
+
+    // Test database connection
+    try {
+      console.log('🔍 Testing database connection...');
+      const { db, projects } = await import('@repo/db');
+      const testQuery = await db.select().from(projects).limit(1);
+      console.log(`✅ Database connected! Found ${testQuery.length} project(s)`);
+    } catch (dbError) {
+      console.error('❌ Database connection FAILED!');
+      console.error('Error:', dbError);
+      if (dbError instanceof Error) {
+        console.error('Message:', dbError.message);
+        console.error('Stack:', dbError.stack);
+      }
+    }
   }
 
   // Start background sync jobs
