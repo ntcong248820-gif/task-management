@@ -79,6 +79,13 @@ serve({
 }, () => {
   console.log(`🚀 Hono API running on port ${port}`);
 
+  // Check Database Connection
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ WARNING: DATABASE_URL is not set. Using local default which may fail in production.');
+  } else {
+    console.log('✅ DATABASE_URL is detected');
+  }
+
   // Start background sync jobs
   if (process.env.NODE_ENV === 'production') {
     startAllSyncJobs();
