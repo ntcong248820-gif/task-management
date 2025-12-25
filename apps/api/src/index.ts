@@ -68,12 +68,19 @@ app.route('/api/integrations', integrationsRoutes);
 app.route('/api/integrations/gsc', gscRoutes);
 app.route('/api/integrations/ga4', ga4Routes);
 
+import { startAllSyncJobs } from './jobs';
+
 // Start server
 const port = parseInt(process.env.PORT || process.env.API_PORT || '3001');
 
 serve({
   fetch: app.fetch,
   port,
-});
+}, () => {
+  console.log(`🚀 Hono API running on port ${port}`);
 
-console.log(`🚀 Hono API running on http://localhost:${port}`);
+  // Start background sync jobs
+  if (process.env.NODE_ENV === 'production') {
+    startAllSyncJobs();
+  }
+});
