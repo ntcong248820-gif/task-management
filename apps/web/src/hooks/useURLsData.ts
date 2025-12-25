@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 interface DecliningURL {
     page: string;
@@ -97,7 +97,8 @@ export function useURLsData(projectId: number = 1, days: number = 30): UseURLsDa
 
     const fetchOverview = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/urls/overview?projectId=${projectId}&days=${days}`);
+            setLoading(true);
+            const res = await fetch(getApiUrl(`/api/urls/overview?projectId=${projectId}&days=${days}`));
             const json = await res.json();
             if (json.success) {
                 setOverview(json.data);
@@ -115,8 +116,9 @@ export function useURLsData(projectId: number = 1, days: number = 30): UseURLsDa
         filter?: 'all' | 'declining' | 'improving';
     } = {}) => {
         try {
+            setLoading(true);
             const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1, filter = 'all' } = params;
-            const url = `${API_BASE}/api/urls/list?projectId=${projectId}&days=${days}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20&filter=${filter}`;
+            const url = getApiUrl(`/api/urls/list?projectId=${projectId}&days=${days}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20&filter=${filter}`);
             const res = await fetch(url);
             const json = await res.json();
             if (json.success) {
@@ -129,8 +131,9 @@ export function useURLsData(projectId: number = 1, days: number = 30): UseURLsDa
 
     const fetchDetail = useCallback(async (urlToFetch: string) => {
         try {
+            setLoading(true);
             const encodedUrl = encodeURIComponent(urlToFetch);
-            const res = await fetch(`${API_BASE}/api/urls/detail?projectId=${projectId}&url=${encodedUrl}&days=${days}`);
+            const res = await fetch(getApiUrl(`/api/urls/detail?projectId=${projectId}&url=${encodedUrl}&days=${days}`));
             const json = await res.json();
             if (json.success) {
                 setDetailData(json.data);

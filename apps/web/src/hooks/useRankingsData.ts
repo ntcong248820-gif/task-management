@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 export interface KeywordMover {
     query: string;
@@ -104,7 +103,7 @@ export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
 
     const fetchOverview = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/overview?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
+            const res = await fetch(getApiUrl(`/api/rankings/overview?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
             const json = await res.json();
             if (json.success) {
                 setOverview(json.data);
@@ -122,7 +121,7 @@ export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
     } = {}) => {
         try {
             const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1 } = params;
-            const url = `${API_BASE}/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`;
+            const url = getApiUrl(`/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`);
             const res = await fetch(url);
             const json = await res.json();
             if (json.success) {
@@ -135,7 +134,7 @@ export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
 
     const fetchChart = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/chart?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=5`);
+            const res = await fetch(getApiUrl(`/api/rankings/chart?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=5`));
             const json = await res.json();
             if (json.success) {
                 setChartData(json.data);
@@ -147,7 +146,7 @@ export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
 
     const fetchDistribution = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/rankings/distribution?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
+            const res = await fetch(getApiUrl(`/api/rankings/distribution?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
             const json = await res.json();
             if (json.success) {
                 setDistributionData(json.data);

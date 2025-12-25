@@ -17,5 +17,7 @@ export const config = {
  * @returns Full URL
  */
 export function getApiUrl(path: string): string {
-    return `${config.apiUrl}${path}`
+    const baseUrl = config.apiUrl.endsWith('/') ? config.apiUrl.slice(0, -1) : config.apiUrl;
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${normalizedPath}`;
 }

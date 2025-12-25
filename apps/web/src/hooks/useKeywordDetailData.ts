@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 export interface KeywordDetail {
     keyword: string;
@@ -33,12 +32,12 @@ export function useKeywordDetailData(projectId: number = 1) {
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<KeywordDetail | null>(null);
 
-    const fetchDetail = useCallback(async (keyword: string, days: number = 30) => {
+    const fetchDetail = useCallback(async (keywordToFetch: string) => {
         setLoading(true);
         setError(null);
         try {
-            const encodedKeyword = encodeURIComponent(keyword);
-            const res = await fetch(`${API_BASE}/api/keywords/detail?projectId=${projectId}&keyword=${encodedKeyword}&days=${days}`);
+            const encodedKeyword = encodeURIComponent(keywordToFetch);
+            const res = await fetch(getApiUrl(`/api/keywords/detail?projectId=${projectId}&keyword=${encodedKeyword}&days=30`));
             const json = await res.json();
             if (json.success) {
                 setData(json.data);

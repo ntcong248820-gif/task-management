@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 export interface MetricValue {
     value: number;
@@ -77,14 +77,14 @@ export function useAnalyticsData(projectId: number = 1): UseAnalyticsDataReturn 
             setError(null);
 
             // Fetch GSC data (no siteUrl needed - each project has 1 site)
-            const gscRes = await fetch(`${API_BASE}/api/analytics/gsc?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
+            const gscRes = await fetch(getApiUrl(`/api/analytics/gsc?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
             const gscJson = await gscRes.json();
             if (gscJson.success) {
                 setGscData(gscJson.data);
             }
 
             // Fetch GA4 data
-            const ga4Res = await fetch(`${API_BASE}/api/analytics/ga4?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`);
+            const ga4Res = await fetch(getApiUrl(`/api/analytics/ga4?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
             const ga4Json = await ga4Res.json();
             if (ga4Json.success) {
                 setGa4Data(ga4Json.data);

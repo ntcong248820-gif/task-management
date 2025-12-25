@@ -3,8 +3,7 @@
 import { useState, useCallback } from 'react';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 export interface DiagnosisIssue {
     type: 'declining_traffic' | 'position_drop' | 'low_ctr' | 'high_bounce' | 'content_stale';
@@ -40,12 +39,12 @@ export function useDiagnosisData(projectId: number = 1) {
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');
 
-    const fetchDiagnosis = useCallback(async (url: string) => {
+    const fetchDiagnosis = useCallback(async (urlToDiagnose: string) => {
         setLoading(true);
         setError(null);
         try {
-            const encodedUrl = encodeURIComponent(url);
-            const res = await fetch(`${API_BASE}/api/diagnosis/url?projectId=${projectId}&url=${encodedUrl}&startDate=${startDate}&endDate=${endDate}`);
+            const encodedUrl = encodeURIComponent(urlToDiagnose);
+            const res = await fetch(getApiUrl(`/api/diagnosis/url?projectId=${projectId}&url=${encodedUrl}&startDate=${startDate}&endDate=${endDate}`));
             const json = await res.json();
             if (json.success) {
                 setDiagnosis(json.data);
