@@ -2,28 +2,52 @@
 
 ## Current Error: "Tenant or user not found"
 
-This error occurs when using Supabase's connection pooler (port 6543) with certain drivers. The solution is to use **direct connection (port 5432)** instead.
+This error occurs when using Supabase's **port 6543 (Transaction Mode)**. The solution is to use **port 5432 (Session Mode Pooler)** instead.
+
+### Why Port 5432?
+
+Port 5432 is Supabase's **Session Mode Pooler** which:
+- ✅ **Works with IPv4** (no IPv6 required)
+- ✅ **Supports prepared statements** (unlike port 6543)
+- ✅ **Connection pooling enabled** (not limited to 60 connections)
+- ✅ **More stable** than transaction mode
+- ✅ **Officially recommended by Supabase** (as of Feb 2025)
 
 ---
 
-## ✅ Solution: Switch to Direct Connection
+## ✅ Solution: Use Port 5432 (Session Mode Pooler)
 
-### Step 1: Get Direct Connection String from Supabase
+### Important: Understanding Supabase Ports
+
+As of **February 28, 2025**, Supabase pooler ports work as follows:
+
+| Port | Mode | IPv4 Support | Prepared Statements | Status |
+|------|------|--------------|---------------------|--------|
+| **5432** | **Session Mode** | ✅ Yes | ✅ Yes | **Recommended** |
+| 6543 | Transaction Mode | ✅ Yes | ❌ No | Not recommended |
+
+**Port 5432** is a **Session Mode Pooler** (not direct connection), which means:
+- ✅ Works with IPv4 networks
+- ✅ Supports prepared statements
+- ✅ Connection pooling enabled
+- ✅ Best choice for most applications
+
+### Step 1: Get Connection String from Supabase
 
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
 2. Select your project
 3. Click **Project Settings** (⚙️ icon in sidebar)
 4. Go to **Database** tab
 5. Scroll to **Connection String** section
-6. Find **URI** (NOT "Connection Pooling URI")
-7. Click **Copy** - this is your direct connection string
+6. Find **URI** - this uses port 5432 by default
+7. Click **Copy**
 
 **The URL should look like:**
 ```
 postgresql://postgres.jtdeuxvwcwtqzjndhrlg:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
 ```
 
-**Notice: Port is 5432** (not 6543)
+**Notice: Port is 5432** (Session Mode Pooler with IPv4 support)
 
 ---
 
@@ -145,15 +169,18 @@ npx tsx scripts/encode-db-url.ts
 
 ## Connection Type Comparison
 
-| Feature | Direct Connection (5432) | Connection Pooler (6543) |
-|---------|--------------------------|---------------------------|
-| **Reliability** | ✅ Very reliable | ⚠️ Has auth issues |
+| Feature | Port 5432 (Session Mode) | Port 6543 (Transaction Mode) |
+|---------|--------------------------|------------------------------|
+| **IPv4 Support** | ✅ Yes | ✅ Yes (but buggy) |
+| **Reliability** | ✅ Very reliable | ⚠️ Has "Tenant not found" issues |
 | **Setup** | ✅ Simple | ⚠️ Complex |
-| **Concurrent Connections** | ~60 max | Unlimited |
+| **Connection Pooling** | ✅ Yes | ✅ Yes |
 | **Prepared Statements** | ✅ Supported | ❌ Not supported |
-| **Best For** | Most apps | High-traffic apps |
+| **Best For** | **All applications** | Advanced use cases only |
 
-**Recommendation:** Use Direct Connection (5432) unless you have >50 concurrent users.
+**Recommendation:** Always use Port 5432 (Session Mode Pooler). It works with IPv4, supports prepared statements, and is the most reliable option.
+
+**Note:** As of February 28, 2025, Supabase officially recommends port 5432 for most use cases. Port 6543 is now transaction-mode only and has known authentication issues.
 
 ---
 

@@ -12,27 +12,39 @@ if (!databaseUrl) {
 
 // Parse connection details for logging and configuration
 const isSupabase = databaseUrl.includes('supabase.com');
-const isPooler = databaseUrl.includes(':6543') || databaseUrl.includes('pooler');
-const isDirectConnection = databaseUrl.includes(':5432');
+const isPort5432 = databaseUrl.includes(':5432'); // Session Mode Pooler (recommended)
+const isPort6543 = databaseUrl.includes(':6543'); // Transaction Mode (not recommended)
+
+// Determine connection mode and prepared statement support
+let connectionType = 'Custom';
+let preparedStatementsEnabled = true;
+
+if (isPort5432) {
+    connectionType = 'Session Mode Pooler (5432)';
+    preparedStatementsEnabled = true; // Session mode supports prepared statements
+} else if (isPort6543) {
+    connectionType = 'Transaction Mode Pooler (6543)';
+    preparedStatementsEnabled = false; // Transaction mode does NOT support prepared statements
+}
 
 // Log sanitized URL for debugging (hide password)
 const sanitizedUrl = databaseUrl.replace(/:[^:@]+@/, ':***@');
 console.log('[DB] Connecting to:', sanitizedUrl);
-console.log('[DB] Connection type:', isDirectConnection ? 'Direct (5432)' : isPooler ? 'Pooler (6543)' : 'Custom');
+console.log('[DB] Connection type:', connectionType);
 console.log('[DB] SSL:', isSupabase ? 'ENABLED' : 'DISABLED');
-console.log('[DB] Prepared statements:', !isPooler ? 'ENABLED' : 'DISABLED');
+console.log('[DB] Prepared statements:', preparedStatementsEnabled ? 'ENABLED' : 'DISABLED');
 
-// Warn if using pooler (known to have issues)
-if (isPooler) {
-    console.warn('[DB] ⚠️  WARNING: Using connection pooler (port 6543)');
-    console.warn('[DB] ⚠️  If you encounter "Tenant or user not found" errors,');
-    console.warn('[DB] ⚠️  switch to direct connection (port 5432).');
-    console.warn('[DB] ⚠️  See DATABASE_TROUBLESHOOTING.md for details.');
+// Warn if using port 6543 (known to have issues)
+if (isPort6543) {
+    console.warn('[DB] ⚠️  WARNING: Using port 6543 (Transaction Mode)');
+    console.warn('[DB] ⚠️  This port has known "Tenant or user not found" errors');
+    console.warn('[DB] ⚠️  RECOMMENDED: Switch to port 5432 (Session Mode)');
+    console.warn('[DB] ⚠️  See DATABASE_TROUBLESHOOTING.md for details');
 }
 
 const queryClient = postgres(databaseUrl, {
     ssl: isSupabase ? 'require' : false,
-    prepare: isPooler ? false : undefined, // CRITICAL: Disable for Supabase pooler (PgBouncer transaction mode)
+    prepare: preparedStatementsEnabled ? undefined : false, // Disable ONLY for port 6543 (transaction mode)
     max: 10, // Connection pool size
     idle_timeout: 20,
     connect_timeout: 10,
