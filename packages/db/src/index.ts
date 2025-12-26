@@ -5,20 +5,30 @@ import * as schema from './schema';
 // Get database URL from environment variable
 const databaseUrl = process.env.DATABASE_URL || 'postgresql://kong.peterpan@localhost:5432/seo_impact_os';
 
+// Validate database URL
+if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is required');
+}
+
+// Parse connection details for logging and configuration
+const isSupabase = databaseUrl.includes('supabase.com');
+const isPooler = databaseUrl.includes(':6543') || databaseUrl.includes('pooler');
+const isDirectConnection = databaseUrl.includes(':5432');
+
 // Log sanitized URL for debugging (hide password)
 const sanitizedUrl = databaseUrl.replace(/:[^:@]+@/, ':***@');
 console.log('[DB] Connecting to:', sanitizedUrl);
-console.log('[DB] SSL enabled:', databaseUrl.includes('supabase.com'));
-
-// Create PostgreSQL connection with SSL support for Supabase
-// IMPORTANT: Supabase's connection pooler (port 6543) uses PgBouncer in transaction mode
-// which does NOT support prepared statements. We must disable them with prepare: false
-const isSupabase = databaseUrl.includes('supabase.com');
-const isPooler = databaseUrl.includes(':6543') || databaseUrl.includes('pooler');
-
-console.log('[DB] Supabase detected:', isSupabase);
-console.log('[DB] Pooler detected:', isPooler);
+console.log('[DB] Connection type:', isDirectConnection ? 'Direct (5432)' : isPooler ? 'Pooler (6543)' : 'Custom');
+console.log('[DB] SSL:', isSupabase ? 'ENABLED' : 'DISABLED');
 console.log('[DB] Prepared statements:', !isPooler ? 'ENABLED' : 'DISABLED');
+
+// Warn if using pooler (known to have issues)
+if (isPooler) {
+    console.warn('[DB] ⚠️  WARNING: Using connection pooler (port 6543)');
+    console.warn('[DB] ⚠️  If you encounter "Tenant or user not found" errors,');
+    console.warn('[DB] ⚠️  switch to direct connection (port 5432).');
+    console.warn('[DB] ⚠️  See DATABASE_TROUBLESHOOTING.md for details.');
+}
 
 const queryClient = postgres(databaseUrl, {
     ssl: isSupabase ? 'require' : false,
