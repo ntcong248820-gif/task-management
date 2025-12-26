@@ -8,7 +8,20 @@
 
 set -e  # Exit on error
 
+# Load environment variables
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
+
+# Validate DATABASE_URL is set
+if [ -z "$DATABASE_URL" ]; then
+    echo "❌ ERROR: DATABASE_URL is not set"
+    echo "Please set DATABASE_URL in .env file or environment"
+    exit 1
+fi
+
 echo "🚀 Starting auto-setup for all projects..."
+echo "📊 Using database: ${DATABASE_URL%%:*}://***"
 echo ""
 
 # Project 32 - Điện Máy Xanh
@@ -20,9 +33,9 @@ echo "🔍 Discovering sites..."
 npx tsx apps/api/src/scripts/discover-gsc-sites.ts 32
 
 echo "🗑️  Removing other sites..."
-psql postgresql://kong.peterpan@localhost:5432/seo_impact_os -c "
-DELETE FROM gsc_sites 
-WHERE project_id = 32 
+psql "$DATABASE_URL" -c "
+DELETE FROM gsc_sites
+WHERE project_id = 32
   AND site_url != 'https://www.dienmayxanh.com/';
 "
 
@@ -42,9 +55,9 @@ echo "🔍 Discovering sites..."
 npx tsx apps/api/src/scripts/discover-gsc-sites.ts 33
 
 echo "🗑️  Removing other sites..."
-psql postgresql://kong.peterpan@localhost:5432/seo_impact_os -c "
-DELETE FROM gsc_sites 
-WHERE project_id = 33 
+psql "$DATABASE_URL" -c "
+DELETE FROM gsc_sites
+WHERE project_id = 33
   AND site_url != 'https://www.thegioididong.com/';
 "
 
