@@ -9,7 +9,18 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { FolderKanban, Plus } from "lucide-react"
+import { config } from "@/lib/config"
 
 interface Project {
   id: number
@@ -25,25 +36,63 @@ interface Project {
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [newProject, setNewProject] = useState({
+    name: "",
+    client: "",
+    domain: "",
+    description: ""
+  })
+  const [creating, setCreating] = useState(false)
+
+  const fetchProjects = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/projects`)
+      const data = await response.json()
+
+      if (data.success) {
+        setProjects(data.data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch projects:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await fetch("http://localhost:3001/api/projects")
-        const data = await response.json()
-
-        if (data.success) {
-          setProjects(data.data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchProjects()
   }, [])
+
+  const handleCreateProject = async () => {
+    if (!newProject.name.trim()) return
+
+    setCreating(true)
+    try {
+      const response = await fetch(`${config.apiUrl}/api/projects`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newProject.name,
+          client: newProject.client || null,
+          domain: newProject.domain || null,
+          description: newProject.description || null,
+          status: "active"
+        })
+      })
+
+      if (response.ok) {
+        setDialogOpen(false)
+        setNewProject({ name: "", client: "", domain: "", description: "" })
+        fetchProjects() // Refresh list
+      }
+    } catch (error) {
+      console.error("Failed to create project:", error)
+    } finally {
+      setCreating(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -53,11 +102,69 @@ export default function ProjectsPage() {
             Manage your SEO projects and clients
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
       </div>
+
+      {/* Create Project Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>
+              Add a new SEO project to track performance and tasks.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Project Name *</Label>
+              <Input
+                id="name"
+                placeholder="e.g., Acme Corp SEO"
+                value={newProject.name}
+                onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="client">Client</Label>
+              <Input
+                id="client"
+                placeholder="e.g., Acme Corporation"
+                value={newProject.client}
+                onChange={(e) => setNewProject({ ...newProject, client: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="domain">Domain</Label>
+              <Input
+                id="domain"
+                placeholder="e.g., acme.com"
+                value={newProject.domain}
+                onChange={(e) => setNewProject({ ...newProject, domain: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input
+                id="description"
+                placeholder="Brief project description"
+                value={newProject.description}
+                onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateProject} disabled={creating || !newProject.name.trim()}>
+              {creating ? "Creating..." : "Create Project"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid gap-4 md:grid-cols-3">
         {loading ? (

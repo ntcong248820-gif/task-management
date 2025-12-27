@@ -21,6 +21,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import type { Project, TaskStatus, TaskPriority } from "@/types/task.types"
+import { config } from "@/lib/config"
 
 interface NewTaskDialogProps {
     open: boolean
@@ -49,7 +50,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch("http://localhost:3001/api/projects")
+            const response = await fetch(`${config.apiUrl}/api/projects`)
             const data = await response.json()
             if (data.success) {
                 setProjects(data.data)
@@ -76,7 +77,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
                 ? parseInt(formData.estimatedTime) * 3600 // Convert hours to seconds
                 : undefined
 
-            const response = await fetch("http://localhost:3001/api/tasks", {
+            const response = await fetch(`${config.apiUrl}/api/tasks`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
