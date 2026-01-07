@@ -21,7 +21,17 @@ import keywordsRoutes from './routes/keywords';
 const app = new Hono();
 
 // Middleware
-app.use('*', cors());
+app.use('*', cors({
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:3002',
+    'https://task-management-app-theta-two.vercel.app',
+    process.env.FRONTEND_URL || '',
+  ].filter(Boolean),
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
+}));
 app.use('*', logger());
 app.use('*', prettyJSON());
 
