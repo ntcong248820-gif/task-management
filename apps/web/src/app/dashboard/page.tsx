@@ -66,7 +66,11 @@ function useCorrelationData(dateRange: number) {
     async function fetchData() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/correlation?projectId=1&days=${dateRange}`);
+        // Get project ID from localStorage, default to '2' (valid project in DB)
+        const projectId = typeof window !== 'undefined'
+          ? localStorage.getItem('selectedProjectId') || '2'
+          : '2';
+        const res = await fetch(`${API_BASE}/api/correlation?projectId=${projectId}&days=${dateRange}`);
         const json = await res.json();
         if (json.success && json.data) {
           setChartData(json.data.chartData || []);

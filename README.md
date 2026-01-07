@@ -28,10 +28,10 @@
 **Focus:** Production readiness, testing, security, and deployment
 
 📚 **Phase 7 Documentation:**
-- [Implementation Plan](./PHASE7_IMPLEMENTATION_PLAN.md) - Complete 4-week roadmap
-- [Quick Start Guide](./PHASE7_QUICK_START.md) - Get started immediately
-- [Testing Setup](./PHASE7_WEEK1_TESTING_SETUP.md) - Comprehensive testing guide
-- [Security Guide](./PHASE7_SECURITY_GUIDE.md) - Security hardening steps
+- [Implementation Plan](./docs/phase7/implementation-plan.md) - Complete 4-week roadmap
+- [Quick Start Guide](./docs/phase7/quick-start.md) - Get started immediately
+- [Testing Setup](./docs/phase7/testing-setup.md) - Comprehensive testing guide
+- [Security Guide](./docs/phase7/security-guide.md) - Security hardening steps
 
 ---
 
@@ -482,11 +482,13 @@ npm run test         # Run frontend tests
 
 ## 📚 Additional Documentation
 
-- [Master Project Plan](./PROJECT_MASTER_PLAN.md) - Complete project overview
-- [Tech Stack Details](./TECH_STACK.md) - Detailed technology documentation
-- [Visual Features](./VISUAL_FEATURES.md) - UI/UX documentation
-- [Phase 1 Complete](./PHASE1_DAY3_COMPLETE.md) - Foundation phase
-- [Phase 2 Complete](./PHASE1_DAY4_COMPLETE.md) - Integration phase
+📂 **[Full Documentation](./docs/README.md)** - All documentation organized by category
+
+- [Master Project Plan](./docs/project/master-plan.md) - Complete project overview
+- [Tech Stack Details](./docs/project/tech-stack.md) - Detailed technology documentation
+- [Visual Features](./docs/project/visual-features.md) - UI/UX documentation
+- [Deployment Guide](./docs/deployment/overview.md) - Deployment instructions
+- [Troubleshooting](./docs/troubleshooting/) - Common issues and fixes
 
 ---
 
@@ -502,10 +504,10 @@ The application is 95% complete with all core features working:
 - ✅ Rankings, URLs, and Keyword dashboards
 - ✅ AI diagnosis and recommendations
 
-**Next steps:** Follow the [Phase 7 Quick Start Guide](./PHASE7_QUICK_START.md) to prepare for production deployment.
+**Next steps:** Follow the [Phase 7 Quick Start Guide](./docs/phase7/quick-start.md) to prepare for production deployment.
 
 ---
 
 **Built with ❤️ for SEO professionals**  
-**Last Updated:** December 23, 2025
+**Last Updated:** January 6, 2026
 
