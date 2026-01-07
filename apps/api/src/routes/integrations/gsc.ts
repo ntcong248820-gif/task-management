@@ -145,17 +145,24 @@ class GSCClient {
 
 const app = new Hono();
 
-// OAuth configuration
-const getOAuthConfig = () => ({
-    clientId: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    redirectUri: process.env.GOOGLE_REDIRECT_URI!,
-    scopes: [
-        'https://www.googleapis.com/auth/webmasters.readonly',
-        'https://www.googleapis.com/auth/userinfo.email',
-        'openid',
-    ],
-});
+// OAuth configuration - GSC uses its own redirect URI
+const getOAuthConfig = () => {
+    // GSC-specific redirect URI, fallback to general GOOGLE_REDIRECT_URI
+    const redirectUri = process.env.GSC_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!;
+
+    console.log('[GSC OAuth] Using redirect URI:', redirectUri);
+
+    return {
+        clientId: process.env.GOOGLE_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        redirectUri,
+        scopes: [
+            'https://www.googleapis.com/auth/webmasters.readonly',
+            'https://www.googleapis.com/auth/userinfo.email',
+            'openid',
+        ],
+    };
+};
 
 /**
  * GET /api/integrations/gsc/authorize
