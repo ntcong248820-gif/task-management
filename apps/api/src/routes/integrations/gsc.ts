@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import { db, oauthTokens, gscData, gscSites, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
+import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 
 // Inline GSCClient to avoid monorepo import issues
 class GSCClient {
@@ -12,8 +13,8 @@ class GSCClient {
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
-            process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_CLIENT_SECRET!
+            // redirect URI not needed for data fetching
         );
         this.oauth2Client.setCredentials({
             access_token: accessToken,
@@ -297,8 +298,8 @@ app.get('/callback', async (c) => {
             await db
                 .update(oauthTokens)
                 .set({
-                    accessToken: tokens.access_token,
-                    refreshToken: tokens.refresh_token,
+                    accessToken: encryptToken(tokens.access_token),
+                    refreshToken: encryptToken(tokens.refresh_token),
                     expiresAt: new Date(tokens.expiry_date!),
                     tokenType: tokens.token_type || 'Bearer',
                     scope: tokens.scope || '',
@@ -312,8 +313,8 @@ app.get('/callback', async (c) => {
             await db.insert(oauthTokens).values({
                 projectId,
                 provider: 'google_search_console',
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token,
+                accessToken: encryptToken(tokens.access_token),
+                refreshToken: encryptToken(tokens.refresh_token),
                 expiresAt: new Date(tokens.expiry_date!),
                 tokenType: tokens.token_type || 'Bearer',
                 scope: tokens.scope || '',
@@ -365,15 +366,14 @@ app.get('/sites', async (c) => {
         // Get valid access token (auto-refresh if expired)
         const validAccessToken = await getValidAccessToken(tokenRecord);
 
-        // Create OAuth2 client
+        // Create OAuth2 client (no redirect URI needed for data fetching)
         const oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
-            process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_CLIENT_SECRET!
         );
         oauth2Client.setCredentials({
             access_token: validAccessToken,
-            refresh_token: tokenRecord.refreshToken,
+            refresh_token: decryptTokenValue(tokenRecord.refreshToken),
         });
 
         // List sites
@@ -433,11 +433,13 @@ app.get('/sites', async (c) => {
  */
 app.post('/sync', async (c) => {
     try {
-        const { projectId, siteUrl, days = 30 } = await c.req.json();
+        const { projectId, siteUrl, days: rawDays = 30 } = await c.req.json();
 
         if (!projectId || !siteUrl) {
             return c.json({ success: false, error: 'projectId and siteUrl are required' }, 400);
         }
+
+        const days = Math.min(Math.max(parseInt(rawDays) || 30, 1), 365);
 
         // Get OAuth tokens
         const [tokenRecord] = await db
@@ -461,7 +463,7 @@ app.post('/sync', async (c) => {
         // Initialize GSC client with valid token
         const gscClient = new GSCClient(
             validAccessToken,
-            tokenRecord.refreshToken
+            decryptTokenValue(tokenRecord.refreshToken)
         );
 
         // Calculate date range
@@ -534,6 +536,12 @@ app.post('/sync', async (c) => {
 
             totalInserted += rows.length;
         }
+
+        // Record successful sync timestamp
+        await db
+            .update(oauthTokens)
+            .set({ lastSyncedAt: new Date() })
+            .where(and(eq(oauthTokens.projectId, projectId), eq(oauthTokens.provider, 'google_search_console')));
 
         return c.json({
             success: true,

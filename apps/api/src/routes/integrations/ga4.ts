@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
+import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 
 // Inline GA4Client to avoid monorepo import issues
 class GA4Client {
@@ -12,8 +13,8 @@ class GA4Client {
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
-            process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_CLIENT_SECRET!
+            // redirect URI not needed for data fetching
         );
         this.oauth2Client.setCredentials({
             access_token: accessToken,
@@ -229,8 +230,8 @@ app.get('/callback', async (c) => {
             await db
                 .update(oauthTokens)
                 .set({
-                    accessToken: tokens.access_token,
-                    refreshToken: tokens.refresh_token,
+                    accessToken: encryptToken(tokens.access_token),
+                    refreshToken: encryptToken(tokens.refresh_token),
                     expiresAt: new Date(tokens.expiry_date!),
                     tokenType: tokens.token_type || 'Bearer',
                     scope: tokens.scope || '',
@@ -243,8 +244,8 @@ app.get('/callback', async (c) => {
             await db.insert(oauthTokens).values({
                 projectId,
                 provider: 'google_analytics',
-                accessToken: tokens.access_token,
-                refreshToken: tokens.refresh_token,
+                accessToken: encryptToken(tokens.access_token),
+                refreshToken: encryptToken(tokens.refresh_token),
                 expiresAt: new Date(tokens.expiry_date!),
                 tokenType: tokens.token_type || 'Bearer',
                 scope: tokens.scope || '',
@@ -301,15 +302,14 @@ app.get('/properties', async (c) => {
         // Get valid access token (auto-refresh if expired)
         const validAccessToken = await getValidAccessToken(tokenRecord);
 
-        // Create OAuth2 client
+        // Create OAuth2 client (no redirect URI needed for data fetching)
         const oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
-            process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_CLIENT_SECRET!
         );
         oauth2Client.setCredentials({
             access_token: validAccessToken,
-            refresh_token: tokenRecord.refreshToken,
+            refresh_token: decryptTokenValue(tokenRecord.refreshToken),
         });
 
         // List properties using Admin API
@@ -375,11 +375,13 @@ app.get('/properties', async (c) => {
  */
 app.post('/sync', async (c) => {
     try {
-        const { projectId, propertyId, days = 30 } = await c.req.json();
+        const { projectId, propertyId, days: rawDays = 30 } = await c.req.json();
 
         if (!projectId || !propertyId) {
             return c.json({ success: false, error: 'projectId and propertyId are required' }, 400);
         }
+
+        const days = Math.min(Math.max(parseInt(rawDays) || 30, 1), 365);
 
         // Get OAuth tokens
         const [tokenRecord] = await db
@@ -403,7 +405,7 @@ app.post('/sync', async (c) => {
         // Initialize GA4 client with valid token
         const ga4Client = new GA4Client(
             validAccessToken,
-            tokenRecord.refreshToken
+            decryptTokenValue(tokenRecord.refreshToken)
         );
 
         // Calculate date range
@@ -478,6 +480,12 @@ app.post('/sync', async (c) => {
 
             totalInserted += rows.length;
         }
+
+        // Record successful sync timestamp
+        await db
+            .update(oauthTokens)
+            .set({ lastSyncedAt: new Date() })
+            .where(and(eq(oauthTokens.projectId, projectId), eq(oauthTokens.provider, 'google_analytics')));
 
         return c.json({
             success: true,

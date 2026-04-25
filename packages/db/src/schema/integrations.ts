@@ -23,6 +23,9 @@ export const oauthTokens = pgTable('oauth_tokens', {
     // Account info
     accountEmail: varchar('account_email', { length: 255 }),
 
+    // Sync tracking
+    lastSyncedAt: timestamp('last_synced_at'),
+
     // Metadata
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),

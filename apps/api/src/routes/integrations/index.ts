@@ -20,6 +20,7 @@ app.get('/status', async (c) => {
             .select({
                 provider: oauthTokens.provider,
                 createdAt: oauthTokens.createdAt,
+                lastSyncedAt: oauthTokens.lastSyncedAt,
                 scope: oauthTokens.scope,
                 accountEmail: oauthTokens.accountEmail,
             })
@@ -37,7 +38,7 @@ app.get('/status', async (c) => {
             data: {
                 gsc: integrations.gsc ? {
                     connected: true,
-                    lastSync: integrations.gsc.createdAt,
+                    lastSync: integrations.gsc.lastSyncedAt ?? integrations.gsc.createdAt,
                     scopes: integrations.gsc.scope?.split(' ') || [],
                     email: integrations.gsc.accountEmail,
                 } : {
@@ -45,7 +46,7 @@ app.get('/status', async (c) => {
                 },
                 ga4: integrations.ga4 ? {
                     connected: true,
-                    lastSync: integrations.ga4.createdAt,
+                    lastSync: integrations.ga4.lastSyncedAt ?? integrations.ga4.createdAt,
                     scopes: integrations.ga4.scope?.split(' ') || [],
                     email: integrations.ga4.accountEmail,
                 } : {

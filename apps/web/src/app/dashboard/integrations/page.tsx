@@ -48,6 +48,7 @@ export default function IntegrationsPage() {
     const [disconnecting, setDisconnecting] = useState<string | null>(null)
     const [syncing, setSyncing] = useState<string | null>(null)
     const [syncResult, setSyncResult] = useState<{ id: string; message: string; success: boolean } | null>(null)
+    const [callbackAlert, setCallbackAlert] = useState<{ message: string; success: boolean } | null>(null)
 
     // Check connection status on mount
     useEffect(() => {
@@ -61,16 +62,19 @@ export default function IntegrationsPage() {
             const success = params.get("success")
             const error = params.get("error")
 
-            // Show success/error messages
+            // Show success/error messages from OAuth callback
             if (success === "gsc_connected") {
-                console.log("✅ GSC connected successfully!")
-                // Could show a toast notification here
+                setCallbackAlert({ message: "Google Search Console connected successfully!", success: true })
             } else if (success === "ga4_connected") {
-                console.log("✅ GA4 connected successfully!")
-                // Could show a toast notification here
+                setCallbackAlert({ message: "Google Analytics 4 connected successfully!", success: true })
             } else if (error) {
-                console.error("❌ OAuth error:", error)
-                // Could show error toast here
+                const errorMessages: Record<string, string> = {
+                    connection_failed: 'Connection failed. Please try again.',
+                    no_code: 'Authorization was not completed.',
+                    invalid_state: 'Invalid session state. Please try again.',
+                    access_denied: 'Access was denied. Please grant the required permissions.',
+                }
+                setCallbackAlert({ message: errorMessages[error] ?? 'Connection failed. Please try again.', success: false })
             }
 
             // Clear URL params after handling
@@ -291,6 +295,17 @@ export default function IntegrationsPage() {
                     Connect your Google accounts to sync data automatically
                 </p>
             </div>
+
+            {callbackAlert && (
+                <div className={`flex items-center justify-between p-4 rounded-lg border text-sm ${
+                    callbackAlert.success
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-red-50 text-red-800 border-red-200'
+                }`}>
+                    <span>{callbackAlert.message}</span>
+                    <button onClick={() => setCallbackAlert(null)} className="ml-4 font-medium hover:opacity-70">✕</button>
+                </div>
+            )}
 
             <div className="grid gap-6 md:grid-cols-2">
                 {integrations.map((integration) => {

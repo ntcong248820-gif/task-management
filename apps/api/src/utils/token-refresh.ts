@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { db, oauthTokens, eq, and } from '@repo/db';
+import { decryptTokenValue, encryptToken } from './crypto-tokens';
 
 interface TokenRecord {
     id: number;
@@ -28,12 +29,12 @@ export function isTokenExpired(expiresAt: Date): boolean {
 export async function refreshOAuthTokens(tokenRecord: TokenRecord): Promise<string> {
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID!,
-        process.env.GOOGLE_CLIENT_SECRET!,
-        process.env.GOOGLE_REDIRECT_URI!
+        process.env.GOOGLE_CLIENT_SECRET!
+        // redirect URI not needed for token refresh
     );
 
     oauth2Client.setCredentials({
-        refresh_token: tokenRecord.refreshToken,
+        refresh_token: decryptTokenValue(tokenRecord.refreshToken),
     });
 
     console.log(`[Token Refresh] Refreshing token for ${tokenRecord.provider}...`);
@@ -43,11 +44,11 @@ export async function refreshOAuthTokens(tokenRecord: TokenRecord): Promise<stri
     const newAccessToken = credentials.access_token!;
     const newExpiresAt = new Date(credentials.expiry_date!);
 
-    // Update database with new token
+    // Update database with new token (encrypt before storing)
     await db
         .update(oauthTokens)
         .set({
-            accessToken: newAccessToken,
+            accessToken: encryptToken(newAccessToken),
             expiresAt: newExpiresAt,
             updatedAt: new Date(),
         })
@@ -66,7 +67,7 @@ export async function getValidAccessToken(tokenRecord: TokenRecord): Promise<str
         console.log(`[Token Refresh] Token expired at ${tokenRecord.expiresAt.toISOString()}, refreshing...`);
         return await refreshOAuthTokens(tokenRecord);
     }
-    return tokenRecord.accessToken;
+    return decryptTokenValue(tokenRecord.accessToken);
 }
 
 /**
