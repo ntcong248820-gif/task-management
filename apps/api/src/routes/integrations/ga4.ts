@@ -1,14 +1,18 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
+import type { Auth } from 'googleapis';
 import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
+import { logger } from '../../utils/logger';
+
+const log = logger.child('GA4');
 
 // Inline GA4Client to avoid monorepo import issues
 class GA4Client {
-    private oauth2Client: any;
-    private analyticsdata: any;
+    private oauth2Client: Auth.OAuth2Client;
+    private analyticsdata: ReturnType<typeof google.analyticsdata>;
 
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
@@ -78,7 +82,7 @@ const getOAuthConfig = () => {
     // GA4-specific redirect URI, fallback to general GOOGLE_REDIRECT_URI
     const redirectUri = process.env.GA4_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!;
 
-    console.log('[GA4 OAuth] Using redirect URI:', redirectUri);
+    log.info(`Using redirect URI: ${redirectUri}`);
 
     return {
         clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -135,7 +139,7 @@ app.get('/authorize', async (c) => {
             },
         });
     } catch (error) {
-        console.error('GA4 authorize error:', error);
+        log.error('GA4 authorize error:', error);
         return c.json({ success: false, error: 'Failed to generate authorization URL' }, 500);
     }
 });
@@ -148,16 +152,16 @@ app.get('/callback', async (c) => {
     try {
         const { code, state, error } = c.req.query();
 
-        console.log('[GA4 Callback] Received:', { code: code?.substring(0, 20) + '...', error, state: state?.substring(0, 20) + '...' });
+        log.info(`Received: code=${code?.substring(0, 20)}..., error=${error}, state=${state?.substring(0, 20)}...`);
 
         // Handle OAuth error
         if (error) {
-            console.error('[GA4 Callback] OAuth error:', error);
+            log.error(`OAuth error: ${error}`);
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=${encodeURIComponent(error)}`);
         }
 
         if (!code) {
-            console.error('[GA4 Callback] No code provided');
+            log.error('No code provided');
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=no_code`);
         }
 
@@ -173,9 +177,9 @@ app.get('/callback', async (c) => {
             if (!projectId || isNaN(projectId)) {
                 throw new Error('Invalid projectId in state');
             }
-            console.log('[GA4 Callback] Project ID from state:', projectId);
+            log.info(`Project ID from state: ${projectId}`);
         } catch (stateError) {
-            console.error('[GA4 Callback] State parsing error:', stateError);
+            log.error('State parsing error:', stateError);
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=invalid_state`);
         }
 
@@ -186,16 +190,12 @@ app.get('/callback', async (c) => {
             getOAuthConfig().redirectUri
         );
 
-        console.log('[GA4 Callback] Exchanging code for tokens...');
+        log.info('Exchanging code for tokens...');
 
         // Exchange code for tokens
         const { tokens } = await oauth2Client.getToken(code);
 
-        console.log('[GA4 Callback] Tokens received:', {
-            hasAccessToken: !!tokens.access_token,
-            hasRefreshToken: !!tokens.refresh_token,
-            expiryDate: tokens.expiry_date,
-        });
+        log.info(`Tokens received: hasAccessToken=${!!tokens.access_token}, hasRefreshToken=${!!tokens.refresh_token}, expiryDate=${tokens.expiry_date}`);
 
         if (!tokens.access_token || !tokens.refresh_token) {
             throw new Error('Missing tokens from Google OAuth');
@@ -205,11 +205,11 @@ app.get('/callback', async (c) => {
         oauth2Client.setCredentials(tokens);
         const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
 
-        console.log('[GA4 Callback] Fetching user info...');
+        log.info('Fetching user info...');
         const userInfo = await oauth2.userinfo.get();
         const accountEmail = userInfo.data.email || null;
 
-        console.log('[GA4 Callback] User email:', accountEmail);
+        log.info(`User email: ${accountEmail}`);
 
         // Check if token already exists for this project
         const existingToken = await db
@@ -223,7 +223,7 @@ app.get('/callback', async (c) => {
             )
             .limit(1);
 
-        console.log('[GA4 Callback] Storing tokens in database for project', projectId);
+        log.info(`Storing tokens in database for project ${projectId}`);
 
         if (existingToken.length > 0) {
             // Update existing token
@@ -253,7 +253,7 @@ app.get('/callback', async (c) => {
             });
         }
 
-        console.log(`✅ GA4 connected successfully for project ${projectId}`);
+        log.info(`GA4 connected successfully for project ${projectId}`);
 
         // Redirect back to integrations page with success
         return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?success=ga4_connected`);
@@ -264,7 +264,7 @@ app.get('/callback', async (c) => {
             status: error.status,
             response: error.response?.data,
         };
-        console.error('[GA4 Callback] Error:', errorDetails);
+        log.error('GA4 callback error:', errorDetails);
 
         // Redirect with error
         return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=connection_failed`);
@@ -361,7 +361,7 @@ app.get('/properties', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('GA4 properties discovery error:', error);
+        log.error('GA4 properties discovery error:', error);
         return c.json({
             success: false,
             error: error.message || 'Failed to discover GA4 properties',
@@ -497,7 +497,7 @@ app.post('/sync', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('GA4 sync error:', error);
+        log.error('GA4 sync error:', error);
         return c.json({
             success: false,
             error: error.message || 'Failed to sync GA4 data',

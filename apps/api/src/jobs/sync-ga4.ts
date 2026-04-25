@@ -1,12 +1,16 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
+import type { Auth } from 'googleapis';
 import { db, oauthTokens, ga4Data, ga4Properties, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
+import { logger } from '../utils/logger';
+
+const log = logger.child('GA4-Cron');
 
 // Inline GA4Client for cron job
 class GA4Client {
-    private oauth2Client: any;
-    private analyticsdata: any;
+    private oauth2Client: Auth.OAuth2Client;
+    private analyticsdata: ReturnType<typeof google.analyticsdata>;
 
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
@@ -51,23 +55,23 @@ class GA4Client {
             });
 
             if (allProperties.length === 0) {
-                console.warn(`[GA4 Client] No properties found for project ${projectId}`);
+                log.warn(`No properties found for project ${projectId}`);
                 return null;
             }
 
             if (allProperties.length === 1) {
                 // property string is like "properties/12345"
                 const propertyId = allProperties[0].property.split('/')[1];
-                console.log(`[GA4 Client] Auto-discovered single property for project ${projectId}: ${propertyId}`);
+                log.info(`Auto-discovered single property for project ${projectId}: ${propertyId}`);
                 return propertyId;
             }
 
             // If multiple, warning
-            console.warn(`[GA4 Client] Multiple properties found for project ${projectId}. Please configure manually.`);
+            log.warn(`Multiple properties found for project ${projectId}. Please configure manually.`);
             return null;
 
         } catch (error) {
-            console.error(`[GA4 Client] Error listing properties for project ${projectId}:`, error);
+            log.error(`Error listing properties for project ${projectId}:`, error);
             return null;
         }
     }
@@ -118,7 +122,7 @@ class GA4Client {
  * Run GA4 Sync Logic
  */
 export const runGA4Sync = async () => {
-    console.log('🔄 [GA4 Cron] Starting daily GA4 sync...');
+    log.info('Starting daily GA4 sync...');
 
     try {
         // Get all GA4 connections
@@ -127,7 +131,7 @@ export const runGA4Sync = async () => {
             .from(oauthTokens)
             .where(eq(oauthTokens.provider, 'google_analytics'));
 
-        console.log(`[GA4 Cron] Found ${connections.length} GA4 connections`);
+        log.info(`Found ${connections.length} GA4 connections`);
 
         // Calculate yesterday's date
         const yesterday = new Date();
@@ -136,7 +140,7 @@ export const runGA4Sync = async () => {
 
         for (const connection of connections) {
             try {
-                console.log(`[GA4 Cron] Syncing project ${connection.projectId}...`);
+                log.info(`Syncing project ${connection.projectId}...`);
 
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection);
@@ -147,11 +151,11 @@ export const runGA4Sync = async () => {
                 const propertyId = await client.getOrDiscoverPropertyId(connection.projectId);
 
                 if (!propertyId) {
-                    console.error(`❌ [GA4 Cron] No propertyId found for project ${connection.projectId}. Skipping.`);
+                    log.error(`No propertyId found for project ${connection.projectId}. Skipping.`);
                     continue;
                 }
 
-                console.log(`[GA4 Cron] Fetching data for property: ${propertyId}`);
+                log.info(`Fetching data for property: ${propertyId}`);
 
                 const data = await client.fetchAnalyticsData({
                     propertyId,
@@ -160,7 +164,7 @@ export const runGA4Sync = async () => {
                 });
 
                 if (data.length === 0) {
-                    console.log(`⚠️ [GA4 Cron] No data available for project ${connection.projectId} on ${dateStr}`);
+                    log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
                     continue;
                 }
 
@@ -213,16 +217,16 @@ export const runGA4Sync = async () => {
                     totalInserted += rows.length;
                 }
 
-                console.log(`✅ [GA4 Cron] Synced ${totalInserted} rows for project ${connection.projectId}`);
+                log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
 
             } catch (error: any) {
-                console.error(`❌ [GA4 Cron] Error syncing project ${connection.projectId}:`, error.message);
+                log.error(`Error syncing project ${connection.projectId}:`, error);
             }
         }
 
-        console.log('✅ [GA4 Cron] Daily GA4 sync completed');
+        log.info('Daily GA4 sync completed');
     } catch (error) {
-        console.error('❌ [GA4 Cron] Error in GA4 sync job:', error);
+        log.error('Error in GA4 sync job:', error);
     }
 };
 
@@ -244,7 +248,7 @@ export const ga4SyncJob = new CronJob(
  */
 export function startGA4SyncJob() {
     ga4SyncJob.start();
-    console.log('📅 [GA4 Cron] GA4 sync job scheduled for 2:30 AM daily');
+    log.info('GA4 sync job scheduled for 2:30 AM daily');
 }
 
 /**
@@ -252,5 +256,5 @@ export function startGA4SyncJob() {
  */
 export function stopGA4SyncJob() {
     ga4SyncJob.stop();
-    console.log('🛑 [GA4 Cron] GA4 sync job stopped');
+    log.info('GA4 sync job stopped');
 }

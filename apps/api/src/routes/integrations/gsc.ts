@@ -1,14 +1,18 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
+import type { Auth } from 'googleapis';
 import { db, oauthTokens, gscData, gscSites, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
+import { logger } from '../../utils/logger';
+
+const log = logger.child('GSC');
 
 // Inline GSCClient to avoid monorepo import issues
 class GSCClient {
-    private oauth2Client: any;
-    private searchconsole: any;
+    private oauth2Client: Auth.OAuth2Client;
+    private searchconsole: ReturnType<typeof google.searchconsole>;
 
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
@@ -54,10 +58,10 @@ class GSCClient {
         const rowLimit = 25000;
         let pageNumber = 1;
 
-        console.log(`[GSC Client] Fetching all data for ${options.siteUrl} (${options.startDate} to ${options.endDate})`);
+        log.info(`Fetching all data for ${options.siteUrl} (${options.startDate} to ${options.endDate})`);
 
         while (true) {
-            console.log(`[GSC Client] Fetching page ${pageNumber} (startRow: ${startRow})...`);
+            log.info(`Fetching page ${pageNumber} (startRow: ${startRow})...`);
 
             const batch = await this.fetchSearchAnalytics({
                 ...options,
@@ -66,15 +70,15 @@ class GSCClient {
             });
 
             if (batch.length === 0) {
-                console.log(`[GSC Client] No more data. Total rows fetched: ${allData.length}`);
+                log.info(`No more data. Total rows fetched: ${allData.length}`);
                 break;
             }
 
             allData.push(...batch);
-            console.log(`[GSC Client] Page ${pageNumber}: ${batch.length} rows (Total: ${allData.length})`);
+            log.info(`Page ${pageNumber}: ${batch.length} rows (Total: ${allData.length})`);
 
             if (batch.length < rowLimit) {
-                console.log(`[GSC Client] Last page reached. Total rows fetched: ${allData.length}`);
+                log.info(`Last page reached. Total rows fetched: ${allData.length}`);
                 break;
             }
 
@@ -82,7 +86,7 @@ class GSCClient {
             pageNumber++;
 
             if (pageNumber > 100) {
-                console.warn(`[GSC Client] Safety limit reached (100 pages). Stopping pagination.`);
+                log.warn(`Safety limit reached (100 pages). Stopping pagination.`);
                 break;
             }
         }
@@ -119,11 +123,11 @@ class GSCClient {
         const chunks = this.chunkDateRange(options.startDate, options.endDate, chunkDays);
         const allData: any[] = [];
 
-        console.log(`[GSC Client] Fetching data in ${chunks.length} chunks (${chunkDays} days each)`);
+        log.info(`Fetching data in ${chunks.length} chunks (${chunkDays} days each)`);
 
         for (let i = 0; i < chunks.length; i++) {
             const chunk = chunks[i];
-            console.log(`[GSC Client] Processing chunk ${i + 1}/${chunks.length}: ${chunk.startDate} to ${chunk.endDate}`);
+            log.info(`Processing chunk ${i + 1}/${chunks.length}: ${chunk.startDate} to ${chunk.endDate}`);
 
             try {
                 const chunkData = await this.fetchAllSearchAnalytics({
@@ -133,13 +137,13 @@ class GSCClient {
                 });
 
                 allData.push(...chunkData);
-                console.log(`[GSC Client] Chunk ${i + 1} complete: ${chunkData.length} rows (Total: ${allData.length})`);
+                log.info(`Chunk ${i + 1} complete: ${chunkData.length} rows (Total: ${allData.length})`);
             } catch (error: any) {
-                console.error(`[GSC Client] Error fetching chunk ${i + 1}:`, error.message);
+                log.error(`Error fetching chunk ${i + 1}:`, error);
             }
         }
 
-        console.log(`[GSC Client] All chunks complete. Total rows: ${allData.length}`);
+        log.info(`All chunks complete. Total rows: ${allData.length}`);
         return allData;
     }
 }
@@ -151,7 +155,7 @@ const getOAuthConfig = () => {
     // GSC-specific redirect URI, fallback to general GOOGLE_REDIRECT_URI
     const redirectUri = process.env.GSC_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!;
 
-    console.log('[GSC OAuth] Using redirect URI:', redirectUri);
+    log.info(`Using redirect URI: ${redirectUri}`);
 
     return {
         clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -208,7 +212,7 @@ app.get('/authorize', async (c) => {
             },
         });
     } catch (error) {
-        console.error('GSC authorize error:', error);
+        log.error('GSC authorize error:', error);
         return c.json({ success: false, error: 'Failed to generate authorization URL' }, 500);
     }
 });
@@ -219,22 +223,22 @@ app.get('/authorize', async (c) => {
  */
 app.get('/callback', async (c) => {
     try {
-        console.log('[GSC Callback] Starting callback processing...');
+        log.info('Starting callback processing...');
         const { code, state, error } = c.req.query();
 
         // Handle OAuth error
         if (error) {
-            console.error('[GSC Callback] OAuth error received:', error);
+            log.error(`OAuth error received: ${error}`);
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=${encodeURIComponent(error)}`);
         }
 
         if (!code) {
-            console.error('[GSC Callback] No code received');
+            log.error('No code received');
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=no_code`);
         }
 
-        console.log('[GSC Callback] Code received, length:', code.length);
-        console.log('[GSC Callback] State received:', state);
+        log.info(`Code received, length: ${code.length}`);
+        log.info(`State received: ${state}`);
 
         // Parse state to get projectId
         let projectId: number;
@@ -243,14 +247,14 @@ app.get('/callback', async (c) => {
                 throw new Error('State parameter missing');
             }
             const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
-            console.log('[GSC Callback] Parsed state data:', stateData);
+            log.info(`Parsed state data: ${JSON.stringify(stateData)}`);
             projectId = parseInt(stateData.projectId);
 
             if (!projectId || isNaN(projectId)) {
                 throw new Error('Invalid projectId in state');
             }
         } catch (stateError) {
-            console.error('[GSC Callback] State parsing error:', stateError);
+            log.error('State parsing error:', stateError);
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=invalid_state`);
         }
 
@@ -262,21 +266,21 @@ app.get('/callback', async (c) => {
         );
 
         // Exchange code for tokens
-        console.log('[GSC Callback] Exchanging code for tokens...');
+        log.info('Exchanging code for tokens...');
         const { tokens } = await oauth2Client.getToken(code);
-        console.log('[GSC Callback] Tokens received. Access token exists:', !!tokens.access_token);
+        log.info(`Tokens received. Access token exists: ${!!tokens.access_token}`);
 
         if (!tokens.access_token || !tokens.refresh_token) {
             throw new Error('Missing tokens from Google OAuth');
         }
 
         // Get user info (email)
-        console.log('[GSC Callback] Fetching user info...');
+        log.info('Fetching user info...');
         oauth2Client.setCredentials(tokens);
         const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
         const userInfo = await oauth2.userinfo.get();
         const accountEmail = userInfo.data.email || null;
-        console.log('[GSC Callback] User email:', accountEmail);
+        log.info(`User email: ${accountEmail}`);
 
         // Check if token already exists for this project
         const existingToken = await db
@@ -290,11 +294,11 @@ app.get('/callback', async (c) => {
             )
             .limit(1);
 
-        console.log('[GSC Callback] Existing token found:', existingToken.length > 0);
+        log.info(`Existing token found: ${existingToken.length > 0}`);
 
         if (existingToken.length > 0) {
             // Update existing token
-            console.log('[GSC Callback] Updating existing token...');
+            log.info('Updating existing token...');
             await db
                 .update(oauthTokens)
                 .set({
@@ -309,7 +313,7 @@ app.get('/callback', async (c) => {
                 .where(eq(oauthTokens.id, existingToken[0].id));
         } else {
             // Insert new token
-            console.log('[GSC Callback] Inserting new token...');
+            log.info('Inserting new token...');
             await db.insert(oauthTokens).values({
                 projectId,
                 provider: 'google_search_console',
@@ -322,15 +326,14 @@ app.get('/callback', async (c) => {
             });
         }
 
-        console.log(`[GSC Callback] ✅ GSC connected successfully for project ${projectId}`);
+        log.info(`GSC connected successfully for project ${projectId}`);
 
         // Redirect back to integrations page with success
         const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?success=gsc_connected`;
-        console.log('[GSC Callback] Redirecting to:', redirectUrl);
+        log.info(`Redirecting to: ${redirectUrl}`);
         return c.redirect(redirectUrl);
     } catch (error: any) {
-        console.error('[GSC Callback] ❌ GSC callback error:', error);
-        if (error.stack) console.error(error.stack);
+        log.error('GSC callback error:', error);
         return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=connection_failed`);
     }
 });
@@ -419,7 +422,7 @@ app.get('/sites', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('GSC sites discovery error:', error);
+        log.error('GSC sites discovery error:', error);
         return c.json({
             success: false,
             error: error.message || 'Failed to discover GSC sites',
@@ -473,8 +476,8 @@ app.post('/sync', async (c) => {
 
         const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
-        console.log(`[GSC Sync] Starting sync for project ${projectId}, site: ${siteUrl}`);
-        console.log(`[GSC Sync] Date range: ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)`);
+        log.info(`Starting sync for project ${projectId}, site: ${siteUrl}`);
+        log.info(`Date range: ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)`);
 
         // Fetch data from GSC with pagination and chunking
         const data = await gscClient.fetchAllWithChunking({
@@ -553,7 +556,7 @@ app.post('/sync', async (c) => {
             },
         });
     } catch (error: any) {
-        console.error('GSC sync error:', error);
+        log.error('GSC sync error:', error);
         return c.json({
             success: false,
             error: error.message || 'Failed to sync GSC data',

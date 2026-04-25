@@ -132,7 +132,7 @@ serve({
   }
 
   // Start background sync jobs
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_CRON === 'true') {
     startAllSyncJobs();
   }
 });

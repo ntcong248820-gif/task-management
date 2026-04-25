@@ -23,7 +23,14 @@ interface CorrelationDataPoint {
 // GET /api/correlation?projectId=1&days=30
 app.get('/', async (c) => {
     try {
-        const projectId = Number(c.req.query('projectId') || 1);
+        const rawProjectId = c.req.query('projectId');
+        if (!rawProjectId) {
+            return c.json({ success: false, error: 'projectId is required' }, 400);
+        }
+        const projectId = Number(rawProjectId);
+        if (isNaN(projectId)) {
+            return c.json({ success: false, error: 'projectId must be a number' }, 400);
+        }
         const days = Number(c.req.query('days') || 30);
 
         const endDate = new Date();

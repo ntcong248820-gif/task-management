@@ -1,12 +1,16 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
+import type { Auth } from 'googleapis';
 import { db, oauthTokens, gscData, gscSites, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
+import { logger } from '../utils/logger';
+
+const log = logger.child('GSC-Cron');
 
 // Inline GSCClient for cron job
 class GSCClient {
-    private oauth2Client: any;
-    private searchconsole: any;
+    private oauth2Client: Auth.OAuth2Client;
+    private searchconsole: ReturnType<typeof google.searchconsole>;
 
     constructor(accessToken: string, refreshToken: string) {
         this.oauth2Client = new google.auth.OAuth2(
@@ -42,7 +46,7 @@ class GSCClient {
             // But let's prioritize 'siteOwner' if possible, or just take the first one.
 
             if (sites.length === 0) {
-                console.warn(`[GSC Client] No sites found for project ${projectId}`);
+                log.warn(`No sites found for project ${projectId}`);
                 return null;
             }
 
@@ -53,13 +57,13 @@ class GSCClient {
             const domainProperty = sites.find((s: any) => s.siteUrl?.startsWith('sc-domain:'));
             const selectedSite = domainProperty || sites[0];
 
-            console.log(`[GSC Client] Auto-discovery for project ${projectId}: Found ${sites.length} sites.`);
-            console.log(`[GSC Client] Selected site: ${selectedSite.siteUrl} ${domainProperty ? '(Domain Property)' : '(First available)'}`);
+            log.info(`Auto-discovery for project ${projectId}: Found ${sites.length} sites.`);
+            log.info(`Selected site: ${selectedSite.siteUrl} ${domainProperty ? '(Domain Property)' : '(First available)'}`);
 
             return selectedSite.siteUrl || null;
 
         } catch (error) {
-            console.error(`[GSC Client] Error listing sites for project ${projectId}:`, error);
+            log.error(`Error listing sites for project ${projectId}:`, error);
             return null;
         }
     }
@@ -112,7 +116,7 @@ class GSCClient {
             pageNumber++;
 
             if (pageNumber > 100) {
-                console.warn(`[GSC Cron] Safety limit reached (100 pages). Stopping pagination.`);
+                log.warn(`Safety limit reached (100 pages). Stopping pagination.`);
                 break;
             }
         }
@@ -125,7 +129,7 @@ class GSCClient {
  * Run GSC Sync Logic
  */
 export const runGSCSync = async () => {
-    console.log('🔄 [GSC Cron] Starting daily GSC sync...');
+    log.info('Starting daily GSC sync...');
 
     try {
         // Get all GSC connections
@@ -134,7 +138,7 @@ export const runGSCSync = async () => {
             .from(oauthTokens)
             .where(eq(oauthTokens.provider, 'google_search_console'));
 
-        console.log(`[GSC Cron] Found ${connections.length} GSC connections`);
+        log.info(`Found ${connections.length} GSC connections`);
 
         // Calculate yesterday's date
         const yesterday = new Date();
@@ -143,7 +147,7 @@ export const runGSCSync = async () => {
 
         for (const connection of connections) {
             try {
-                console.log(`[GSC Cron] Syncing project ${connection.projectId}...`);
+                log.info(`Syncing project ${connection.projectId}...`);
 
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection);
@@ -154,11 +158,11 @@ export const runGSCSync = async () => {
                 const siteUrl = await client.getOrDiscoverSiteUrl(connection.projectId);
 
                 if (!siteUrl) {
-                    console.error(`❌ [GSC Cron] No siteUrl found for project ${connection.projectId}. Skipping.`);
+                    log.error(`No siteUrl found for project ${connection.projectId}. Skipping.`);
                     continue;
                 }
 
-                console.log(`[GSC Cron] Fetching data for site: ${siteUrl}, date: ${dateStr}`);
+                log.info(`Fetching data for site: ${siteUrl}, date: ${dateStr}`);
 
                 const data = await client.fetchAllSearchAnalytics({
                     siteUrl,
@@ -167,7 +171,7 @@ export const runGSCSync = async () => {
                 });
 
                 if (data.length === 0) {
-                    console.log(`⚠️ [GSC Cron] No data available for project ${connection.projectId} on ${dateStr}`);
+                    log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
                     continue;
                 }
 
@@ -214,16 +218,16 @@ export const runGSCSync = async () => {
                     totalInserted += rows.length;
                 }
 
-                console.log(`✅ [GSC Cron] Synced ${totalInserted} rows for project ${connection.projectId}`);
+                log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
 
             } catch (error: any) {
-                console.error(`❌ [GSC Cron] Error syncing project ${connection.projectId}:`, error.message);
+                log.error(`Error syncing project ${connection.projectId}:`, error);
             }
         }
 
-        console.log('✅ [GSC Cron] Daily GSC sync completed');
+        log.info('Daily GSC sync completed');
     } catch (error) {
-        console.error('❌ [GSC Cron] Error in GSC sync job:', error);
+        log.error('Error in GSC sync job:', error);
     }
 };
 
@@ -245,7 +249,7 @@ export const gscSyncJob = new CronJob(
  */
 export function startGSCSyncJob() {
     gscSyncJob.start();
-    console.log('📅 [GSC Cron] GSC sync job scheduled for 2:00 AM daily');
+    log.info('GSC sync job scheduled for 2:00 AM daily');
 }
 
 /**
@@ -253,5 +257,5 @@ export function startGSCSyncJob() {
  */
 export function stopGSCSyncJob() {
     gscSyncJob.stop();
-    console.log('🛑 [GSC Cron] GSC sync job stopped');
+    log.info('GSC sync job stopped');
 }
