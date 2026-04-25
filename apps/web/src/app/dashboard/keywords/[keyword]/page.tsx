@@ -23,6 +23,7 @@ import {
     ResponsiveContainer,
     Legend
 } from 'recharts';
+import { useProject } from '@/contexts/ProjectContext';
 
 function KPICard({ title, value, subValue, icon: Icon, color }: any) {
     return (
@@ -60,8 +61,9 @@ export default function KeywordDetailPage() {
     const router = useRouter();
     const params = useParams();
     const keyword = typeof params.keyword === 'string' ? decodeURIComponent(params.keyword) : '';
+    const { selectedProjectId } = useProject();
 
-    const { data, loading, error, fetchDetail } = useKeywordDetailData(1);
+    const { data, loading, error, fetchDetail } = useKeywordDetailData(selectedProjectId);
 
     useEffect(() => {
         if (keyword) {

@@ -16,7 +16,7 @@ import { useProject } from '@/contexts/ProjectContext';
 
 function AnalyticsDashboardContent() {
   const { selectedProjectId } = useProject();
-  const { gscData, ga4Data, loading, error } = useAnalyticsData(selectedProjectId || 1);
+  const { gscData, ga4Data, loading, error } = useAnalyticsData(selectedProjectId);
 
   if (loading) {
     return (

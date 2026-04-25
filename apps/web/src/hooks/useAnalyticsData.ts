@@ -61,12 +61,16 @@ export interface UseAnalyticsDataReturn {
  * Custom hook for fetching GSC and GA4 analytics data
  * Separates data fetching logic from UI components
  */
-export function useAnalyticsData(projectId: number = 1): UseAnalyticsDataReturn {
+export function useAnalyticsData(projectId: number | null): UseAnalyticsDataReturn {
     const { dateRange } = useDateContext();
     const [gscData, setGscData] = useState<GSCData | null>(null);
     const [ga4Data, setGa4Data] = useState<GA4Data | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    if (!projectId) {
+        return { gscData: null, ga4Data: null, loading: false, error: null, refetch: () => {} };
+    }
 
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

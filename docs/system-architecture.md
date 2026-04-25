@@ -120,4 +120,6 @@ Manual sync also available via `POST /api/integrations/gsc/sync` and `POST /api/
 | `GOOGLE_GSC_REDIRECT_URI` | api | GSC callback URL |
 | `GOOGLE_GA4_REDIRECT_URI` | api | GA4 callback URL |
 | `ENCRYPTION_KEY` | api | Token encryption (32-byte hex) |
+| `FRONTEND_URL` | api | CORS origin for production Vercel URL |
+| `FRONTEND_URL_PREVIEW` | api | CORS origin for Vercel preview deployments |
 | `NEXT_PUBLIC_API_URL` | web | API base URL |

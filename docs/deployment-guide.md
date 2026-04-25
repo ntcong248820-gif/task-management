@@ -21,7 +21,9 @@ GOOGLE_CLIENT_SECRET=xxx
 GOOGLE_GSC_REDIRECT_URI=https://<api-domain>/api/integrations/gsc/callback
 GOOGLE_GA4_REDIRECT_URI=https://<api-domain>/api/integrations/ga4/callback
 ENCRYPTION_KEY=<64-char hex>   # node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-CORS_ORIGIN=https://<vercel-domain>.vercel.app
+# CORS origins - Vercel production + preview deployments
+FRONTEND_URL=https://<vercel-domain>.vercel.app
+FRONTEND_URL_PREVIEW=           # Optional: preview deployment URL
 ```
 
 ### apps/web (Vercel)
@@ -65,7 +67,7 @@ GSC and GA4 use **separate** redirect URIs. Missing either breaks OAuth.
 
 ### 5. CORS
 
-In `apps/api/src/index.ts`, `CORS_ORIGIN` env var must match the exact Vercel domain (no trailing slash).
+In `apps/api/src/index.ts`, `FRONTEND_URL` and `FRONTEND_URL_PREVIEW` env vars control CORS origins. Both must match the exact Vercel domain (no trailing slash).
 
 ## Cron Jobs (Production)
 
@@ -87,7 +89,7 @@ curl -X POST https://<api-domain>/api/integrations/ga4/sync
 
 | Issue | Fix |
 |-------|-----|
-| CORS error | Check `CORS_ORIGIN` matches Vercel URL exactly |
+| CORS error | Check `FRONTEND_URL` (and `FRONTEND_URL_PREVIEW` if using previews) match Vercel URL exactly |
 | OAuth callback fails | Verify redirect URI in Google Cloud Console matches env var |
 | DB connection error | Check `DATABASE_URL`, test with `psql <url>` |
 | Cron not running | Check Render logs; ensure service is not sleeping |

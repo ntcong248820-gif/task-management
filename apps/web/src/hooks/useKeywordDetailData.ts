@@ -27,10 +27,14 @@ export interface KeywordDetail {
     }[];
 }
 
-export function useKeywordDetailData(projectId: number = 1) {
+export function useKeywordDetailData(projectId: number | null) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [data, setData] = useState<KeywordDetail | null>(null);
+
+    if (!projectId) {
+        return { data: null, loading: false, error: null, fetchDetail: async () => {} };
+    }
 
     const fetchDetail = useCallback(async (keywordToFetch: string) => {
         setLoading(true);

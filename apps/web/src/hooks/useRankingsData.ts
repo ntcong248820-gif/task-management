@@ -89,7 +89,7 @@ export interface UseRankingsDataReturn {
     refetch: () => void;
 }
 
-export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
+export function useRankingsData(projectId: number | null): UseRankingsDataReturn {
     const { dateRange } = useDateContext();
     const [overview, setOverview] = useState<OverviewData | null>(null);
     const [keywordsData, setKeywordsData] = useState<KeywordsData | null>(null);
@@ -97,6 +97,10 @@ export function useRankingsData(projectId: number = 1): UseRankingsDataReturn {
     const [distributionData, setDistributionData] = useState<DistributionData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    if (!projectId) {
+        return { overview: null, keywordsData: null, chartData: null, distributionData: null, loading: false, error: null, fetchKeywords: async () => {}, refetch: () => {} };
+    }
 
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

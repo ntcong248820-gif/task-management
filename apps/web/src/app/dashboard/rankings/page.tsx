@@ -10,6 +10,7 @@ import {
   RankingChart,
   PositionDistribution,
 } from '@/components/features/rankings';
+import { useProject } from '@/contexts/ProjectContext';
 
 function LoadingSkeleton() {
   return (
@@ -63,6 +64,7 @@ export default function RankingsPage() {
   const [sortBy, setSortBy] = useState('clicks');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [search, setSearch] = useState('');
+  const { selectedProjectId } = useProject();
 
   const {
     overview,
@@ -72,7 +74,7 @@ export default function RankingsPage() {
     loading,
     error,
     fetchKeywords,
-  } = useRankingsData(1);
+  } = useRankingsData(selectedProjectId);
 
   const handleSearch = useCallback((newSearch: string) => {
     setSearch(newSearch);

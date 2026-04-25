@@ -9,6 +9,7 @@ import {
     URLTable,
     URLDetailChart,
 } from '@/components/features/urls';
+import { useProject } from '@/contexts/ProjectContext';
 
 function LoadingSkeleton() {
     return (
@@ -60,6 +61,7 @@ export default function URLsPage() {
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<'all' | 'declining' | 'improving'>('all');
+    const { selectedProjectId } = useProject();
 
     const {
         overview,
@@ -70,7 +72,7 @@ export default function URLsPage() {
         fetchList,
         fetchDetail,
         clearDetail,
-    } = useURLsData(1, 30);
+    } = useURLsData(selectedProjectId, 30);
 
     const handleSearch = useCallback((newSearch: string) => {
         setSearch(newSearch);

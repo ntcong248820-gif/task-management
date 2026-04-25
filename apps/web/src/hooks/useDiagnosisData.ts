@@ -30,11 +30,15 @@ export interface DiagnosisData {
     lastUpdated: string;
 }
 
-export function useDiagnosisData(projectId: number = 1) {
+export function useDiagnosisData(projectId: number | null) {
     const { dateRange } = useDateContext();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [diagnosis, setDiagnosis] = useState<DiagnosisData | null>(null);
+
+    if (!projectId) {
+        return { diagnosis: null, loading: false, error: null, fetchDiagnosis: async () => {}, clearDiagnosis: () => {} };
+    }
 
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

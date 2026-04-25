@@ -8,8 +8,7 @@ import {
   CorrelationChart,
   RecentTasksTable,
 } from '@/components/features/dashboard';
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { getApiUrl } from '@/lib/config';
 
 // Types
 interface CorrelationData {
@@ -70,7 +69,7 @@ function useCorrelationData(dateRange: number) {
         const projectId = typeof window !== 'undefined'
           ? localStorage.getItem('selectedProjectId') || '2'
           : '2';
-        const res = await fetch(`${API_BASE}/api/correlation?projectId=${projectId}&days=${dateRange}`);
+        const res = await fetch(getApiUrl(`/api/correlation?projectId=${projectId}&days=${dateRange}`));
         const json = await res.json();
         if (json.success && json.data) {
           setChartData(json.data.chartData || []);

@@ -88,12 +88,16 @@ interface UseURLsDataReturn {
     refetch: () => void;
 }
 
-export function useURLsData(projectId: number = 1, days: number = 30): UseURLsDataReturn {
+export function useURLsData(projectId: number | null, days: number = 30): UseURLsDataReturn {
     const [overview, setOverview] = useState<OverviewData | null>(null);
     const [listData, setListData] = useState<ListData | null>(null);
     const [detailData, setDetailData] = useState<DetailData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    if (!projectId) {
+        return { overview: null, listData: null, detailData: null, loading: false, error: null, fetchList: async () => {}, fetchDetail: async () => {}, clearDetail: () => {}, refetch: () => {} };
+    }
 
     const fetchOverview = async () => {
         try {

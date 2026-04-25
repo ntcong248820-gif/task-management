@@ -4,6 +4,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { serve } from '@hono/node-server';
+import { rateLimiter } from 'hono-rate-limiter';
 import projectsRoutes from './routes/projects';
 import tasksRoutes from './routes/tasks';
 import timeLogsRoutes from './routes/time-logs';
@@ -25,15 +26,34 @@ app.use('*', cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3002',
-    'https://task-management-app-theta-two.vercel.app',
     process.env.FRONTEND_URL || '',
-  ].filter(Boolean),
+    process.env.FRONTEND_URL_PREVIEW || '',
+  ].filter(Boolean) as string[],
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
 }));
 app.use('*', logger());
 app.use('*', prettyJSON());
+
+// Rate limiting on sync and authorize routes.
+// Use the last segment of x-forwarded-for (Render appends the real client IP last)
+// to prevent spoofing via a crafted x-forwarded-for header.
+const getClientIp = (c: any): string => {
+    const xff = c.req.header('x-forwarded-for');
+    if (xff) return xff.split(',').pop()!.trim();
+    return c.req.header('cf-connecting-ip') ?? 'anonymous';
+};
+app.use('/api/integrations/*/sync', rateLimiter({
+    windowMs: 60_000,
+    limit: 5,
+    keyGenerator: getClientIp,
+}));
+app.use('/api/integrations/*/authorize', rateLimiter({
+    windowMs: 60_000,
+    limit: 10,
+    keyGenerator: getClientIp,
+}));
 
 // Health check
 app.get('/health', (c) => {
@@ -42,63 +62,6 @@ app.get('/health', (c) => {
     message: 'SEO Impact OS API is running',
     timestamp: new Date().toISOString()
   });
-});
-
-// Debug endpoint - test database connection directly
-app.get('/debug/db', async (c) => {
-  try {
-    const { db, sql } = await import('@repo/db');
-
-    // Test with raw SQL query
-    const result = await db.execute(sql`SELECT 1 as test, current_database() as database, current_user as user`);
-
-    return c.json({
-      success: true,
-      message: 'Database connection successful',
-      result: result,
-      env: {
-        hasDbUrl: !!process.env.DATABASE_URL,
-        dbUrlPreview: process.env.DATABASE_URL?.replace(/:[^:@]+@/, ':***@').substring(0, 80) + '...',
-      }
-    });
-  } catch (error: unknown) {
-    // Capture the FULL error chain
-    const errorDetails: Record<string, unknown> = {};
-
-    if (error instanceof Error) {
-      errorDetails.name = error.name;
-      errorDetails.message = error.message;
-      errorDetails.stack = error.stack;
-
-      // Check for cause (nested error)
-      if ('cause' in error && error.cause) {
-        const cause = error.cause as Error;
-        errorDetails.cause = {
-          name: cause.name,
-          message: cause.message,
-          stack: cause.stack,
-        };
-      }
-
-      // Postgres-specific error properties
-      const pgError = error as unknown as Record<string, unknown>;
-      if (pgError.code) errorDetails.pgCode = pgError.code;
-      if (pgError.severity) errorDetails.severity = pgError.severity;
-      if (pgError.detail) errorDetails.detail = pgError.detail;
-      if (pgError.hint) errorDetails.hint = pgError.hint;
-    }
-
-    return c.json({
-      success: false,
-      error: 'Database connection failed',
-      details: errorDetails,
-      rawError: String(error),
-      env: {
-        hasDbUrl: !!process.env.DATABASE_URL,
-        dbUrlPreview: process.env.DATABASE_URL?.replace(/:[^:@]+@/, ':***@').substring(0, 80) + '...',
-      }
-    }, 500);
-  }
 });
 
 // Root endpoint
