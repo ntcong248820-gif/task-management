@@ -79,8 +79,7 @@ const app = new Hono();
 
 // OAuth configuration - GA4 uses its own redirect URI
 const getOAuthConfig = () => {
-    // GA4-specific redirect URI, fallback to general GOOGLE_REDIRECT_URI
-    const redirectUri = process.env.GA4_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!;
+    const redirectUri = process.env.GOOGLE_GA4_REDIRECT_URI!;
 
     log.info(`Using redirect URI: ${redirectUri}`);
 

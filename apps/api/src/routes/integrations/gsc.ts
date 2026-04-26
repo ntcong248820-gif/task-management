@@ -152,8 +152,7 @@ const app = new Hono();
 
 // OAuth configuration - GSC uses its own redirect URI
 const getOAuthConfig = () => {
-    // GSC-specific redirect URI, fallback to general GOOGLE_REDIRECT_URI
-    const redirectUri = process.env.GSC_REDIRECT_URI || process.env.GOOGLE_REDIRECT_URI!;
+    const redirectUri = process.env.GOOGLE_GSC_REDIRECT_URI!;
 
     log.info(`Using redirect URI: ${redirectUri}`);
 

@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
 import { db, oauthTokens, gscData, gscSites, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
+import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
 
 const log = logger.child('GSC-Cron');
@@ -16,7 +17,7 @@ class GSCClient {
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
             process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_GSC_REDIRECT_URI!
         );
         this.oauth2Client.setCredentials({
             access_token: accessToken,
@@ -152,7 +153,7 @@ export const runGSCSync = async () => {
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection);
 
-                const client = new GSCClient(validAccessToken, connection.refreshToken);
+                const client = new GSCClient(validAccessToken, decryptTokenValue(connection.refreshToken));
 
                 // Auto-discover siteUrl
                 const siteUrl = await client.getOrDiscoverSiteUrl(connection.projectId);

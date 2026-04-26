@@ -3,6 +3,7 @@ import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
 import { db, oauthTokens, ga4Data, ga4Properties, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
+import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
 
 const log = logger.child('GA4-Cron');
@@ -16,7 +17,7 @@ class GA4Client {
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
             process.env.GOOGLE_CLIENT_SECRET!,
-            process.env.GOOGLE_REDIRECT_URI!
+            process.env.GOOGLE_GA4_REDIRECT_URI!
         );
         this.oauth2Client.setCredentials({
             access_token: accessToken,
@@ -145,7 +146,7 @@ export const runGA4Sync = async () => {
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection);
 
-                const client = new GA4Client(validAccessToken, connection.refreshToken);
+                const client = new GA4Client(validAccessToken, decryptTokenValue(connection.refreshToken));
 
                 // Auto-discover propertyId
                 const propertyId = await client.getOrDiscoverPropertyId(connection.projectId);
