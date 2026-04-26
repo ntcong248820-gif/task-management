@@ -37,9 +37,11 @@
 | `src/app/dashboard/integrations/` | OAuth connect page |
 | `src/app/dashboard/projects/` | Project management |
 | `src/components/ui/` | shadcn/ui primitives |
-| `src/components/features/` | Feature components (tasks, analytics, etc.) |
-| `src/hooks/` | Custom React hooks (useTaskForm, useTimer, etc.) |
-| `src/stores/` | Zustand stores (timer-store, project-store) |
+| `src/components/features/` | Feature components (tasks, analytics, rankings, urls, dashboard) |
+| `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
+| `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
+| `src/stores/` | Zustand stores (timer-store, use-project-store) |
+| `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
 | `src/types/` | Frontend-only TypeScript types |
 
 ## packages/db

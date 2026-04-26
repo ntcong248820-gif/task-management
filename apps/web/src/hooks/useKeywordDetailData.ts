@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import useSWR, { mutate } from 'swr';
+import { useCallback } from 'react';
+import { fetcher } from '@/lib/api-client';
 import { getApiUrl } from '@/lib/config';
 
 export interface KeywordDetail {
@@ -27,38 +29,32 @@ export interface KeywordDetail {
     }[];
 }
 
-export function useKeywordDetailData(projectId: number | null) {
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [data, setData] = useState<KeywordDetail | null>(null);
+export interface UseKeywordDetailDataReturn {
+    data: KeywordDetail | null;
+    loading: boolean;
+    error: string | null;
+    fetchDetail: (keyword: string) => Promise<void>;
+    mutate: () => void;
+}
 
-    if (!projectId) {
-        return { data: null, loading: false, error: null, fetchDetail: async () => {} };
-    }
+export function useKeywordDetailData(projectId: number | null): UseKeywordDetailDataReturn {
+    const { data, error, isLoading, mutate: mutateData } = useSWR(
+        projectId ? getApiUrl(`/api/keywords/detail?projectId=${projectId}&days=30`) : null,
+        fetcher
+    );
 
     const fetchDetail = useCallback(async (keywordToFetch: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const encodedKeyword = encodeURIComponent(keywordToFetch);
-            const res = await fetch(getApiUrl(`/api/keywords/detail?projectId=${projectId}&keyword=${encodedKeyword}&days=30`));
-            const json = await res.json();
-            if (json.success) {
-                setData(json.data);
-            } else {
-                setError(json.error || 'Failed to fetch keyword detail');
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch keyword detail');
-        } finally {
-            setLoading(false);
-        }
+        if (!projectId) return;
+        const encodedKeyword = encodeURIComponent(keywordToFetch);
+        const key = getApiUrl(`/api/keywords/detail?projectId=${projectId}&keyword=${encodedKeyword}&days=30`);
+        await mutate(key);
     }, [projectId]);
 
     return {
-        data,
-        loading,
-        error,
+        data: data || null,
+        loading: isLoading,
+        error: error?.message || null,
         fetchDetail,
+        mutate: mutateData,
     };
 }

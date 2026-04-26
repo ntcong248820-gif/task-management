@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import useSWR from 'swr';
+import { useCallback } from 'react';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
+import { fetcher } from '@/lib/api-client';
 import { getApiUrl } from '@/lib/config';
 
 export interface KeywordMover {
@@ -79,43 +81,40 @@ export interface UseRankingsDataReturn {
     distributionData: DistributionData | null;
     loading: boolean;
     error: string | null;
-    // Actions
     fetchKeywords: (params: {
         search?: string;
         sortBy?: string;
         sortOrder?: 'asc' | 'desc';
         page?: number;
     }) => Promise<void>;
-    refetch: () => void;
+    mutate: () => void;
 }
 
 export function useRankingsData(projectId: number | null): UseRankingsDataReturn {
     const { dateRange } = useDateContext();
-    const [overview, setOverview] = useState<OverviewData | null>(null);
-    const [keywordsData, setKeywordsData] = useState<KeywordsData | null>(null);
-    const [chartData, setChartData] = useState<ChartData | null>(null);
-    const [distributionData, setDistributionData] = useState<DistributionData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    if (!projectId) {
-        return { overview: null, keywordsData: null, chartData: null, distributionData: null, loading: false, error: null, fetchKeywords: async () => {}, refetch: () => {} };
-    }
-
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');
 
-    const fetchOverview = async () => {
-        try {
-            const res = await fetch(getApiUrl(`/api/rankings/overview?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
-            const json = await res.json();
-            if (json.success) {
-                setOverview(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch overview:', err);
-        }
-    };
+    const overviewKey = projectId
+        ? getApiUrl(`/api/rankings/overview?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`)
+        : null;
+    const keywordsKey = projectId
+        ? getApiUrl(`/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=20`)
+        : null;
+    const chartKey = projectId
+        ? getApiUrl(`/api/rankings/chart?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=5`)
+        : null;
+    const distributionKey = projectId
+        ? getApiUrl(`/api/rankings/distribution?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`)
+        : null;
+
+    const { data: overview, error: overviewError, isLoading: overviewLoading, mutate: overviewMutate } = useSWR(overviewKey, fetcher);
+    const { data: keywordsData, error: keywordsError, isLoading: keywordsLoading, mutate: keywordsMutate } = useSWR(keywordsKey, fetcher);
+    const { data: chartData, error: chartError, isLoading: chartLoading, mutate: chartMutate } = useSWR(chartKey, fetcher);
+    const { data: distributionData, error: distError, isLoading: distLoading, mutate: distMutate } = useSWR(distributionKey, fetcher);
+
+    const error = overviewError?.message || keywordsError?.message || chartError?.message || distError?.message || null;
+    const loading = overviewLoading || keywordsLoading || chartLoading || distLoading;
 
     const fetchKeywords = useCallback(async (params: {
         search?: string;
@@ -123,72 +122,24 @@ export function useRankingsData(projectId: number | null): UseRankingsDataReturn
         sortOrder?: 'asc' | 'desc';
         page?: number;
     } = {}) => {
-        try {
-            const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1 } = params;
-            const url = getApiUrl(`/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`);
-            const res = await fetch(url);
-            const json = await res.json();
-            if (json.success) {
-                setKeywordsData(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch keywords:', err);
-        }
-    }, [projectId, startDate, endDate]);
-
-    const fetchChart = async () => {
-        try {
-            const res = await fetch(getApiUrl(`/api/rankings/chart?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&limit=5`));
-            const json = await res.json();
-            if (json.success) {
-                setChartData(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch chart:', err);
-        }
-    };
-
-    const fetchDistribution = async () => {
-        try {
-            const res = await fetch(getApiUrl(`/api/rankings/distribution?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
-            const json = await res.json();
-            if (json.success) {
-                setDistributionData(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch distribution:', err);
-        }
-    };
-
-    const fetchAll = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            await Promise.all([
-                fetchOverview(),
-                fetchKeywords(),
-                fetchChart(),
-                fetchDistribution(),
-            ]);
-        } catch (err: any) {
-            setError(err.message || 'Failed to load rankings data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchAll();
-    }, [projectId, startDate, endDate]);
+        const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1 } = params;
+        const key = getApiUrl(`/api/rankings/keywords?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20`);
+        await keywordsMutate(key);
+    }, [projectId, startDate, endDate, keywordsMutate]);
 
     return {
-        overview,
-        keywordsData,
-        chartData,
-        distributionData,
+        overview: overview || null,
+        keywordsData: keywordsData || null,
+        chartData: chartData || null,
+        distributionData: distributionData || null,
         loading,
         error,
         fetchKeywords,
-        refetch: fetchAll,
+        mutate: () => {
+            overviewMutate();
+            keywordsMutate();
+            chartMutate();
+            distMutate();
+        },
     };
 }

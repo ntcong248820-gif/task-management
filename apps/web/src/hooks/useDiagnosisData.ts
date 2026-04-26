@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import useSWR, { mutate } from 'swr';
+import { useCallback } from 'react';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
+import { fetcher } from '@/lib/api-client';
 import { getApiUrl } from '@/lib/config';
 
 export interface DiagnosisIssue {
@@ -30,47 +32,42 @@ export interface DiagnosisData {
     lastUpdated: string;
 }
 
-export function useDiagnosisData(projectId: number | null) {
+export interface UseDiagnosisDataReturn {
+    diagnosis: DiagnosisData | null;
+    loading: boolean;
+    error: string | null;
+    fetchDiagnosis: (url: string) => Promise<void>;
+    clearDiagnosis: () => void;
+    mutate: () => void;
+}
+
+export function useDiagnosisData(projectId: number | null): UseDiagnosisDataReturn {
     const { dateRange } = useDateContext();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [diagnosis, setDiagnosis] = useState<DiagnosisData | null>(null);
-
-    if (!projectId) {
-        return { diagnosis: null, loading: false, error: null, fetchDiagnosis: async () => {}, clearDiagnosis: () => {} };
-    }
-
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');
 
+    const { data, error, isLoading, mutate: mutateData } = useSWR(
+        projectId ? getApiUrl(`/api/diagnosis/list?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`) : null,
+        fetcher
+    );
+
     const fetchDiagnosis = useCallback(async (urlToDiagnose: string) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const encodedUrl = encodeURIComponent(urlToDiagnose);
-            const res = await fetch(getApiUrl(`/api/diagnosis/url?projectId=${projectId}&url=${encodedUrl}&startDate=${startDate}&endDate=${endDate}`));
-            const json = await res.json();
-            if (json.success) {
-                setDiagnosis(json.data);
-            } else {
-                setError(json.error || 'Failed to fetch diagnosis');
-            }
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch diagnosis');
-        } finally {
-            setLoading(false);
-        }
+        if (!projectId) return;
+        const encodedUrl = encodeURIComponent(urlToDiagnose);
+        const key = getApiUrl(`/api/diagnosis/url?projectId=${projectId}&url=${encodedUrl}&startDate=${startDate}&endDate=${endDate}`);
+        await mutate(key);
     }, [projectId, startDate, endDate]);
 
     const clearDiagnosis = useCallback(() => {
-        setDiagnosis(null);
-    }, []);
+        mutateData(undefined);
+    }, [mutateData]);
 
     return {
-        diagnosis,
-        loading,
-        error,
+        diagnosis: data || null,
+        loading: isLoading,
+        error: error?.message || null,
         fetchDiagnosis,
         clearDiagnosis,
+        mutate: mutateData,
     };
 }

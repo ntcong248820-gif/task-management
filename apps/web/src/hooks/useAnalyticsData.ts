@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import useSWR from 'swr';
 import { useDateContext } from '@/contexts/DateContext';
 import { format } from 'date-fns';
-
+import { fetcher } from '@/lib/api-client';
 import { getApiUrl } from '@/lib/config';
 
 export interface MetricValue {
@@ -54,63 +54,38 @@ export interface UseAnalyticsDataReturn {
     ga4Data: GA4Data | null;
     loading: boolean;
     error: string | null;
-    refetch: () => void;
+    mutate: () => void;
 }
 
 /**
- * Custom hook for fetching GSC and GA4 analytics data
- * Separates data fetching logic from UI components
+ * Custom hook for fetching GSC and GA4 analytics data using SWR
  */
 export function useAnalyticsData(projectId: number | null): UseAnalyticsDataReturn {
     const { dateRange } = useDateContext();
-    const [gscData, setGscData] = useState<GSCData | null>(null);
-    const [ga4Data, setGa4Data] = useState<GA4Data | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    if (!projectId) {
-        return { gscData: null, ga4Data: null, loading: false, error: null, refetch: () => {} };
-    }
-
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');
 
-    const fetchData = async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const gscKey = projectId
+        ? getApiUrl(`/api/analytics/gsc?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`)
+        : null;
+    const ga4Key = projectId
+        ? getApiUrl(`/api/analytics/ga4?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`)
+        : null;
 
-            // Fetch GSC data (no siteUrl needed - each project has 1 site)
-            const gscRes = await fetch(getApiUrl(`/api/analytics/gsc?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
-            const gscJson = await gscRes.json();
-            if (gscJson.success) {
-                setGscData(gscJson.data);
-            }
+    const { data: gscData, error: gscError, isLoading: gscLoading, mutate: gscMutate } = useSWR(gscKey, fetcher);
+    const { data: ga4Data, error: ga4Error, isLoading: ga4Loading, mutate: ga4Mutate } = useSWR(ga4Key, fetcher);
 
-            // Fetch GA4 data
-            const ga4Res = await fetch(getApiUrl(`/api/analytics/ga4?projectId=${projectId}&startDate=${startDate}&endDate=${endDate}`));
-            const ga4Json = await ga4Res.json();
-            if (ga4Json.success) {
-                setGa4Data(ga4Json.data);
-            }
-        } catch (err: unknown) {
-            const errorMessage = err instanceof Error ? err.message : 'Failed to load analytics data';
-            console.error('Failed to fetch analytics:', err);
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [projectId, startDate, endDate]);
+    const error = gscError?.message || ga4Error?.message || null;
+    const loading = gscLoading || ga4Loading;
 
     return {
-        gscData,
-        ga4Data,
+        gscData: gscData || null,
+        ga4Data: ga4Data || null,
         loading,
         error,
-        refetch: fetchData,
+        mutate: () => {
+            gscMutate();
+            ga4Mutate();
+        },
     };
 }

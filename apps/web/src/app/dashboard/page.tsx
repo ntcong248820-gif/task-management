@@ -9,6 +9,7 @@ import {
   RecentTasksTable,
 } from '@/components/features/dashboard';
 import { getApiUrl } from '@/lib/config';
+import { useProjectStore } from '@/stores/use-project-store';
 
 // Types
 interface CorrelationData {
@@ -55,20 +56,24 @@ function formatNumber(num: number): string {
 }
 
 // Custom hook for fetching correlation data
-function useCorrelationData(dateRange: number) {
+function useCorrelationData(dateRange: number, projectId: number | null) {
   const [chartData, setChartData] = useState<CorrelationData[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [recentTasks, setRecentTasks] = useState<RecentTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!projectId) {
+      setChartData([]);
+      setMetrics(null);
+      setRecentTasks([]);
+      setLoading(false);
+      return;
+    }
+
     async function fetchData() {
       setLoading(true);
       try {
-        // Get project ID from localStorage, default to '2' (valid project in DB)
-        const projectId = typeof window !== 'undefined'
-          ? localStorage.getItem('selectedProjectId') || '2'
-          : '2';
         const res = await fetch(getApiUrl(`/api/correlation?projectId=${projectId}&days=${dateRange}`));
         const json = await res.json();
         if (json.success && json.data) {
@@ -83,7 +88,7 @@ function useCorrelationData(dateRange: number) {
       }
     }
     fetchData();
-  }, [dateRange]);
+  }, [projectId, dateRange]);
 
   return { chartData, metrics, recentTasks, loading };
 }
@@ -95,8 +100,9 @@ function DashboardContent() {
     impressions: false,
     impact: true,
   });
+  const selectedProjectId = useProjectStore((state) => state.selectedProjectId);
 
-  const { chartData, metrics, recentTasks, loading } = useCorrelationData(dateRange);
+  const { chartData, metrics, recentTasks, loading } = useCorrelationData(dateRange, selectedProjectId);
 
   if (loading) {
     return (

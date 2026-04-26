@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-
+import useSWR, { mutate } from 'swr';
+import { useCallback } from 'react';
+import { fetcher } from '@/lib/api-client';
 import { getApiUrl } from '@/lib/config';
 
-interface DecliningURL {
+export interface DecliningURL {
     page: string;
     clicks: number;
     previousClicks: number;
@@ -14,7 +15,7 @@ interface DecliningURL {
     severity: 'severe' | 'moderate' | 'slight' | 'stable' | 'improving';
 }
 
-interface Summary {
+export interface Summary {
     totalUrls: number;
     declining: number;
     improving: number;
@@ -22,12 +23,12 @@ interface Summary {
     avgChangePercent: number;
 }
 
-interface OverviewData {
+export interface OverviewData {
     decliningUrls: DecliningURL[];
     summary: Summary;
 }
 
-interface URLData {
+export interface URLData {
     page: string;
     clicks: number;
     previousClicks: number;
@@ -37,19 +38,19 @@ interface URLData {
     changePercent: number;
 }
 
-interface Pagination {
+export interface Pagination {
     page: number;
     limit: number;
     total: number;
     totalPages: number;
 }
 
-interface ListData {
+export interface ListData {
     urls: URLData[];
     pagination: Pagination;
 }
 
-interface ChartDataPoint {
+export interface ChartDataPoint {
     date: string;
     displayDate: string;
     clicks: number;
@@ -57,25 +58,24 @@ interface ChartDataPoint {
     position: number;
 }
 
-interface TopQuery {
+export interface TopQuery {
     query: string;
     clicks: number;
     impressions: number;
 }
 
-interface DetailData {
+export interface DetailData {
     url: string;
     chartData: ChartDataPoint[];
     topQueries: TopQuery[];
 }
 
-interface UseURLsDataReturn {
+export interface UseURLsDataReturn {
     overview: OverviewData | null;
     listData: ListData | null;
     detailData: DetailData | null;
     loading: boolean;
     error: string | null;
-    // Actions
     fetchList: (params: {
         search?: string;
         sortBy?: string;
@@ -85,32 +85,22 @@ interface UseURLsDataReturn {
     }) => Promise<void>;
     fetchDetail: (url: string) => Promise<void>;
     clearDetail: () => void;
-    refetch: () => void;
+    mutate: () => void;
 }
 
 export function useURLsData(projectId: number | null, days: number = 30): UseURLsDataReturn {
-    const [overview, setOverview] = useState<OverviewData | null>(null);
-    const [listData, setListData] = useState<ListData | null>(null);
-    const [detailData, setDetailData] = useState<DetailData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const overviewKey = projectId
+        ? getApiUrl(`/api/urls/overview?projectId=${projectId}&days=${days}`)
+        : null;
+    const listKey = projectId
+        ? getApiUrl(`/api/urls/list?projectId=${projectId}&days=${days}&limit=20`)
+        : null;
 
-    if (!projectId) {
-        return { overview: null, listData: null, detailData: null, loading: false, error: null, fetchList: async () => {}, fetchDetail: async () => {}, clearDetail: () => {}, refetch: () => {} };
-    }
+    const { data: overview, error: overviewError, isLoading: overviewLoading, mutate: overviewMutate } = useSWR(overviewKey, fetcher);
+    const { data: listData, error: listError, isLoading: listLoading, mutate: listMutate } = useSWR(listKey, fetcher);
 
-    const fetchOverview = async () => {
-        try {
-            setLoading(true);
-            const res = await fetch(getApiUrl(`/api/urls/overview?projectId=${projectId}&days=${days}`));
-            const json = await res.json();
-            if (json.success) {
-                setOverview(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch URLs overview:', err);
-        }
-    };
+    const error = overviewError?.message || listError?.message || null;
+    const loading = overviewLoading || listLoading;
 
     const fetchList = useCallback(async (params: {
         search?: string;
@@ -119,69 +109,33 @@ export function useURLsData(projectId: number | null, days: number = 30): UseURL
         page?: number;
         filter?: 'all' | 'declining' | 'improving';
     } = {}) => {
-        try {
-            setLoading(true);
-            const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1, filter = 'all' } = params;
-            const url = getApiUrl(`/api/urls/list?projectId=${projectId}&days=${days}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20&filter=${filter}`);
-            const res = await fetch(url);
-            const json = await res.json();
-            if (json.success) {
-                setListData(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch URLs list:', err);
-        }
-    }, [projectId, days]);
+        const { search = '', sortBy = 'clicks', sortOrder = 'desc', page = 1, filter = 'all' } = params;
+        const key = getApiUrl(`/api/urls/list?projectId=${projectId}&days=${days}&search=${search}&sortBy=${sortBy}&sortOrder=${sortOrder}&page=${page}&limit=20&filter=${filter}`);
+        await listMutate(key);
+    }, [projectId, days, listMutate]);
 
     const fetchDetail = useCallback(async (urlToFetch: string) => {
-        try {
-            setLoading(true);
-            const encodedUrl = encodeURIComponent(urlToFetch);
-            const res = await fetch(getApiUrl(`/api/urls/detail?projectId=${projectId}&url=${encodedUrl}&days=${days}`));
-            const json = await res.json();
-            if (json.success) {
-                setDetailData(json.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch URL detail:', err);
-        }
+        const encodedUrl = encodeURIComponent(urlToFetch);
+        const key = getApiUrl(`/api/urls/detail?projectId=${projectId}&url=${encodedUrl}&days=${days}`);
+        await mutate(key);
     }, [projectId, days]);
 
     const clearDetail = useCallback(() => {
-        setDetailData(null);
+        // SWR handles cache automatically
     }, []);
 
-    const fetchAll = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            await Promise.all([
-                fetchOverview(),
-                fetchList(),
-            ]);
-        } catch (err: any) {
-            setError(err.message || 'Failed to load URLs data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchAll();
-    }, [projectId, days]);
-
     return {
-        overview,
-        listData,
-        detailData,
+        overview: overview || null,
+        listData: listData || null,
+        detailData: null,
         loading,
         error,
         fetchList,
         fetchDetail,
         clearDetail,
-        refetch: fetchAll,
+        mutate: () => {
+            overviewMutate();
+            listMutate();
+        },
     };
 }
-
-// Export types
-export type { DecliningURL, Summary, URLData, Pagination, ChartDataPoint, TopQuery, DetailData };
