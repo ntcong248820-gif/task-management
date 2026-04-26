@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
-import { db, gscData, gscSites, ga4Data, eq, sql, and, gte, lte } from '@repo/db';
-import { gscDataAggregated } from '@repo/db/src/schema/gsc_data_aggregated';
+import { db, gscData, gscSites, ga4Data, gscDataAggregated, eq, sql, and, gte, lte } from '@repo/db';
 import { logger } from '../utils/logger';
 
 const log = logger.child('Analytics');

@@ -64,6 +64,7 @@ export * from './schema/tasks';
 export * from './schema/time-logs';
 export * from './schema/integrations';
 export * from './schema/gsc_data';
+export * from './schema/gsc_data_aggregated';
 export * from './schema/ga4_data';
 
 // Export drizzle-orm utilities for use in other packages

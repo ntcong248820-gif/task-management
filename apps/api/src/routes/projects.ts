@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
+import { zValidator } from '@hono/zod-validator';
 import { db, projects, eq, type NewProject } from '@repo/db';
 import { logger } from '../utils/logger';
+import { createProjectSchema, updateProjectSchema } from '../schemas/project-schema';
 
 const log = logger.child('Projects');
 
@@ -9,35 +11,11 @@ const app = new Hono();
 // GET /api/projects - List all projects
 app.get('/', async (c) => {
   try {
-    log.info('Fetching all projects...');
     const allProjects = await db.select().from(projects);
-    log.info(`Successfully fetched ${allProjects.length} projects`);
-
-    return c.json({
-      success: true,
-      data: allProjects,
-      count: allProjects.length,
-    });
+    return c.json({ success: true, data: allProjects, count: allProjects.length });
   } catch (error) {
-    log.error('CRITICAL: Error fetching projects from database', error);
-
-    // Log full error details for debugging
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
-    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-
-    return c.json(
-      {
-        success: false,
-        error: 'Failed to fetch projects',
-        details: error instanceof Error ? error.message : String(error),
-        errorType: error instanceof Error ? error.name : typeof error,
-      },
-      500
-    );
+    log.error('Error fetching projects', error);
+    return c.json({ success: false, error: 'Failed to fetch projects' }, 500);
   }
 });
 
@@ -45,138 +23,60 @@ app.get('/', async (c) => {
 app.get('/:id', async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
-
     if (isNaN(id)) {
-      return c.json(
-        {
-          success: false,
-          error: 'Invalid project ID',
-        },
-        400
-      );
+      return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
-    const project = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id))
-      .limit(1);
-
+    const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
     if (!project.length) {
-      return c.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        404
-      );
+      return c.json({ success: false, error: 'Project not found' }, 404);
     }
 
-    return c.json({
-      success: true,
-      data: project[0],
-    });
+    return c.json({ success: true, data: project[0] });
   } catch (error) {
     log.error('Error fetching project', error);
-    return c.json(
-      {
-        success: false,
-        error: 'Failed to fetch project',
-      },
-      500
-    );
+    return c.json({ success: false, error: 'Failed to fetch project' }, 500);
   }
 });
 
 // POST /api/projects - Create new project
-app.post('/', async (c) => {
+app.post('/', zValidator('json', createProjectSchema), async (c) => {
   try {
-    const body = await c.req.json();
+    const body = c.req.valid('json');
 
-    // Validate required fields
-    if (!body.name) {
-      return c.json(
-        {
-          success: false,
-          error: 'Project name is required',
-        },
-        400
-      );
-    }
-
-    // Prepare project data
     const newProject: NewProject = {
       name: body.name,
-      client: body.client || null,
-      domain: body.domain || null,
-      status: body.status || 'active',
-      description: body.description || null,
+      client: body.client ?? null,
+      domain: body.domain ?? null,
+      status: body.status,
+      description: body.description ?? null,
     };
 
-    // Insert into database
-    const result = await db
-      .insert(projects)
-      .values(newProject)
-      .returning();
+    const result = await db.insert(projects).values(newProject).returning();
 
-    return c.json(
-      {
-        success: true,
-        data: result[0],
-        message: 'Project created successfully',
-      },
-      201
-    );
+    return c.json({ success: true, data: result[0], message: 'Project created successfully' }, 201);
   } catch (error) {
     log.error('Error creating project', error);
-    return c.json(
-      {
-        success: false,
-        error: 'Failed to create project',
-      },
-      500
-    );
+    return c.json({ success: false, error: 'Failed to create project' }, 500);
   }
 });
 
 // PUT /api/projects/:id - Update existing project
-app.put('/:id', async (c) => {
+app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
-
     if (isNaN(id)) {
-      return c.json(
-        {
-          success: false,
-          error: 'Invalid project ID',
-        },
-        400
-      );
+      return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
-    const body = await c.req.json();
+    const body = c.req.valid('json');
 
-    // Check if project exists
-    const existingProject = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id))
-      .limit(1);
-
+    const existingProject = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
     if (!existingProject.length) {
-      return c.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        404
-      );
+      return c.json({ success: false, error: 'Project not found' }, 404);
     }
 
-    // Prepare update data (only include fields that are present)
-    const updateData: Partial<NewProject> & { updatedAt: Date } = {
-      updatedAt: new Date(),
-    };
+    const updateData: Partial<NewProject> & { updatedAt: Date } = { updatedAt: new Date() };
 
     if (body.name !== undefined) updateData.name = body.name;
     if (body.client !== undefined) updateData.client = body.client;
@@ -184,27 +84,12 @@ app.put('/:id', async (c) => {
     if (body.status !== undefined) updateData.status = body.status;
     if (body.description !== undefined) updateData.description = body.description;
 
-    // Update in database
-    const result = await db
-      .update(projects)
-      .set(updateData)
-      .where(eq(projects.id, id))
-      .returning();
+    const result = await db.update(projects).set(updateData).where(eq(projects.id, id)).returning();
 
-    return c.json({
-      success: true,
-      data: result[0],
-      message: 'Project updated successfully',
-    });
+    return c.json({ success: true, data: result[0], message: 'Project updated successfully' });
   } catch (error) {
     log.error('Error updating project', error);
-    return c.json(
-      {
-        success: false,
-        error: 'Failed to update project',
-      },
-      500
-    );
+    return c.json({ success: false, error: 'Failed to update project' }, 500);
   }
 });
 
@@ -212,52 +97,21 @@ app.put('/:id', async (c) => {
 app.delete('/:id', async (c) => {
   try {
     const id = parseInt(c.req.param('id'));
-
     if (isNaN(id)) {
-      return c.json(
-        {
-          success: false,
-          error: 'Invalid project ID',
-        },
-        400
-      );
+      return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
-    // Check if project exists
-    const existingProject = await db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id))
-      .limit(1);
-
+    const existingProject = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
     if (!existingProject.length) {
-      return c.json(
-        {
-          success: false,
-          error: 'Project not found',
-        },
-        404
-      );
+      return c.json({ success: false, error: 'Project not found' }, 404);
     }
 
-    // Delete from database (cascade will handle tasks and time_logs)
-    await db
-      .delete(projects)
-      .where(eq(projects.id, id));
+    await db.delete(projects).where(eq(projects.id, id));
 
-    return c.json({
-      success: true,
-      message: 'Project deleted successfully',
-    });
+    return c.json({ success: true, message: 'Project deleted successfully' });
   } catch (error) {
     log.error('Error deleting project', error);
-    return c.json(
-      {
-        success: false,
-        error: 'Failed to delete project',
-      },
-      500
-    );
+    return c.json({ success: false, error: 'Failed to delete project' }, 500);
   }
 });
 

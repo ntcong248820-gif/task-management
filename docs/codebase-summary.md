@@ -19,6 +19,7 @@
 | `src/routes/integrations/` | GSC + GA4 OAuth + sync routes |
 | `src/jobs/sync-gsc.ts` | GSC daily cron job |
 | `src/jobs/sync-ga4.ts` | GA4 daily cron job |
+| `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
 | `src/utils/` | Date helpers, string utilities |

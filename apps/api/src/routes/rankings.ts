@@ -39,57 +39,47 @@ app.get('/overview', async (c) => {
         const prevStart = new Date(prevEnd);
         prevStart.setDate(prevStart.getDate() - daysDiff);
 
-        // Get current period keyword performance
-        const currentPeriod = await db
-            .select({
-                query: gscData.query,
-                avgPosition: sql<number>`AVG(${gscData.position})`.as('avg_position'),
-                totalClicks: sql<number>`SUM(${gscData.clicks})`.as('total_clicks'),
-                totalImpressions: sql<number>`SUM(${gscData.impressions})`.as('total_impressions'),
-            })
-            .from(gscData)
-            .where(
-                and(
-                    eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, start),
-                    lte(gscData.date, end)
-                )
-            )
-            .groupBy(gscData.query)
-            .orderBy(sql`SUM(${gscData.clicks}) DESC`)
-            .limit(100);
+        const prevStartStr = prevStart.toISOString().split('T')[0];
+        const prevEndStr = prevEnd.toISOString().split('T')[0];
+        const pid = parseInt(projectId);
 
-        // Get previous period for comparison
-        const prevPeriod = await db
-            .select({
-                query: gscData.query,
-                avgPosition: sql<number>`AVG(${gscData.position})`.as('avg_position'),
-            })
-            .from(gscData)
-            .where(
-                and(
-                    eq(gscData.projectId, parseInt(projectId)),
-                    gte(gscData.date, prevStart.toISOString().split('T')[0]),
-                    lte(gscData.date, prevEnd.toISOString().split('T')[0])
-                )
-            )
-            .groupBy(gscData.query);
-
-        // Create lookup map for previous period
-        const prevMap = new Map(prevPeriod.map(p => [p.query, Number(p.avgPosition)]));
+        // Single query: FILTER aggregation covers both periods in one DB round trip
+        type RankingRow = {
+            query: string;
+            current_pos: string | null;
+            current_clicks: string | null;
+            current_impressions: string | null;
+            prev_pos: string | null;
+        };
+        const rows = await db.execute<RankingRow>(sql`
+            SELECT
+                query,
+                AVG(position) FILTER (WHERE date >= ${start} AND date <= ${end})::text         AS current_pos,
+                SUM(clicks)   FILTER (WHERE date >= ${start} AND date <= ${end})::text         AS current_clicks,
+                SUM(impressions) FILTER (WHERE date >= ${start} AND date <= ${end})::text      AS current_impressions,
+                AVG(position) FILTER (WHERE date >= ${prevStartStr} AND date <= ${prevEndStr})::text AS prev_pos
+            FROM gsc_data
+            WHERE project_id = ${pid}
+              AND date >= ${prevStartStr}
+              AND date <= ${end}
+            GROUP BY query
+            HAVING SUM(clicks) FILTER (WHERE date >= ${start} AND date <= ${end}) IS NOT NULL
+            ORDER BY SUM(clicks) FILTER (WHERE date >= ${start} AND date <= ${end}) DESC
+            LIMIT 100
+        `);
 
         // Calculate position changes
-        const keywordsWithChanges = currentPeriod.map(kw => {
-            const prevPos = prevMap.get(kw.query);
-            const currentPos = Number(kw.avgPosition);
-            const positionChange = prevPos ? prevPos - currentPos : 0; // Positive = improved
+        const keywordsWithChanges = rows.map(row => {
+            const currentPos = Number(row.current_pos) || 0;
+            const prevPos = row.prev_pos != null ? Number(row.prev_pos) : null;
+            const positionChange = prevPos != null ? prevPos - currentPos : 0;
             return {
-                query: kw.query,
+                query: row.query,
                 position: Math.round(currentPos * 10) / 10,
-                previousPosition: prevPos ? Math.round(prevPos * 10) / 10 : null,
+                previousPosition: prevPos != null ? Math.round(prevPos * 10) / 10 : null,
                 positionChange: Math.round(positionChange * 10) / 10,
-                clicks: Number(kw.totalClicks),
-                impressions: Number(kw.totalImpressions),
+                clicks: Number(row.current_clicks) || 0,
+                impressions: Number(row.current_impressions) || 0,
             };
         });
 
