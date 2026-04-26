@@ -15,6 +15,7 @@ import rankingsRoutes from './routes/rankings';
 import urlsRoutes from './routes/urls';
 import diagnosisRoutes from './routes/diagnosis';
 import keywordsRoutes from './routes/keywords';
+import cronRoutes from './routes/cron/index';
 
 const app = new Hono().basePath('/api');
 
@@ -70,5 +71,6 @@ app.route('/keywords', keywordsRoutes);
 app.route('/integrations', integrationsRoutes);
 app.route('/integrations/gsc', gscRoutes);
 app.route('/integrations/ga4', ga4Routes);
+app.route('/cron', cronRoutes);
 
 export { app };
