@@ -1,6 +1,5 @@
 import { db } from '@repo/db';
 import { projects, tasks, timeLogs } from '@repo/db/schema';
-import { eq, sql } from 'drizzle-orm';
 
 /**
  * Create a test project

@@ -68,6 +68,11 @@ packages/types/          # Shared types between apps
 - Use `drizzle-kit push` for dev; migrations for production
 - Index columns used in WHERE/ORDER BY clauses
 - Never store plain-text OAuth tokens — encrypt before saving
+- **Enum-like text columns use check constraints** (enforced at DB level):
+  - `tasks.status`: `'todo'`, `'in_progress'`, `'done'`
+  - `tasks.taskType`: `'technical'`, `'content'`, `'links'` (nullable)
+  - `tasks.priority`: `'low'`, `'medium'`, `'high'`
+  - Invalid values rejected by database, never reaching application
 
 ## Security
 

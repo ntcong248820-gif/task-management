@@ -52,14 +52,14 @@ PostgreSQL (hosted)
 | Table | Purpose |
 |-------|---------|
 | `projects` | Multi-project support |
-| `tasks` | SEO tasks with status, dates |
+| `tasks` | SEO tasks with status, dates. Status enum: `'todo' \| 'in_progress' \| 'done'`. Task type enum: `'technical' \| 'content' \| 'links'` (nullable). Priority enum: `'low' \| 'medium' \| 'high'`. **Check constraints enforce valid values at DB level.** |
 | `time_logs` | Time tracking entries per task |
 | `oauth_tokens` | Encrypted GSC + GA4 tokens with `lastSyncedAt` tracking (nullable; falls back to `createdAt` until first sync) |
 | `gsc_sites` | GSC site/property URLs and permission levels |
 | `ga4_properties` | GA4 property IDs and names |
 | `gsc_data` | Raw GSC rows (site, query, date, metrics) |
 | `gsc_data_aggregated` | Daily aggregated GSC metrics |
-| `ga4_data` | GA4 sessions, users, conversions |
+| `ga4_data` | GA4 sessions, users, conversions. Indexed on `(projectId, date)` for efficient date-range queries. |
 
 ## Google OAuth Flows
 

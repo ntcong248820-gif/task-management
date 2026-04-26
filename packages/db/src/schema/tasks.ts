@@ -1,4 +1,5 @@
-import { pgTable, serial, text, integer, timestamp, jsonb, index, date } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, timestamp, jsonb, index, date, check } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import { projects } from './projects';
 
 export const tasks = pgTable('tasks', {
@@ -37,6 +38,10 @@ export const tasks = pgTable('tasks', {
   projectIdIdx: index('tasks_project_id_idx').on(table.projectId),
   statusIdx: index('tasks_status_idx').on(table.status),
   completedAtIdx: index('tasks_completed_at_idx').on(table.completedAt),
+  // Check constraints for enum-like columns
+  statusCheck: check('tasks_status_check', sql`${table.status} IN ('todo', 'in_progress', 'done')`),
+  taskTypeCheck: check('tasks_task_type_check', sql`${table.taskType} IS NULL OR ${table.taskType} IN ('technical', 'content', 'links')`),
+  priorityCheck: check('tasks_priority_check', sql`${table.priority} IN ('low', 'medium', 'high')`),
 }));
 
 // Type exports for TypeScript
