@@ -17,8 +17,9 @@
 | `src/routes/keywords.ts` | Keyword detail + SERP history |
 | `src/routes/diagnosis.ts` | AI rule-based diagnosis |
 | `src/routes/integrations/` | GSC + GA4 OAuth + sync routes |
-| `src/jobs/sync-gsc.ts` | GSC daily cron job |
-| `src/jobs/sync-ga4.ts` | GA4 daily cron job |
+| `src/routes/cron/` | HTTP endpoints for GitHub Actions cron trigger (`sync-gsc`, `sync-ga4`) with Bearer token auth |
+| `src/jobs/sync-gsc.ts` | GSC sync logic (called by both cron routes and local ENABLE_CRON mode) |
+| `src/jobs/sync-ga4.ts` | GA4 sync logic (called by both cron routes and local ENABLE_CRON mode) |
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |

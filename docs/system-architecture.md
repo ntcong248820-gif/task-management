@@ -100,12 +100,18 @@ In production (Vercel), these routes are served by the Hono app mounted at `/api
 
 ## Data Sync (Cron Jobs)
 
-| Job | Schedule | File |
-|-----|----------|------|
-| GSC sync | 2:00 AM daily | `apps/api/src/jobs/sync-gsc.ts` |
-| GA4 sync | 2:30 AM daily | `apps/api/src/jobs/sync-ga4.ts` |
+**Production (GitHub Actions):**
+- GSC sync: 7:00 PM UTC (19:00) daily via `/api/cron/sync-gsc`
+- GA4 sync: ~7:05 PM UTC daily via `/api/cron/sync-ga4` (runs after GSC completes)
+- Triggered by `.github/workflows/cron-sync.yml`
+- Requires `CRON_SECRET` env var (Bearer token auth)
 
-Manual sync also available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/sync`. Both routes update `lastSyncedAt` on success and support optional `days` parameter (1–365, clamped automatically). Status endpoint returns `lastSyncedAt` (or `createdAt` if never synced).
+**Local Development:**
+- Jobs run in-process if `ENABLE_CRON=true` (uses `packages/api-app/src/jobs/sync-gsc.ts` and `sync-ga4.ts`)
+- Fallback for testing without GitHub Actions
+
+**Manual Sync:**
+Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/sync`. Both routes update `lastSyncedAt` on success and support optional `days` parameter (1–365, clamped automatically). Status endpoint returns `lastSyncedAt` (or `createdAt` if never synced).
 
 ## Correlation Logic
 

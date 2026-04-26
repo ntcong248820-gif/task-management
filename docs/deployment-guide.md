@@ -71,11 +71,16 @@ In `apps/api/src/index.ts`, `FRONTEND_URL` and `FRONTEND_URL_PREVIEW` env vars c
 
 ## Cron Jobs (Production)
 
-Cron jobs run inside the Render service (node-cron):
-- GSC sync: 2:00 AM daily
-- GA4 sync: 2:30 AM daily
+Cron jobs are triggered by GitHub Actions (`.github/workflows/cron-sync.yml`):
+- GSC sync: 7:00 PM UTC (19:00) daily
+- GA4 sync: ~7:05 PM UTC daily (runs after GSC, even if GSC fails)
 
-Ensure the Render instance doesn't sleep (free tier sleeps after 15 min inactivity — upgrade or use a keep-alive ping).
+**Setup:**
+1. Add `CRON_SECRET` to GitHub repository secrets (same value used in API env vars)
+2. Add `APP_URL` to GitHub repository secrets (e.g., `https://api.example.com`)
+3. GitHub Actions handles scheduling — no need for Render cron configuration
+
+**Note:** Local development can still use `ENABLE_CRON=true` in `apps/api/.env` to run jobs in-process without GitHub Actions.
 
 ## Manual Sync
 
