@@ -1,7 +1,7 @@
 ---
 title: "Full-Stack Review & Optimization"
 description: "Comprehensive review and optimization of backend, frontend, database, and architecture"
-status: pending
+status: completed
 priority: P1
 effort: 16h
 branch: main
@@ -28,8 +28,8 @@ Full codebase review covering backend (Hono), frontend (Next.js 15), database (P
 | 1 | [Security & Critical Fixes](../260421-2324-bug-fix-security-hardening/plan.md) | P0 | 4h | ✅ Done |
 | 2 | [Backend Optimization](./phase-02-backend-optimization.md) | P1 | 4h | ✅ Done |
 | 3 | [Database Optimization](./phase-03-database-optimization.md) | P1 | 2h | ✅ Done |
-| 4 | [Frontend Architecture](./phase-04-frontend-architecture.md) | P1 | 4h | 🔲 Todo |
-| 5 | [Type Safety & Code Quality](./phase-05-type-safety-code-quality.md) | P2 | 2h | 🔲 Todo |
+| 4 | [Frontend Architecture](./phase-04-frontend-architecture.md) | P1 | 4h | ✅ Done |
+| 5 | [Type Safety & Code Quality](./phase-05-type-safety-code-quality.md) | P2 | 2h | ✅ Done |
 
 ## Execution Order
 

@@ -177,20 +177,20 @@ export class ErrorBoundary extends Component<
 
 ## Todo
 
-- [ ] Install `swr`
-- [ ] Create `apps/web/src/lib/api-client.ts`
-- [ ] Create `apps/web/src/stores/use-project-store.ts`
-- [ ] Refactor `useAnalyticsData` → SWR
-- [ ] Refactor `useRankingsData` → SWR
-- [ ] Refactor `useURLsData` → SWR
-- [ ] Refactor `useDiagnosisData` → SWR
-- [ ] Refactor `useKeywordDetailData` → SWR
-- [ ] Remove `= 1` default from all 5 hooks
-- [ ] Update dashboard pages to pass `selectedProjectId` from store
-- [ ] Remove duplicate `API_BASE` from `dashboard/page.tsx`
-- [ ] Create `error-boundary.tsx`
-- [ ] Wrap dashboard layout with `ErrorBoundary`
-- [ ] Run type-check + lint
+- [x] Install `swr`
+- [x] Create `apps/web/src/lib/api-client.ts`
+- [x] Create `apps/web/src/stores/use-project-store.ts`
+- [x] Refactor `useAnalyticsData` → SWR
+- [x] Refactor `useRankingsData` → SWR
+- [x] Refactor `useURLsData` → SWR
+- [x] Refactor `useDiagnosisData` → SWR
+- [x] Refactor `useKeywordDetailData` → SWR
+- [x] Remove `= 1` default from all 5 hooks
+- [x] Update dashboard pages to pass `selectedProjectId` from store
+- [x] Remove duplicate `API_BASE` from `dashboard/page.tsx`
+- [x] Create `error-boundary.tsx`
+- [x] Wrap dashboard layout with `ErrorBoundary`
+- [x] Run type-check + lint
 
 ## Success Criteria
 
