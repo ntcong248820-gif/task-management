@@ -17,14 +17,12 @@
 
 ```
 apps/api/src/
-  routes/         # Hono route handlers (one file per resource)
-  schemas/        # Zod validation schemas
-  jobs/           # Cron jobs
-  utils/          # Pure utility functions
-  index.ts        # Entry point
+  index.ts        # Local dev server only (imports @repo/api-app)
 
 apps/web/src/
-  app/dashboard/  # Next.js App Router pages
+  app/
+    api/[[...route]]/route.ts  # Hono handler for /api/* routes
+    dashboard/    # Next.js App Router pages
   components/
     ui/           # shadcn/ui base components
     forms/        # Form components
@@ -34,8 +32,18 @@ apps/web/src/
   stores/         # Zustand stores
   types/          # Frontend-only types
 
+packages/api-app/src/
+  app.ts          # Hono application instance (exported to web + api)
+  index.ts        # Exports app + sync jobs
+  routes/         # Hono route handlers (one file per resource)
+  schemas/        # Zod validation schemas
+  jobs/           # Cron jobs (sync-gsc.ts, sync-ga4.ts, etc.)
+  utils/          # Pure utility functions (crypto, logger, token-refresh)
+
 packages/db/src/schema/  # Drizzle schema (one file per table)
 packages/types/          # Shared types between apps
+packages/integrations/   # Google OAuth clients + utilities
+packages/ui/            # UI component library (shadcn components, custom)
 ```
 
 ## TypeScript
@@ -43,24 +51,53 @@ packages/types/          # Shared types between apps
 - Strict mode enabled — no `any` unless absolutely necessary
 - Prefer `interface` for object shapes, `type` for unions/aliases
 - All API responses must be typed via `packages/types`
+- Use `OAuth2Client` from `@googleapis/oauth2` for typed Google API clients (GA4Client, GSCClient)
 - No unused variables, no unused imports
+- Use ES module imports only — no `require()` calls in TypeScript files
 
-## React / Next.js
+## Shared Types
+
+Import canonical types from `packages/types/src/index.ts`:
+
+```typescript
+import { ApiResponse, PaginatedResponse, Task, Project } from '@seo/types';
+```
+
+Never duplicate domain types in `apps/api/src/types/` or `apps/web/src/types/`.
+
+## React / Next.js (`apps/web`)
 
 - Use App Router (`app/` directory) — no Pages Router
 - Server Components by default; add `"use client"` only when needed
 - Custom hooks for business logic — no logic in component bodies
 - Zustand for global state — no prop drilling
 - No `console.log` in production code
+- **API Route Handler:** `apps/web/src/app/api/[[...route]]/route.ts` mounts the Hono app with `runtime='nodejs'`
+  - All API logic is in `packages/api-app`, not in Next.js route handlers
+  - No duplicate validation, auth, or business logic in Next.js
 
-## API (Hono)
+## API (Hono) — `packages/api-app`
 
-- Each resource gets its own route file in `routes/`
-- Use Zod for request validation: define schemas in `schemas/` directory, apply via `zValidator` middleware in routes
+The Hono application is centralized in `packages/api-app` and exported to both `apps/web` (production) and `apps/api` (local dev).
+
+**Architecture:**
+- Entry point: `packages/api-app/src/app.ts` — instantiates Hono app with basePath `/api`
+- Export point: `packages/api-app/src/index.ts` — exports `app` + sync job functions
+- Production: Mounted via `apps/web/src/app/api/[[...route]]/route.ts` using `hono/vercel`
+- Local dev: Served standalone via `apps/api/src/index.ts` on port 3001
+
+**Route & Schema Organization:**
+- Each resource gets its own route file in `packages/api-app/src/routes/`
+- Use Zod for request validation: define schemas in `packages/api-app/src/schemas/`
+- Apply validation via `zValidator` middleware in routes
 - Invalid requests return 400 with structured Zod validation errors
 - Return consistent JSON: `{ data, error, message }`
 - Wrap DB calls in try/catch; return 500 on unexpected errors
-- Cron jobs go in `jobs/` — never inline in `index.ts`
+
+**Jobs & Cron:**
+- Sync jobs in `packages/api-app/src/jobs/` (sync-gsc.ts, sync-ga4.ts)
+- Export job functions from `packages/api-app/src/index.ts`
+- Only run when explicitly started: in production via Vercel cron, in local dev if `ENABLE_CRON=true`
 
 ## Database (Drizzle)
 

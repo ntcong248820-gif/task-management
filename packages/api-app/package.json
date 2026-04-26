@@ -1,0 +1,27 @@
+{
+  "name": "@repo/api-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google-analytics/data": "^4.3.0",
+    "@hono/zod-validator": "^0.7.6",
+    "@repo/db": "*",
+    "@repo/integrations": "*",
+    "@repo/types": "*",
+    "cron": "^3.1.6",
+    "googleapis": "^131.0.0",
+    "hono": "^4.6.14",
+    "hono-rate-limiter": "^0.5.3",
+    "node-cache": "^5.1.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.6",
+    "typescript": "^5.3.3"
+  }
+}
