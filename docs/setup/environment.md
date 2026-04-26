@@ -135,14 +135,16 @@ DATABASE_URL=postgresql://kong.peterpan@localhost:5432/seo_impact_os
 # Google OAuth
 GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-client-secret
-GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/callback/google
+# OAuth Redirect URIs (separate for GSC and GA4)
+GOOGLE_GSC_REDIRECT_URI=http://localhost:3002/api/integrations/gsc/callback
+GOOGLE_GA4_REDIRECT_URI=http://localhost:3002/api/integrations/ga4/callback
 
 # Local API URL
 NEXT_PUBLIC_API_URL=http://localhost:3001
 
 # Server Ports
 API_PORT=3001
-WEB_PORT=3000
+WEB_PORT=3002
 NODE_ENV=development
 ```
 

@@ -1658,7 +1658,7 @@ OPENAI_API_KEY="sk-..."
 
 # Server
 API_PORT=3001
-WEB_PORT=3000
+WEB_PORT=3002
 NODE_ENV=development
 ```
 

@@ -1,41 +1,38 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": [
-    "NEXT_PUBLIC_API_URL",
-    "DATABASE_URL"
-  ],
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
+      "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "ENCRYPTION_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_GSC_REDIRECT_URI",
+        "GOOGLE_GA4_REDIRECT_URI",
+        "NEXT_PUBLIC_API_URL",
+        "FRONTEND_URL",
+        "FRONTEND_URL_PREVIEW",
+        "CRON_SECRET"
       ],
-      "outputs": [
-        ".next/**",
-        "dist/**",
-        ".turbo/**"
-      ]
+      "outputs": [".next/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": [
-        "^lint"
-      ],
+      "dependsOn": ["^lint"],
       "outputs": []
     },
     "type-check": {
-      "dependsOn": [
-        "^type-check"
-      ],
+      "dependsOn": ["^type-check"],
       "outputs": []
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": [],
       "outputs": []
     },
     "clean": {

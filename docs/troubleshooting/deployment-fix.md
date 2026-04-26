@@ -67,9 +67,9 @@ export function ProjectProvider({ children }) {
 
 **Changes Made**:
 
-#### a. Removed `vercel.json`
-- **Reason**: Vercel auto-detects Turbo monorepo and Next.js
-- **Benefit**: Prevents configuration conflicts
+#### a. Added `vercel.json` (Phase 01: 2026-04-26)
+- **Reason**: Required for Vercel cron job configuration in monorepo setup
+- **Current**: Contains empty `crons[]` array (schema from schemastore)
 
 #### b. Added `.vercelignore`
 - **Purpose**: Exclude unnecessary files from deployment
