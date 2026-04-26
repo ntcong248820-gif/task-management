@@ -27,7 +27,7 @@ Eliminate Render cold starts, consolidate to single Vercel deployment, fix 20 au
 | 01 | [Vercel + Turborepo monorepo config](./phase-01-vercel-monorepo-config.md) | pending | 1h | #1, #12, #13, #16, #17 |
 | 02 | [Hono into Next.js Route Handlers](./phase-02-hono-into-nextjs.md) | complete | 3h | #3, #7, #14, #18, #19 |
 | 03 | [Vercel Cron migration](./phase-03-cron-migration.md) | complete | 1.5h | #2 |
-| 04 | [Env centralization + OAuth fixes](./phase-04-env-centralization.md) | pending | 1.5h | #4, #5, #8, #9, #17 |
+| 04 | [Env centralization + OAuth fixes](./phase-04-env-centralization.md) | complete | 1.5h | #4, #5, #8, #9, #17 |
 | 05 | [Cleanup (Render, Docker, orphan dirs)](./phase-05-cleanup.md) | pending | 1h | #6, #10, #11, #15, #20 |
 
 ## Dependency Graph

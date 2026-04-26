@@ -23,6 +23,8 @@
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
+| `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY, required vars, format checks) |
+| `src/utils/verify-cron-secret.ts` | Timing-safe CRON_SECRET comparison for GitHub Actions |
 | `src/utils/` | Date helpers, string utilities |
 
 ## apps/web

@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { rateLimiter } from 'hono-rate-limiter';
+import { validateEnv } from './utils/validate-env';
 import projectsRoutes from './routes/projects';
 import tasksRoutes from './routes/tasks';
 import timeLogsRoutes from './routes/time-logs';
@@ -17,15 +18,19 @@ import diagnosisRoutes from './routes/diagnosis';
 import keywordsRoutes from './routes/keywords';
 import cronRoutes from './routes/cron/index';
 
+validateEnv();
+
+const previewOrigins = (process.env.FRONTEND_URL_PREVIEW ?? '').split(',').map(s => s.trim()).filter(Boolean);
+const corsOrigins = [
+    'http://localhost:3002',
+    process.env.FRONTEND_URL,
+    ...previewOrigins,
+].filter(Boolean) as string[];
+
 const app = new Hono().basePath('/api');
 
 app.use('*', cors({
-    origin: [
-        'http://localhost:3000',
-        'http://localhost:3002',
-        process.env.FRONTEND_URL || '',
-        process.env.FRONTEND_URL_PREVIEW || '',
-    ].filter(Boolean) as string[],
+    origin: corsOrigins,
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
