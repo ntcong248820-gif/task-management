@@ -5,6 +5,10 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "outputs": [".next/**", "dist/**"]
+    },
+    "@seo-impact-os/web#build": {
+      "dependsOn": ["^build"],
       "env": [
         "DATABASE_URL",
         "ENCRYPTION_KEY",
@@ -17,7 +21,22 @@
         "FRONTEND_URL_PREVIEW",
         "CRON_SECRET"
       ],
-      "outputs": [".next/**", "dist/**"]
+      "outputs": [".next/**"]
+    },
+    "@seo-impact-os/api#build": {
+      "dependsOn": ["^build"],
+      "env": [
+        "DATABASE_URL",
+        "ENCRYPTION_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "GOOGLE_GSC_REDIRECT_URI",
+        "GOOGLE_GA4_REDIRECT_URI",
+        "NEXT_PUBLIC_API_URL",
+        "FRONTEND_URL",
+        "CRON_SECRET"
+      ],
+      "outputs": ["dist/**"]
     },
     "dev": {
       "cache": false,
