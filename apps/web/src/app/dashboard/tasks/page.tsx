@@ -31,8 +31,8 @@ export default function TasksPage() {
       if (data.success) {
         setProjects(data.data)
       }
-    } catch (error) {
-      console.error("Failed to fetch projects:", error)
+    } catch {
+      // Silent fail - SWR will handle retry/error state
     }
   }
 
