@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createTestProject, createTestTask, cleanupTestData } from '../../__tests__/helpers';
 
 describe('Tasks API', () => {
@@ -8,6 +8,10 @@ describe('Tasks API', () => {
         await cleanupTestData();
         const project = await createTestProject();
         testProjectId = project.id;
+    });
+
+    afterEach(async () => {
+        await cleanupTestData();
     });
 
     describe('Database Operations', () => {
@@ -35,11 +39,11 @@ describe('Tasks API', () => {
 
         it('should create tasks with different statuses', async () => {
             const todoTask = await createTestTask(testProjectId, { status: 'todo' });
-            const inProgressTask = await createTestTask(testProjectId, { status: 'in-progress' });
+            const inProgressTask = await createTestTask(testProjectId, { status: 'in_progress' });
             const doneTask = await createTestTask(testProjectId, { status: 'done' });
 
             expect(todoTask.status).toBe('todo');
-            expect(inProgressTask.status).toBe('in-progress');
+            expect(inProgressTask.status).toBe('in_progress');
             expect(doneTask.status).toBe('done');
         });
 

@@ -7,6 +7,7 @@ export default defineConfig({
         environment: 'node',
         setupFiles: ['./src/__tests__/setup.ts'],
         include: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+        fileParallelism: false, // Run test files sequentially to prevent test isolation issues with shared test DB
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],

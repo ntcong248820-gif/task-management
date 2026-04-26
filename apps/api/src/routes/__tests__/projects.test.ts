@@ -1,8 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createTestProject, cleanupTestData } from '../../__tests__/helpers';
 
 describe('Projects API', () => {
     beforeEach(async () => {
+        await cleanupTestData();
+    });
+
+    afterEach(async () => {
         await cleanupTestData();
     });
 
