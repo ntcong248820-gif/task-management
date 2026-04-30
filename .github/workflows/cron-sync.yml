@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Trigger GSC Sync
         run: |
-          curl -f -X POST https://${{ secrets.APP_URL }}/api/cron/sync-gsc \
+          curl -f -X POST https://${{ vars.APP_URL }}/api/cron/sync-gsc \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json"
 
@@ -22,6 +22,6 @@ jobs:
     steps:
       - name: Trigger GA4 Sync
         run: |
-          curl -f -X POST https://${{ secrets.APP_URL }}/api/cron/sync-ga4 \
+          curl -f -X POST https://${{ vars.APP_URL }}/api/cron/sync-ga4 \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json"
