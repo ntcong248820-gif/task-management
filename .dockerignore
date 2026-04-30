@@ -13,3 +13,18 @@ coverage
 *.swp
 *.swo
 *~
+
+# Git history adds unnecessary build context
+.git
+.github
+
+# Vercel build output
+apps/web/.next
+
+# Docs and plans (not needed in container)
+docs
+plans
+interface-visual
+
+# Markdown files
+*.md

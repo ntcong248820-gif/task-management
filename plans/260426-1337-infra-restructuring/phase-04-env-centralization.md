@@ -1,6 +1,6 @@
 # Phase 04 — Env Centralization + OAuth Fixes
 
-**Status:** pending | **Priority:** P1 | **Effort:** 1.5h
+**Status:** complete | **Priority:** P1 | **Effort:** 1.5h
 **Fixes:** #4, #5, #8, #9, #17
 
 ## Context Links

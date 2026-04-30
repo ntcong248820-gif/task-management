@@ -207,24 +207,14 @@ npm run dev
 ```
 
 This starts:
-- **Frontend:** http://localhost:3002
-- **Backend API:** http://localhost:3001
-- **Cron Jobs:** Running in background
+- **Web + API (Hono mounted in Next.js):** http://localhost:3002
+- **Dev API wrapper (optional):** http://localhost:3001
 
-### Start Services Individually
-```bash
-# Terminal 1 - Backend
-cd apps/api
-npm run dev
-
-# Terminal 2 - Frontend
-cd apps/web
-npm run dev
-```
+> **Note:** The Hono API runs inside Next.js in production (`/api/*`). `apps/api` is a dev-only thin wrapper — you do not need to start it separately.
 
 ### Access the Application
-- **Frontend:** http://localhost:3002
-- **API:** http://localhost:3001/api
+- **App:** http://localhost:3002
+- **API:** http://localhost:3002/api
 - **Database Studio:** Run `npm run db:studio` (opens on http://localhost:4983)
 
 ---
@@ -234,58 +224,27 @@ npm run dev
 ```
 seo-impact-os/
 ├── apps/
-│   ├── api/                        # Hono backend
-│   │   ├── src/
-│   │   │   ├── routes/            # API routes
-│   │   │   │   ├── analytics.ts   # GSC + GA4 analytics
-│   │   │   │   ├── correlation.ts # Task-traffic correlation
-│   │   │   │   ├── diagnosis.ts   # AI diagnosis
-│   │   │   │   ├── integrations/  # OAuth flows
-│   │   │   │   ├── keywords.ts    # Keyword details
-│   │   │   │   ├── projects.ts    # Project CRUD
-│   │   │   │   ├── rankings.ts    # Keyword rankings
-│   │   │   │   ├── tasks.ts       # Task CRUD
-│   │   │   │   ├── time-logs.ts   # Time tracking
-│   │   │   │   └── urls.ts        # URL performance
-│   │   │   ├── jobs/              # Cron jobs
-│   │   │   │   ├── sync-gsc.ts    # GSC daily sync
-│   │   │   │   └── sync-ga4.ts    # GA4 daily sync
-│   │   │   ├── utils/             # Utilities
-│   │   │   └── index.ts           # Server entry
-│   │   └── package.json
-│   └── web/                        # Next.js frontend
+│   ├── api/                        # Dev-only thin wrapper (port 3001)
+│   │   └── src/index.ts            # Imports packages/api-app and serves it
+│   └── web/                        # Next.js 15 + Hono (Vercel, port 3002)
 │       ├── src/
 │       │   ├── app/
-│       │   │   └── dashboard/     # Dashboard pages
-│       │   │       ├── page.tsx           # Correlation
-│       │   │       ├── analytics/         # GSC + GA4
-│       │   │       ├── rankings/          # Keywords
-│       │   │       ├── urls/              # URL performance
-│       │   │       ├── keywords/          # Keyword details
-│       │   │       ├── tasks/             # Kanban board
-│       │   │       ├── integrations/      # OAuth
-│       │   │       └── projects/          # Projects
-│       │   ├── components/        # React components
-│       │   ├── hooks/             # Custom hooks
-│       │   ├── stores/            # Zustand stores
-│       │   └── types/             # TypeScript types
+│       │   │   ├── api/[[...route]]/ # Hono catch-all (production API)
+│       │   │   └── dashboard/        # Dashboard pages
+│       │   ├── components/           # React components
+│       │   ├── hooks/                # Custom hooks
+│       │   └── stores/               # Zustand stores
 │       └── package.json
 ├── packages/
-│   ├── db/                         # Database package
+│   ├── api-app/                    # Shared Hono app (imported by web + api)
 │   │   └── src/
-│   │       └── schema/            # Drizzle schemas
-│   │           ├── projects.ts
-│   │           ├── tasks.ts
-│   │           ├── time-logs.ts
-│   │           ├── oauth-tokens.ts
-│   │           ├── gsc-data.ts
-│   │           ├── ga4-data.ts
-│   │           └── ...
-│   └── types/                      # Shared types
-├── PHASE7_IMPLEMENTATION_PLAN.md   # 4-week roadmap
-├── PHASE7_QUICK_START.md           # Quick start guide
-├── PHASE7_WEEK1_TESTING_SETUP.md   # Testing guide
-├── PHASE7_SECURITY_GUIDE.md        # Security guide
+│   │       ├── routes/             # API routes
+│   │       ├── jobs/               # Cron jobs (sync-gsc, sync-ga4)
+│   │       └── utils/              # Utilities
+│   ├── db/                         # Drizzle ORM schema + migrations
+│   └── types/                      # Shared TypeScript types
+├── docs/                           # Project documentation
+├── plans/                          # Implementation plans + agent reports
 └── README.md
 ```
 

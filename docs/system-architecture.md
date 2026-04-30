@@ -37,7 +37,7 @@ Next.js + Hono (Vercel, same origin)
   │     ├─ /api/tasks, /api/time-logs
   │     ├─ /api/analytics, /api/correlation
   │     ├─ /api/integrations/gsc/*, /api/integrations/ga4/*
-  │     └─ Sync jobs (2:00 AM GSC, 2:30 AM GA4 — Vercel cron)
+  │     └─ /api/cron/sync-gsc, /api/cron/sync-ga4 (triggered by GitHub Actions)
   │
   ▼ Drizzle ORM
 PostgreSQL (hosted)

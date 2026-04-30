@@ -100,16 +100,16 @@ Docker:      DELETED (or kept minimal for local containerized testing only — d
 
 ### Immediately doable (no blocking)
 - [x] Render service suspended (2026-04-30)
-- [ ] Grep verify `interface-visual/` zero references
-- [ ] Archive + delete `interface-visual/`
-- [ ] `git rm render.yaml`
-- [ ] Update `.dockerignore` (add `.git` + bloat sources)
-- [ ] Add `rimraf` + fix root `clean` script
-- [ ] Decide: delete or fix Dockerfile (recommend: delete)
-- [ ] Update `docs/deployment-guide.md`
-- [ ] Update `docs/system-architecture.md`
-- [ ] Update `docs/codebase-summary.md`
-- [ ] Update root `README.md`
+- [x] Grep verify `interface-visual/` zero references (2026-04-30)
+- [x] Archive + delete `interface-visual/` (2026-04-30)
+- [x] `git rm render.yaml` (2026-04-30)
+- [x] Update `.dockerignore` (add `.git` + bloat sources) (2026-04-30)
+- [x] Add `rimraf` + fix root `clean` script (2026-04-30)
+- [x] Decide: delete or fix Dockerfile (recommend: delete) (2026-04-30)
+- [x] Update `docs/deployment-guide.md` (2026-04-30)
+- [x] Update `docs/system-architecture.md` (2026-04-30)
+- [x] Update `docs/codebase-summary.md` (2026-04-30)
+- [x] Update root `README.md` (2026-04-30)
 - [ ] Smoke verify fresh clone
 
 ### Waiting on (14-day soak — ~May 14)

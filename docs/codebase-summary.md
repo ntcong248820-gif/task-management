@@ -2,11 +2,13 @@
 
 > Quick map of all modules. Read before implementing anything.
 
-## apps/api
+## packages/api-app
+
+Shared Hono application — imported by both `apps/web` (production) and `apps/api` (local dev).
 
 | File/Dir | Purpose |
 |----------|---------|
-| `src/index.ts` | Hono app entry, middleware, cron init, CORS |
+| `src/app.ts` | Hono app factory — CORS, rate limiting, route registration, validateEnv() |
 | `src/routes/projects.ts` | CRUD `/api/projects` |
 | `src/routes/tasks.ts` | CRUD `/api/tasks` with status/filter |
 | `src/routes/time-logs.ts` | Time tracking entries |
@@ -18,19 +20,28 @@
 | `src/routes/diagnosis.ts` | AI rule-based diagnosis |
 | `src/routes/integrations/` | GSC + GA4 OAuth + sync routes |
 | `src/routes/cron/` | HTTP endpoints for GitHub Actions cron trigger (`sync-gsc`, `sync-ga4`) with Bearer token auth |
-| `src/jobs/sync-gsc.ts` | GSC sync logic (called by both cron routes and local ENABLE_CRON mode) |
-| `src/jobs/sync-ga4.ts` | GA4 sync logic (called by both cron routes and local ENABLE_CRON mode) |
+| `src/jobs/sync-gsc.ts` | GSC sync logic (cron routes + local ENABLE_CRON mode) |
+| `src/jobs/sync-ga4.ts` | GA4 sync logic (cron routes + local ENABLE_CRON mode) |
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
-| `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY, required vars, format checks) |
-| `src/utils/verify-cron-secret.ts` | Timing-safe CRON_SECRET comparison for GitHub Actions |
-| `src/utils/` | Date helpers, string utilities |
+| `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY hex check, required vars, format) |
+| `src/utils/verify-cron-secret.ts` | Timing-safe CRON_SECRET comparison (crypto.timingSafeEqual) |
+| `src/utils/logger.ts` | Structured logging utility |
+
+## apps/api
+
+Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves it via `@hono/node-server` on port 3001. Not deployed to production (local development only).
+
+| File/Dir | Purpose |
+|----------|---------|
+| `src/index.ts` | Node server entry point — serves `@repo/api-app` on `API_PORT` (default 3001) |
 
 ## apps/web
 
 | File/Dir | Purpose |
 |----------|---------|
+| `src/app/api/[[...route]]/route.ts` | Hono catch-all route handler — mounts `@repo/api-app` at `/api` in production |
 | `src/app/dashboard/page.tsx` | Correlation dashboard (main page) |
 | `src/app/dashboard/analytics/` | GSC + GA4 analytics dashboard |
 | `src/app/dashboard/rankings/` | Keyword rankings page |
@@ -80,4 +91,3 @@ Shared TypeScript interfaces: `Project`, `Task`, `TimeLog`, `GscData`, `Ga4Data`
 |-----|---------|
 | `docs/` | ClaudeKit-standard docs + legacy subdirs |
 | `plans/` | Implementation plans + agent reports |
-| `interface-visual/` | Standalone UI prototype (not part of main app) |

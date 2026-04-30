@@ -74,12 +74,12 @@ Vercel (Root Dir: apps/web/)
 6. **Local verify:** `npm run build` succeeds; `.turbo/` not in any `dist/` or `.next/`.
 
 ## Todo List
-- [ ] Check Vercel name availability `task-management`
-- [ ] Create root `vercel.json` (cron placeholder)
-- [ ] Update `turbo.json` env + outputs + test deps
-- [ ] Update Vercel dashboard rootDir = `apps/web`
-- [ ] Fix `.env.example` port references
-- [ ] Verify local `npm run build` clean
+- [x] Check Vercel name availability `task-management`
+- [x] Create root `vercel.json` (cron placeholder)
+- [x] Update `turbo.json` env + outputs + test deps
+- [x] Update Vercel dashboard rootDir = `apps/web`
+- [x] Fix `.env.example` port references
+- [x] Verify local `npm run build` clean
 
 ## Success Criteria
 - `turbo run build --dry=json` shows correct env hash inputs per task
