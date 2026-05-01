@@ -8,7 +8,8 @@ export const config = {
      * API base URL
      * @default 'http://localhost:3001' in development
      */
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+    // Empty string = same-origin (production). Dev sets NEXT_PUBLIC_API_URL=http://localhost:3001 in .env.local
+    apiUrl: process.env.NEXT_PUBLIC_API_URL || '',
 } as const
 
 /**
