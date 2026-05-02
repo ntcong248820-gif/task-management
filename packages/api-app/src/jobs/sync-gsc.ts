@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
-import { db, oauthTokens, gscData, gscSites, eq, sql } from '@repo/db';
+import { db, oauthTokens, gscData, gscDataAggregated, gscSites, projects, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
@@ -27,42 +27,49 @@ class GSCClient {
     }
 
     async getOrDiscoverSiteUrl(projectId: number): Promise<string | null> {
-        // 1. Check DB for configured site
-        const configuredSite = await db
+        // 1. Check DB for configured sites
+        const configuredSites = await db
             .select()
             .from(gscSites)
-            .where(eq(gscSites.projectId, projectId))
-            .limit(1);
+            .where(eq(gscSites.projectId, projectId));
 
-        if (configuredSite.length > 0) {
-            return configuredSite[0].siteUrl;
+        if (configuredSites.length === 1) {
+            return configuredSites[0].siteUrl;
         }
 
-        // 2. If not found, list sites from API
+        if (configuredSites.length > 1) {
+            // Multiple sites: match against project.domain
+            const [project] = await db
+                .select({ domain: projects.domain })
+                .from(projects)
+                .where(eq(projects.id, projectId))
+                .limit(1);
+
+            if (project?.domain) {
+                const match = configuredSites.find(s =>
+                    s.siteUrl.includes(project.domain!)
+                );
+                if (match) return match.siteUrl;
+            }
+            log.warn(`Multiple sites for project ${projectId}, no domain match — using first`);
+            return configuredSites[0].siteUrl;
+        }
+
+        // 2. Auto-discover from GSC API (no DB row yet)
         try {
             const response = await this.searchconsole.sites.list();
             const sites = response.data.siteEntry || [];
-
-            // Filter for verified sites only? Usually safe to assume if in list we have some access
-            // But let's prioritize 'siteOwner' if possible, or just take the first one.
 
             if (sites.length === 0) {
                 log.warn(`No sites found for project ${projectId}`);
                 return null;
             }
 
-            // Improve auto-discovery: If multiple sites, prefer 'sc-domain:' (Domain Property)
-            // If no domain property, take the first one.
-            // Log what we found to help debugging.
-
             const domainProperty = sites.find((s: any) => s.siteUrl?.startsWith('sc-domain:'));
             const selectedSite = domainProperty || sites[0];
 
-            log.info(`Auto-discovery for project ${projectId}: Found ${sites.length} sites.`);
-            log.info(`Selected site: ${selectedSite.siteUrl} ${domainProperty ? '(Domain Property)' : '(First available)'}`);
-
+            log.info(`Auto-discovery for project ${projectId}: ${sites.length} sites. Selected: ${selectedSite.siteUrl}`);
             return selectedSite.siteUrl || null;
-
         } catch (error) {
             log.error(`Error listing sites for project ${projectId}:`, error);
             return null;
@@ -217,6 +224,39 @@ export const runGSCSync = async () => {
                         });
 
                     totalInserted += rows.length;
+                }
+
+                // Fetch date-aggregated totals and insert to gsc_data_aggregated
+                // This is what analytics.ts reads — must match GSC dashboard totals exactly
+                const aggData = await client.fetchSearchAnalytics({
+                    siteUrl,
+                    startDate: dateStr,
+                    endDate: dateStr,
+                    dimensions: ['date'],
+                });
+
+                if (aggData.length > 0) {
+                    const aggRows = aggData.map((row: any) => ({
+                        projectId: connection.projectId,
+                        siteUrl,
+                        date: row.date,
+                        clicks: row.clicks,
+                        impressions: row.impressions,
+                        ctr: row.ctr.toString(),
+                        position: row.position.toString(),
+                    }));
+
+                    await db.insert(gscDataAggregated).values(aggRows).onConflictDoUpdate({
+                        target: [gscDataAggregated.projectId, gscDataAggregated.siteUrl, gscDataAggregated.date],
+                        set: {
+                            clicks: sql`EXCLUDED.clicks`,
+                            impressions: sql`EXCLUDED.impressions`,
+                            ctr: sql`EXCLUDED.ctr`,
+                            position: sql`EXCLUDED.position`,
+                            updatedAt: sql`NOW()`,
+                        },
+                    });
+                    log.info(`Synced ${aggRows.length} aggregated rows for project ${connection.projectId}`);
                 }
 
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);

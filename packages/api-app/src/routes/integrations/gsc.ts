@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
-import { db, oauthTokens, gscData, gscSites, eq, sql, and } from '@repo/db';
+import { db, oauthTokens, gscData, gscDataAggregated, gscSites, eq, sql, and } from '@repo/db';
 import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
@@ -544,6 +544,41 @@ app.post('/sync', async (c) => {
             .update(oauthTokens)
             .set({ lastSyncedAt: new Date() })
             .where(and(eq(oauthTokens.projectId, projectId), eq(oauthTokens.provider, 'google_search_console')));
+
+        // Also sync to gsc_data_aggregated for the full date range
+        const aggAllData = await gscClient.fetchAllSearchAnalytics({
+            siteUrl,
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate),
+            dimensions: ['date'],
+        });
+
+        if (aggAllData.length > 0) {
+            const aggBatchSize = 1000;
+            for (let i = 0; i < aggAllData.length; i += aggBatchSize) {
+                const aggBatch = aggAllData.slice(i, i + aggBatchSize);
+                const aggRows = aggBatch.map((row: any) => ({
+                    projectId,
+                    siteUrl,
+                    date: row.date,
+                    clicks: row.clicks,
+                    impressions: row.impressions,
+                    ctr: row.ctr.toString(),
+                    position: row.position.toString(),
+                }));
+
+                await db.insert(gscDataAggregated).values(aggRows).onConflictDoUpdate({
+                    target: [gscDataAggregated.projectId, gscDataAggregated.siteUrl, gscDataAggregated.date],
+                    set: {
+                        clicks: sql`EXCLUDED.clicks`,
+                        impressions: sql`EXCLUDED.impressions`,
+                        ctr: sql`EXCLUDED.ctr`,
+                        position: sql`EXCLUDED.position`,
+                        updatedAt: sql`NOW()`,
+                    },
+                });
+            }
+        }
 
         return c.json({
             success: true,
