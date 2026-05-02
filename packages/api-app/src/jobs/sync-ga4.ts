@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
-import { db, oauthTokens, ga4Data, ga4Properties, eq, sql } from '@repo/db';
+import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
@@ -38,21 +38,15 @@ class GA4Client {
             return configuredProp[0].propertyId;
         }
 
-        // 2. If not found, list properties from API
+        // 2. If not found, discover from API and auto-save first property
         try {
-            // Try v1beta first
             const admin = google.analyticsadmin({ version: 'v1beta', auth: this.oauth2Client });
-
-            // We need to list accounts first, or account summaries to find properties
-            // efficiently. But let's try 'accountSummaries' which gives a hierarchy
             const response = await admin.accountSummaries.list();
             const summaries = response.data.accountSummaries || [];
 
             const allProperties: any[] = [];
             summaries.forEach((account: any) => {
-                if (account.propertySummaries) {
-                    allProperties.push(...account.propertySummaries);
-                }
+                if (account.propertySummaries) allProperties.push(...account.propertySummaries);
             });
 
             if (allProperties.length === 0) {
@@ -60,16 +54,34 @@ class GA4Client {
                 return null;
             }
 
-            if (allProperties.length === 1) {
-                // property string is like "properties/12345"
-                const propertyId = allProperties[0].property.split('/')[1];
-                log.info(`Auto-discovered single property for project ${projectId}: ${propertyId}`);
-                return propertyId;
+            // Save all discovered properties to DB (user can pick later via /properties endpoint)
+            for (const prop of allProperties) {
+                const propertyId = prop.property?.split('/')[1];
+                if (!propertyId) continue;
+
+                const existing = await db
+                    .select({ id: ga4Properties.id })
+                    .from(ga4Properties)
+                    .where(and(
+                        eq(ga4Properties.projectId, projectId),
+                        eq(ga4Properties.propertyId, propertyId)
+                    ))
+                    .limit(1);
+
+                if (existing.length === 0) {
+                    await db.insert(ga4Properties).values({
+                        projectId,
+                        propertyId,
+                        propertyName: prop.displayName || null,
+                    });
+                    log.info(`Auto-saved GA4 property ${propertyId} (${prop.displayName}) for project ${projectId}`);
+                }
             }
 
-            // If multiple, warning
-            log.warn(`Multiple properties found for project ${projectId}. Please configure manually.`);
-            return null;
+            // Return first property ID (use first as default)
+            const firstPropertyId = allProperties[0].property?.split('/')[1];
+            log.info(`Auto-discovered ${allProperties.length} GA4 properties for project ${projectId}. Using: ${firstPropertyId}`);
+            return firstPropertyId || null;
 
         } catch (error) {
             log.error(`Error listing properties for project ${projectId}:`, error);

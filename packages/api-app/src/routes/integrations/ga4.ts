@@ -254,6 +254,57 @@ app.get('/callback', async (c) => {
 
         log.info(`GA4 connected successfully for project ${projectId}`);
 
+        // Discover and save GA4 properties after OAuth connect
+        try {
+            const oauth2ClientForProps = new google.auth.OAuth2(
+                getOAuthConfig().clientId,
+                getOAuthConfig().clientSecret,
+                getOAuthConfig().redirectUri
+            );
+            oauth2ClientForProps.setCredentials({
+                access_token: tokens.access_token,
+                refresh_token: tokens.refresh_token,
+            });
+
+            const analyticsadmin = google.analyticsadmin({ version: 'v1beta', auth: oauth2ClientForProps });
+            const summaryResponse = await analyticsadmin.accountSummaries.list();
+            const summaries = summaryResponse.data.accountSummaries || [];
+
+            const allProperties: any[] = [];
+            summaries.forEach((account: any) => {
+                if (account.propertySummaries) allProperties.push(...account.propertySummaries);
+            });
+
+            for (const prop of allProperties) {
+                const propertyId = prop.property?.split('/')[1] || '';
+                if (!propertyId) continue;
+
+                const existing = await db
+                    .select({ id: ga4Properties.id })
+                    .from(ga4Properties)
+                    .where(and(
+                        eq(ga4Properties.projectId, projectId),
+                        eq(ga4Properties.propertyId, propertyId)
+                    ))
+                    .limit(1);
+
+                if (existing.length === 0) {
+                    await db.insert(ga4Properties).values({
+                        projectId,
+                        propertyId,
+                        propertyName: prop.displayName || null,
+                    });
+                    log.info(`Saved GA4 property ${propertyId} (${prop.displayName}) for project ${projectId}`);
+                }
+            }
+
+            if (allProperties.length === 0) {
+                log.warn(`No GA4 properties found for account — user needs to add manually`);
+            }
+        } catch (propError) {
+            log.error('Failed to discover/save GA4 properties during callback:', propError);
+        }
+
         // Redirect back to integrations page with success
         return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?success=ga4_connected`);
     } catch (error: any) {
