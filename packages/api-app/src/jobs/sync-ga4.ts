@@ -133,9 +133,11 @@ class GA4Client {
 
 /**
  * Run GA4 Sync Logic
+ * Returns { synced, errors } for error surfacing in cron responses
  */
-export const runGA4Sync = async () => {
+export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }> => {
     log.info('Starting daily GA4 sync...');
+    const result = { synced: 0, errors: [] as string[] };
 
     try {
         // Get all GA4 connections
@@ -164,6 +166,7 @@ export const runGA4Sync = async () => {
                 const propertyId = await client.getOrDiscoverPropertyId(connection.projectId);
 
                 if (!propertyId) {
+                    result.errors.push(`project ${connection.projectId}: no propertyId`);
                     log.error(`No propertyId found for project ${connection.projectId}. Skipping.`);
                     continue;
                 }
@@ -177,6 +180,7 @@ export const runGA4Sync = async () => {
                 });
 
                 if (data.length === 0) {
+                    result.errors.push(`project ${connection.projectId}: no data for ${dateStr}`);
                     log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
                     continue;
                 }
@@ -230,17 +234,28 @@ export const runGA4Sync = async () => {
                     totalInserted += rows.length;
                 }
 
+                // Always update lastSyncedAt on success
+                await db
+                    .update(oauthTokens)
+                    .set({ lastSyncedAt: new Date() })
+                    .where(eq(oauthTokens.id, connection.id));
+
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
+                result.synced++;
 
             } catch (error: any) {
+                result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);
             }
         }
 
-        log.info('Daily GA4 sync completed');
-    } catch (error) {
+        log.info(`Daily GA4 sync completed. synced=${result.synced} errors=${result.errors.length}`);
+    } catch (error: any) {
+        result.errors.push(`job-level: ${error.message}`);
         log.error('Error in GA4 sync job:', error);
     }
+
+    return result;
 };
 
 /**
@@ -250,7 +265,7 @@ export const runGA4Sync = async () => {
  */
 export const ga4SyncJob = new CronJob(
     '30 2 * * *', // Run at 2:30 AM every day
-    runGA4Sync,
+    async () => { await runGA4Sync(); },
     null,
     false, // Don't auto-start
     'Asia/Ho_Chi_Minh' // Vietnam timezone

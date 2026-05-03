@@ -37,7 +37,7 @@ Three concurrent failures, all masked by silent error swallowing (`ok:true` rega
 |---|-------|--------|--------|----------|
 | 01 | [Fix GSC aggregated sync + site selection](./phase-01-fix-gsc-aggregated-sync.md) | completed | 45min | P0 |
 | 02 | [Fix GA4 property storage at OAuth + sync](./phase-02-fix-ga4-property-storage.md) | completed | 45min | P0 |
-| 03 | [Error surfacing + last_synced_at](./phase-03-error-surfacing.md) | pending | 30min | P1 |
+| 03 | [Error surfacing + last_synced_at](./phase-03-error-surfacing.md) | completed | 30min | P1 |
 | 04 | [Historical data backfill (manual ops)](./phase-04-historical-backfill.md) | pending | 30min | P1 |
 
 ## Files to Modify

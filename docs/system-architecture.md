@@ -64,7 +64,7 @@ Hono standalone (port 3001, optional)
 | `projects` | Multi-project support |
 | `tasks` | SEO tasks with status, dates. Status enum: `'todo' \| 'in_progress' \| 'done'`. Task type enum: `'technical' \| 'content' \| 'links'` (nullable). Priority enum: `'low' \| 'medium' \| 'high'`. **Check constraints enforce valid values at DB level.** |
 | `time_logs` | Time tracking entries per task |
-| `oauth_tokens` | Encrypted GSC + GA4 tokens with `lastSyncedAt` tracking (nullable; falls back to `createdAt` until first sync) |
+| `oauth_tokens` | Encrypted GSC + GA4 tokens with `last_synced_at` tracking (nullable; falls back to `created_at` until first sync) |
 | `gsc_sites` | GSC site/property URLs and permission levels |
 | `ga4_properties` | GA4 property IDs and names |
 | `gsc_data` | Raw GSC rows (site, query, date, metrics) |
@@ -91,6 +91,7 @@ In production (Vercel), these routes are served by the Hono app mounted at `/api
 - Format: `{iv:tag:ciphertext}` (hex-encoded)
 - Backward-compatible with unencrypted legacy tokens
 - Token refresh only includes `access_token` and `refresh_token` — redirect URI not required for refresh
+- Sync tracking: `last_synced_at` column (nullable timestamp) — may need manual ALTER TABLE if schema migration doesn't create it
 - See `src/utils/crypto-tokens.ts` for encryption/decryption and `src/utils/token-refresh.ts` for refresh logic
 
 **Rate Limiting:**
@@ -105,13 +106,15 @@ In production (Vercel), these routes are served by the Hono app mounted at `/api
 - GA4 sync: ~7:05 PM UTC daily via `/api/cron/sync-ga4` (runs after GSC completes)
 - Triggered by `.github/workflows/cron-sync.yml`
 - Requires `CRON_SECRET` env var (Bearer token auth)
+- Response includes `{ synced: number, errors: string[] }` for monitoring
+- `last_synced_at` updated on success; errors surfaced in response
 
 **Local Development:**
 - Jobs run in-process if `ENABLE_CRON=true` (uses `packages/api-app/src/jobs/sync-gsc.ts` and `sync-ga4.ts`)
 - Fallback for testing without GitHub Actions
 
 **Manual Sync:**
-Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/sync`. Both routes update `lastSyncedAt` on success and support optional `days` parameter (1–365, clamped automatically). Status endpoint returns `lastSyncedAt` (or `createdAt` if never synced).
+Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/sync`. Both routes update `last_synced_at` on success and support optional `days` parameter (1–365, clamped automatically). Status endpoint returns `last_synced_at` (or `created_at` if never synced). Response includes synced count and error details.
 
 ## Correlation Logic
 

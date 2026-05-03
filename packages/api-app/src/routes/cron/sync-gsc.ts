@@ -6,11 +6,11 @@ const app = new Hono();
 app.post('/', async (c) => {
     const start = Date.now();
     try {
-        await runGSCSync();
+        const result = await runGSCSync();
+        return c.json({ ok: true, durationMs: Date.now() - start, synced: result.synced, errors: result.errors });
     } catch (err) {
         return c.json({ ok: false, error: String(err), durationMs: Date.now() - start }, 500);
     }
-    return c.json({ ok: true, durationMs: Date.now() - start });
 });
 
 export default app;

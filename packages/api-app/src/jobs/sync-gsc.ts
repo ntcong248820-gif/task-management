@@ -135,9 +135,11 @@ class GSCClient {
 
 /**
  * Run GSC Sync Logic
+ * Returns { synced, errors } for error surfacing in cron responses
  */
-export const runGSCSync = async () => {
+export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }> => {
     log.info('Starting daily GSC sync...');
+    const result = { synced: 0, errors: [] as string[] };
 
     try {
         // Get all GSC connections
@@ -166,6 +168,7 @@ export const runGSCSync = async () => {
                 const siteUrl = await client.getOrDiscoverSiteUrl(connection.projectId);
 
                 if (!siteUrl) {
+                    result.errors.push(`project ${connection.projectId}: no siteUrl`);
                     log.error(`No siteUrl found for project ${connection.projectId}. Skipping.`);
                     continue;
                 }
@@ -179,6 +182,7 @@ export const runGSCSync = async () => {
                 });
 
                 if (data.length === 0) {
+                    result.errors.push(`project ${connection.projectId}: no data for ${dateStr}`);
                     log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
                     continue;
                 }
@@ -259,17 +263,28 @@ export const runGSCSync = async () => {
                     log.info(`Synced ${aggRows.length} aggregated rows for project ${connection.projectId}`);
                 }
 
+                // Always update lastSyncedAt on success
+                await db
+                    .update(oauthTokens)
+                    .set({ lastSyncedAt: new Date() })
+                    .where(eq(oauthTokens.id, connection.id));
+
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
+                result.synced++;
 
             } catch (error: any) {
+                result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);
             }
         }
 
-        log.info('Daily GSC sync completed');
-    } catch (error) {
+        log.info(`Daily GSC sync completed. synced=${result.synced} errors=${result.errors.length}`);
+    } catch (error: any) {
+        result.errors.push(`job-level: ${error.message}`);
         log.error('Error in GSC sync job:', error);
     }
+
+    return result;
 };
 
 /**
@@ -279,7 +294,7 @@ export const runGSCSync = async () => {
  */
 export const gscSyncJob = new CronJob(
     '0 2 * * *', // Run at 2:00 AM every day
-    runGSCSync,
+    async () => { await runGSCSync(); },
     null,
     false, // Don't auto-start
     'Asia/Ho_Chi_Minh' // Vietnam timezone
