@@ -150,10 +150,10 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
 
         log.info(`Found ${connections.length} GSC connections`);
 
-        // Calculate yesterday's date
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dateStr = yesterday.toISOString().split('T')[0];
+        // GSC API has a 2-3 day data delay — sync 3 days ago to ensure data is available
+        const syncDate = new Date();
+        syncDate.setDate(syncDate.getDate() - 3);
+        const dateStr = syncDate.toISOString().split('T')[0];
 
         for (const connection of connections) {
             try {
