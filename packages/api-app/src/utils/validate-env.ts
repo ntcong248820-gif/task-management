@@ -5,7 +5,13 @@ const REQUIRED = [
     'GOOGLE_CLIENT_SECRET',
 ] as const;
 
-const REQUIRED_PROD = ['CRON_SECRET', 'FRONTEND_URL'] as const;
+const REQUIRED_PROD = [
+    'CRON_SECRET',
+    'FRONTEND_URL',
+    'BETTER_AUTH_SECRET',
+    'BETTER_AUTH_URL',
+    'RESEND_API_KEY',
+] as const;
 
 const REQUIRED_OAUTH = [
     'GOOGLE_GSC_REDIRECT_URI',

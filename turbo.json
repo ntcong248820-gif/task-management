@@ -16,7 +16,12 @@
         "GOOGLE_CLIENT_SECRET",
         "GOOGLE_GSC_REDIRECT_URI",
         "GOOGLE_GA4_REDIRECT_URI",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
         "NEXT_PUBLIC_API_URL",
+        "NEXT_PUBLIC_APP_URL",
         "FRONTEND_URL",
         "FRONTEND_URL_PREVIEW",
         "CRON_SECRET"
@@ -32,6 +37,10 @@
         "GOOGLE_CLIENT_SECRET",
         "GOOGLE_GSC_REDIRECT_URI",
         "GOOGLE_GA4_REDIRECT_URI",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "RESEND_API_KEY",
+        "RESEND_FROM_EMAIL",
         "NEXT_PUBLIC_API_URL",
         "FRONTEND_URL",
         "CRON_SECRET"

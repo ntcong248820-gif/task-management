@@ -60,7 +60,7 @@ export function KanbanBoard({
                 ? getApiUrl(`/api/tasks?projectId=${projectId}`)
                 : getApiUrl('/api/tasks');
 
-            const response = await fetch(url);
+            const response = await fetch(url, { credentials: 'include' });
             const data = await response.json();
 
             if (data.success) {
@@ -116,6 +116,7 @@ export function KanbanBoard({
         try {
             const response = await fetch(getApiUrl(`/api/tasks/${taskId}`), {
                 method: 'PUT',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -154,6 +155,7 @@ export function KanbanBoard({
         try {
             const response = await fetch(getApiUrl(`/api/tasks/${taskId}`), {
                 method: 'DELETE',
+                credentials: 'include',
             });
 
             const data = await response.json();

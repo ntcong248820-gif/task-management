@@ -37,6 +37,12 @@
       ],
       "@repo/api-app": [
         "./packages/api-app/src"
+      ],
+      "@repo/auth-config": [
+        "./packages/auth-config/src"
+      ],
+      "@repo/auth-config/*": [
+        "./packages/auth-config/src/*"
       ]
     },
     "noEmit": true

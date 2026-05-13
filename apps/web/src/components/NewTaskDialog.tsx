@@ -50,7 +50,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch(`${config.apiUrl}/api/projects`)
+            const response = await fetch(`${config.apiUrl}/api/projects`, { credentials: "include" })
             const data = await response.json()
             if (data.success) {
                 setProjects(data.data)
@@ -79,6 +79,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
 
             const response = await fetch(`${config.apiUrl}/api/tasks`, {
                 method: "POST",
+                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                 },
@@ -124,7 +125,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
                     <DialogHeader>
                         <DialogTitle>Create New Task</DialogTitle>
                         <DialogDescription>
-                            Add a new task to your project. Click save when you're done.
+                            Add a new task to your project. Click save when you&apos;re done.
                         </DialogDescription>
                     </DialogHeader>
 

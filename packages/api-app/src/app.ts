@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { rateLimiter } from 'hono-rate-limiter';
+import { auth } from '@repo/auth-config';
 import { validateEnv } from './utils/validate-env';
 import projectsRoutes from './routes/projects';
 import tasksRoutes from './routes/tasks';
@@ -20,6 +21,15 @@ import cronRoutes from './routes/cron/index';
 
 validateEnv();
 
+type AuthSession = typeof auth.$Infer.Session;
+
+type AppVariables = {
+    user: AuthSession['user'];
+    session: AuthSession['session'];
+    userId: string;
+    workspaceId: string;
+};
+
 const previewOrigins = (process.env.FRONTEND_URL_PREVIEW ?? '').split(',').map(s => s.trim()).filter(Boolean);
 const corsOrigins = [
     'http://localhost:3002',
@@ -27,7 +37,7 @@ const corsOrigins = [
     ...previewOrigins,
 ].filter(Boolean) as string[];
 
-const app = new Hono().basePath('/api');
+const app = new Hono<{ Variables: AppVariables }>().basePath('/api');
 
 app.use('*', cors({
     origin: corsOrigins,
@@ -62,6 +72,46 @@ app.get('/health', (c) => {
         message: 'SEO Impact OS API is running',
         timestamp: new Date().toISOString(),
     });
+});
+
+const getApiPath = (url: string): string => {
+    const pathname = new URL(url).pathname;
+    return pathname.replace(/^\/api(?=\/|$)/, '') || '/';
+};
+
+const isPublicApiPath = (path: string): boolean => {
+    return (
+        path === '/health' ||
+        path === '/auth' ||
+        path.startsWith('/auth/') ||
+        path === '/cron' ||
+        path.startsWith('/cron/') ||
+        path === '/integrations/gsc/callback' ||
+        path === '/integrations/ga4/callback'
+    );
+};
+
+app.use('*', async (c, next) => {
+    if (isPublicApiPath(getApiPath(c.req.url))) {
+        await next();
+        return;
+    }
+
+    const session = await auth.api.getSession({ headers: c.req.raw.headers });
+    if (!session) {
+        return c.json({ success: false, error: 'Unauthorized' }, 401);
+    }
+
+    const workspaceId = session.session.activeOrganizationId;
+    if (!workspaceId) {
+        return c.json({ success: false, error: 'No workspace selected' }, 403);
+    }
+
+    c.set('user', session.user);
+    c.set('session', session.session);
+    c.set('userId', session.user.id);
+    c.set('workspaceId', workspaceId);
+    await next();
 });
 
 app.route('/projects', projectsRoutes);

@@ -85,7 +85,9 @@ export default function IntegrationsPage() {
             // Fetch actual connection status from API
             // Get projectId from localStorage or use default
             const projectId = localStorage.getItem('selectedProjectId') || '2'
-            const response = await fetch(getApiUrl(`/api/integrations/status?projectId=${projectId}`))
+            const response = await fetch(getApiUrl(`/api/integrations/status?projectId=${projectId}`), {
+                credentials: 'include',
+            })
             const data = await response.json()
 
             if (data.success) {
@@ -124,7 +126,8 @@ export default function IntegrationsPage() {
 
             const projectId = localStorage.getItem('selectedProjectId') || '2'
             const response = await fetch(
-                getApiUrl(`/api/integrations/${integration.id}/authorize?projectId=${projectId}`)
+                getApiUrl(`/api/integrations/${integration.id}/authorize?projectId=${projectId}`),
+                { credentials: 'include' }
             )
             const data = await response.json()
 
@@ -149,7 +152,7 @@ export default function IntegrationsPage() {
             const projectId = localStorage.getItem('selectedProjectId') || '2'
             const response = await fetch(
                 getApiUrl(`/api/integrations/${integration.id}/disconnect?projectId=${projectId}`),
-                { method: 'DELETE' }
+                { method: 'DELETE', credentials: 'include' }
             )
             const data = await response.json()
 
@@ -179,7 +182,8 @@ export default function IntegrationsPage() {
             if (integration.id === 'gsc') {
                 // First, discover available sites
                 const sitesResponse = await fetch(
-                    getApiUrl(`/api/integrations/gsc/sites?projectId=${projectId}&save=true`)
+                    getApiUrl(`/api/integrations/gsc/sites?projectId=${projectId}&save=true`),
+                    { credentials: 'include' }
                 )
                 const sitesData = await sitesResponse.json()
 
@@ -196,6 +200,7 @@ export default function IntegrationsPage() {
                     getApiUrl(`/api/integrations/gsc/sync`),
                     {
                         method: 'POST',
+                        credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             projectId: parseInt(projectId),
@@ -218,7 +223,8 @@ export default function IntegrationsPage() {
             } else if (integration.id === 'ga4') {
                 // First, discover available properties
                 const propertiesResponse = await fetch(
-                    getApiUrl(`/api/integrations/ga4/properties?projectId=${projectId}&save=true`)
+                    getApiUrl(`/api/integrations/ga4/properties?projectId=${projectId}&save=true`),
+                    { credentials: 'include' }
                 )
                 const propertiesData = await propertiesResponse.json()
 
@@ -234,6 +240,7 @@ export default function IntegrationsPage() {
                     getApiUrl(`/api/integrations/ga4/sync`),
                     {
                         method: 'POST',
+                        credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             projectId: parseInt(projectId),
@@ -437,7 +444,7 @@ export default function IntegrationsPage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm text-muted-foreground">
                     <p>
-                        1. Click "Connect" to authorize access to your Google account
+                        1. Click &quot;Connect&quot; to authorize access to your Google account
                     </p>
                     <p>
                         2. Grant read-only permissions to fetch your data

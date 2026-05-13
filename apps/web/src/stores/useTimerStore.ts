@@ -90,6 +90,7 @@ export const useTimerStore = create<TimerState>()(
                 try {
                     const response = await fetch(getApiUrl('/api/time-logs'), {
                         method: 'POST',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },
@@ -108,6 +109,7 @@ export const useTimerStore = create<TimerState>()(
                     // Update task's timeSpent
                     await fetch(getApiUrl(`/api/tasks/${taskId}`), {
                         method: 'PUT',
+                        credentials: 'include',
                         headers: {
                             'Content-Type': 'application/json',
                         },

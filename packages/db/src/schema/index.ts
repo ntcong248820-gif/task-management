@@ -6,6 +6,7 @@ export * from './integrations';
 export * from './gsc_data';
 export * from './gsc_data_aggregated';
 export * from './ga4_data';
+export * from './auth-schema';
 
 // Future schemas will be exported here:
 // export * from './gsc-data';

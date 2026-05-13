@@ -47,7 +47,7 @@ export default function ProjectsPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/api/projects`)
+      const response = await fetch(`${config.apiUrl}/api/projects`, { credentials: "include" })
       const data = await response.json()
 
       if (data.success) {
@@ -71,6 +71,7 @@ export default function ProjectsPage() {
     try {
       const response = await fetch(`${config.apiUrl}/api/projects`, {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newProject.name,

@@ -58,7 +58,7 @@ export function useTaskForm({ mode, task, onSuccess }: UseTaskFormProps) {
 
     const fetchProjects = async () => {
         try {
-            const response = await fetch(getApiUrl('/api/projects'));
+            const response = await fetch(getApiUrl('/api/projects'), { credentials: 'include' });
             const data = await response.json();
 
             if (data.success) {
@@ -113,6 +113,7 @@ export function useTaskForm({ mode, task, onSuccess }: UseTaskFormProps) {
 
             const response = await fetch(url, {
                 method,
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },

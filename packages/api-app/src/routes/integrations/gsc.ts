@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
+import { auth } from '@repo/auth-config';
 import { db, oauthTokens, gscData, gscDataAggregated, gscSites, eq, sql, and } from '@repo/db';
-import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
+import { createSignedOAuthState, verifySignedOAuthState } from '../../utils/signed-oauth-state';
 
 const log = logger.child('GSC');
 
@@ -148,7 +149,7 @@ class GSCClient {
     }
 }
 
-const app = new Hono();
+const app = new Hono<{ Variables: { userId: string; workspaceId: string } }>();
 
 // OAuth configuration - GSC uses its own redirect URI
 const getOAuthConfig = () => {
@@ -180,6 +181,11 @@ app.get('/authorize', async (c) => {
             return c.json({ success: false, error: 'Project ID is required' }, 400);
         }
 
+        const parsedProjectId = parseInt(projectId);
+        if (isNaN(parsedProjectId)) {
+            return c.json({ success: false, error: 'Invalid project ID' }, 400);
+        }
+
         // Create OAuth2 client
         const oauth2Client = new google.auth.OAuth2(
             getOAuthConfig().clientId,
@@ -187,13 +193,13 @@ app.get('/authorize', async (c) => {
             getOAuthConfig().redirectUri
         );
 
-        // Generate state for CSRF protection (encode integration type)
-        const stateData = {
-            random: crypto.randomBytes(16).toString('hex'),
+        // Signed state prevents projectId tampering on the public Google callback.
+        const state = createSignedOAuthState({
             integration: 'gsc',
-            projectId,
-        };
-        const state = Buffer.from(JSON.stringify(stateData)).toString('base64');
+            projectId: parsedProjectId,
+            userId: c.get('userId'),
+            workspaceId: c.get('workspaceId'),
+        });
 
         // Generate authorization URL
         const authUrl = oauth2Client.generateAuthUrl({
@@ -236,8 +242,7 @@ app.get('/callback', async (c) => {
             return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=no_code`);
         }
 
-        log.info(`Code received, length: ${code.length}`);
-        log.info(`State received: ${state}`);
+        log.info('OAuth callback received with authorization code');
 
         // Parse state to get projectId
         let projectId: number;
@@ -245,12 +250,20 @@ app.get('/callback', async (c) => {
             if (!state) {
                 throw new Error('State parameter missing');
             }
-            const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
-            log.info(`Parsed state data: ${JSON.stringify(stateData)}`);
-            projectId = parseInt(stateData.projectId);
+            const stateData = verifySignedOAuthState(state, 'gsc');
+            projectId = stateData.projectId;
 
             if (!projectId || isNaN(projectId)) {
                 throw new Error('Invalid projectId in state');
+            }
+
+            const session = await auth.api.getSession({ headers: c.req.raw.headers });
+            if (
+                !session ||
+                session.user.id !== stateData.userId ||
+                session.session.activeOrganizationId !== stateData.workspaceId
+            ) {
+                throw new Error('OAuth state does not match active session');
             }
         } catch (stateError) {
             log.error('State parsing error:', stateError);

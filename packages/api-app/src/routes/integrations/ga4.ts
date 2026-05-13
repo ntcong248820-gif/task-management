@@ -1,11 +1,12 @@
 import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
+import { auth } from '@repo/auth-config';
 import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
-import crypto from 'crypto';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
+import { createSignedOAuthState, verifySignedOAuthState } from '../../utils/signed-oauth-state';
 
 const log = logger.child('GA4');
 
@@ -75,7 +76,7 @@ class GA4Client {
     }
 }
 
-const app = new Hono();
+const app = new Hono<{ Variables: { userId: string; workspaceId: string } }>();
 
 // OAuth configuration - GA4 uses its own redirect URI
 const getOAuthConfig = () => {
@@ -107,6 +108,11 @@ app.get('/authorize', async (c) => {
             return c.json({ success: false, error: 'Project ID is required' }, 400);
         }
 
+        const parsedProjectId = parseInt(projectId);
+        if (isNaN(parsedProjectId)) {
+            return c.json({ success: false, error: 'Invalid project ID' }, 400);
+        }
+
         // Create OAuth2 client
         const oauth2Client = new google.auth.OAuth2(
             getOAuthConfig().clientId,
@@ -114,13 +120,13 @@ app.get('/authorize', async (c) => {
             getOAuthConfig().redirectUri
         );
 
-        // Generate state for CSRF protection (encode integration type)
-        const stateData = {
-            random: crypto.randomBytes(16).toString('hex'),
+        // Signed state prevents projectId tampering on the public Google callback.
+        const state = createSignedOAuthState({
             integration: 'ga4',
-            projectId,
-        };
-        const state = Buffer.from(JSON.stringify(stateData)).toString('base64');
+            projectId: parsedProjectId,
+            userId: c.get('userId'),
+            workspaceId: c.get('workspaceId'),
+        });
 
         // Generate authorization URL
         const authUrl = oauth2Client.generateAuthUrl({
@@ -151,7 +157,7 @@ app.get('/callback', async (c) => {
     try {
         const { code, state, error } = c.req.query();
 
-        log.info(`Received: code=${code?.substring(0, 20)}..., error=${error}, state=${state?.substring(0, 20)}...`);
+        log.info(`GA4 OAuth callback received: error=${error ? 'yes' : 'no'}, state=${state ? 'yes' : 'no'}`);
 
         // Handle OAuth error
         if (error) {
@@ -170,11 +176,20 @@ app.get('/callback', async (c) => {
             if (!state) {
                 throw new Error('State parameter missing');
             }
-            const stateData = JSON.parse(Buffer.from(state, 'base64').toString());
-            projectId = parseInt(stateData.projectId);
+            const stateData = verifySignedOAuthState(state, 'ga4');
+            projectId = stateData.projectId;
 
             if (!projectId || isNaN(projectId)) {
                 throw new Error('Invalid projectId in state');
+            }
+
+            const session = await auth.api.getSession({ headers: c.req.raw.headers });
+            if (
+                !session ||
+                session.user.id !== stateData.userId ||
+                session.session.activeOrganizationId !== stateData.workspaceId
+            ) {
+                throw new Error('OAuth state does not match active session');
             }
             log.info(`Project ID from state: ${projectId}`);
         } catch (stateError) {

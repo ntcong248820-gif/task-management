@@ -26,7 +26,7 @@ export default function TasksPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch(getApiUrl("/api/projects"))
+      const response = await fetch(getApiUrl("/api/projects"), { credentials: "include" })
       const data = await response.json()
       if (data.success) {
         setProjects(data.data)

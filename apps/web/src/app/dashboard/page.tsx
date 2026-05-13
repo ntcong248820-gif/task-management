@@ -74,7 +74,9 @@ function useCorrelationData(dateRange: number, projectId: number | null) {
     async function fetchData() {
       setLoading(true);
       try {
-        const res = await fetch(getApiUrl(`/api/correlation?projectId=${projectId}&days=${dateRange}`));
+        const res = await fetch(getApiUrl(`/api/correlation?projectId=${projectId}&days=${dateRange}`), {
+          credentials: 'include',
+        });
         const json = await res.json();
         if (json.success && json.data) {
           setChartData(json.data.chartData || []);
