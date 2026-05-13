@@ -10,6 +10,7 @@ task-management/
 │   ├── api/        → Local development server (port 3001, optional)
 │   └── web/        → Next.js 15 + Hono App Router (port 3002, Vercel)
 ├── packages/
+│   ├── auth-config/ → Shared Better Auth config, email helpers, workspace ACL
 │   ├── api-app/    → Shared Hono application (exported to web + api)
 │   ├── db/         → Drizzle ORM schema + DB client
 │   ├── types/      → Shared TypeScript types
@@ -32,6 +33,7 @@ Next.js + Hono (Vercel, same origin)
   │  │  RSC + Client Components
   │  │  Zustand stores
   │  │
+  │  ├─ Better Auth handler at /api/auth/[...all] (via toNextJsHandler)
   │  └─ Hono API mounted at /api (via [[...route]]/route.ts)
   │     ├─ /api/projects
   │     ├─ /api/tasks, /api/time-logs
@@ -57,6 +59,13 @@ Hono standalone (port 3001, optional)
 
 **Key Change (Phase 02):** Web + API now collocated on same Vercel deployment. The Hono app is exported from `packages/api-app` and mounted via Next.js route handler at `/api`. Separate backend at port 3001 is for local development only.
 
+**Key Change (Phase 01 v2):** Authentication and workspace context are centralized in Better Auth.
+- `packages/auth-config` owns the Better Auth instance, email helpers, and workspace ACL.
+- `apps/web/src/app/api/auth/[...all]/route.ts` exposes Better Auth to Next.js App Router.
+- `apps/web/middleware.ts` redirects unauthenticated users to `/login` and users without an active workspace to `/workspace`.
+- `packages/api-app/src/app.ts` injects `user`, `session`, `userId`, and `workspaceId` into protected API handlers, and treats auth-related requests as public when they reach the Hono app.
+- `apps/web/src/lib/auth-client.ts` enables `organizationClient`, so workspace create/invite/select methods exist on the client.
+
 ## Database Schema (Key Tables)
 
 | Table | Purpose |
@@ -71,9 +80,16 @@ Hono standalone (port 3001, optional)
 | `gsc_data_aggregated` | Daily aggregated GSC metrics |
 | `ga4_data` | GA4 sessions, users, conversions. Indexed on `(projectId, date)` for efficient date-range queries. |
 
+Better Auth adds its own managed tables for user, session, account, verification, organization, member, and invitation data.
+
 ## Google OAuth Flows
 
-Two separate OAuth callbacks with distinct redirect URIs, both handled by the Hono app in `packages/api-app`:
+Separate Google callback paths are used for Better Auth login, GSC, and GA4:
+
+```
+Better Auth login:
+  /api/auth/callback/google
+```
 
 ```
 GSC OAuth:
@@ -83,7 +99,7 @@ GA4 OAuth:
   /api/integrations/ga4/auth  →  Google  →  /api/integrations/ga4/callback
 ```
 
-In production (Vercel), these routes are served by the Hono app mounted at `/api` within the Next.js app. OAuth callbacks are no longer Next.js route handlers (`apps/web/src/app/api/auth/callback/*/route.ts` deleted).
+In production (Vercel), Better Auth login is handled by `apps/web/src/app/api/auth/[...all]/route.ts`, while GSC/GA4 callbacks are served by the Hono app mounted at `/api`. The old Next.js Google callback routes are gone.
 
 **Token Storage & Encryption:**
 - Tokens encrypted with AES-256-GCM before DB storage
@@ -136,6 +152,11 @@ Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/
 | Variable | Where | Purpose |
 |----------|-------|---------|
 | `DATABASE_URL` | root `.env`, deployed | PostgreSQL connection |
+| `BETTER_AUTH_SECRET` | `packages/auth-config` + prod | Better Auth signing secret and OAuth state HMAC seed |
+| `BETTER_AUTH_URL` | `packages/auth-config` + prod | Better Auth base URL |
+| `RESEND_API_KEY` | `packages/auth-config` + prod | Email verification, password reset, invite delivery |
+| `RESEND_FROM_EMAIL` | `packages/auth-config` | Optional sender override |
+| `NEXT_PUBLIC_APP_URL` | `apps/web/.env.local` | Explicit Better Auth client base URL; optional fallback to localhost |
 | `GOOGLE_CLIENT_ID` | Hono (api-app) | OAuth client |
 | `GOOGLE_CLIENT_SECRET` | Hono (api-app) | OAuth client |
 | `GOOGLE_GSC_REDIRECT_URI` | Hono (api-app) | GSC callback URL |

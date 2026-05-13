@@ -20,14 +20,25 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/routes/diagnosis.ts` | AI rule-based diagnosis |
 | `src/routes/integrations/` | GSC + GA4 OAuth + sync routes |
 | `src/routes/cron/` | HTTP endpoints for GitHub Actions cron trigger (`sync-gsc`, `sync-ga4`) with Bearer token auth |
+| `src/utils/signed-oauth-state.ts` | HMAC signed OAuth state bound to project/user/workspace |
 | `src/jobs/sync-gsc.ts` | GSC sync logic (cron routes + local ENABLE_CRON mode) |
 | `src/jobs/sync-ga4.ts` | GA4 sync logic (cron routes + local ENABLE_CRON mode) |
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
-| `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY hex check, required vars, format) |
+| `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY hex check, Better Auth + prod vars, OAuth warnings) |
 | `src/utils/verify-cron-secret.ts` | Timing-safe CRON_SECRET comparison (crypto.timingSafeEqual) |
 | `src/utils/logger.ts` | Structured logging utility |
+
+## packages/auth-config
+
+Shared Better Auth config used by web + API.
+
+| File/Dir | Purpose |
+|----------|---------|
+| `src/index.ts` | Better Auth instance, email/password, Google provider, organization plugin, workspace ACL |
+| `src/email.ts` | Resend email helper for verification/reset/invites |
+| `src/permissions.ts` | Workspace roles (`owner`, `admin`, `member`, `viewer`) and ACL rules |
 
 ## apps/api
 
@@ -42,6 +53,12 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | File/Dir | Purpose |
 |----------|---------|
 | `src/app/api/[[...route]]/route.ts` | Hono catch-all route handler — mounts `@repo/api-app` at `/api` in production |
+| `src/app/api/auth/[...all]/route.ts` | Better Auth Next.js handler |
+| `src/app/(auth)/login/page.tsx` | Login page |
+| `src/app/(auth)/signup/page.tsx` | Signup page with pending workspace name |
+| `src/app/(auth)/workspace/page.tsx` | Workspace create/select page |
+| `src/app/(auth)/reset-password/page.tsx` | Password reset page |
+| `src/app/(auth)/forgot-password/page.tsx` | Password reset request page |
 | `src/app/dashboard/page.tsx` | Correlation dashboard (main page) |
 | `src/app/dashboard/analytics/` | GSC + GA4 analytics dashboard |
 | `src/app/dashboard/rankings/` | Keyword rankings page |
@@ -56,6 +73,8 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
 | `src/stores/` | Zustand stores (timer-store, use-project-store) |
 | `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
+| `src/lib/auth-client.ts` | Better Auth client with `organizationClient` plugin |
+| `apps/web/middleware.ts` | Dashboard session + workspace redirect guard |
 | `src/types/` | Frontend-only TypeScript types |
 
 ## packages/db
@@ -65,6 +84,7 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/schema/projects.ts` | Projects table |
 | `src/schema/tasks.ts` | Tasks table |
 | `src/schema/time-logs.ts` | Time logs table |
+| `src/schema/auth-schema.ts` | Better Auth generated schema tables |
 | `src/schema/integrations.ts` | OAuth tokens (GSC+GA4), GSC sites, GA4 properties with sync tracking |
 | `src/schema/gsc-data.ts` | Raw GSC data |
 | `src/schema/gsc-data-aggregated.ts` | Aggregated GSC metrics |

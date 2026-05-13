@@ -1,7 +1,21 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-01
+> **Last Updated:** 2026-05-13
 > **Overall Progress:** ~97% (MVP deployed, Phase 7 continued, Database migration to new Supabase project complete, GitHub Actions cron verified working)
+
+## v2 Greenfield Rebuild
+
+| Phase | Name | Status | Notes |
+|-------|------|--------|-------|
+| 1 | Auth + Workspace Foundation | Done | Better Auth package, email/password + Google OAuth, workspace/org roles, auth pages, Next auth handler, Hono workspace guard |
+
+### Phase 01 Delivery Notes
+- Shared auth package at `packages/auth-config`
+- Better Auth email verification required on signup
+- Workspace name is stored client-side until verified sign-in
+- `/api/auth/callback/google` must be registered in Google Cloud Console
+- OAuth tokens are encrypted; GSC/GA4 OAuth state is HMAC signed and bound to the active session/workspace
+- Validation passed: root type-check, web tests `16/16`, lint pass, web build pass
 
 ## Phase Status
 
