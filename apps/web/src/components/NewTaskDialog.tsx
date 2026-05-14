@@ -84,7 +84,7 @@ export function NewTaskDialog({ open, onOpenChange, onTaskCreated }: NewTaskDial
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    projectId: parseInt(formData.projectId),
+                    projectId: formData.projectId,
                     title: formData.title,
                     description: formData.description || undefined,
                     status: formData.status,

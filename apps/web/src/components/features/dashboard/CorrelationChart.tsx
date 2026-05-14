@@ -24,7 +24,7 @@ import { CustomTooltip } from './CustomTooltip';
 import { LayerControls } from './LayerControls';
 
 interface CompletedTask {
-    id: number;
+    id: string;
     title: string;
     type: string;
     timeSpent: number;

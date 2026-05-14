@@ -23,12 +23,11 @@ import { FolderKanban, Plus } from "lucide-react"
 import { config } from "@/lib/config"
 
 interface Project {
-  id: number
+  id: string
   name: string
-  client: string | null
   domain: string | null
-  status: string
   description: string | null
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }
@@ -39,7 +38,6 @@ export default function ProjectsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newProject, setNewProject] = useState({
     name: "",
-    client: "",
     domain: "",
     description: ""
   })
@@ -75,16 +73,15 @@ export default function ProjectsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newProject.name,
-          client: newProject.client || null,
           domain: newProject.domain || null,
           description: newProject.description || null,
-          status: "active"
+          isActive: true
         })
       })
 
       if (response.ok) {
         setDialogOpen(false)
-        setNewProject({ name: "", client: "", domain: "", description: "" })
+        setNewProject({ name: "", domain: "", description: "" })
         fetchProjects() // Refresh list
       }
     } catch (error) {
@@ -126,15 +123,6 @@ export default function ProjectsPage() {
                 placeholder="e.g., Acme Corp SEO"
                 value={newProject.name}
                 onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="client">Client</Label>
-              <Input
-                id="client"
-                placeholder="e.g., Acme Corporation"
-                value={newProject.client}
-                onChange={(e) => setNewProject({ ...newProject, client: e.target.value })}
               />
             </div>
             <div className="space-y-2">
@@ -181,7 +169,7 @@ export default function ProjectsPage() {
                     <FolderKanban className="h-5 w-5 text-primary" />
                     {project.name}
                   </CardTitle>
-                  <CardDescription>{project.client || "No client"}</CardDescription>
+                  <CardDescription>{project.domain || "No domain"}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -192,7 +180,7 @@ export default function ProjectsPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">Status:</span>
                       <span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium bg-green-100 text-green-700">
-                        {project.status}
+                        {project.isActive ? "Active" : "Inactive"}
                       </span>
                     </div>
                   </div>

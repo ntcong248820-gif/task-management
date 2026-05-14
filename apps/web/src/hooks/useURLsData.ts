@@ -88,7 +88,7 @@ export interface UseURLsDataReturn {
     mutate: () => void;
 }
 
-export function useURLsData(projectId: number | null, days: number = 30): UseURLsDataReturn {
+export function useURLsData(projectId: string | null, days: number = 30): UseURLsDataReturn {
     const overviewKey = projectId
         ? getApiUrl(`/api/urls/overview?projectId=${projectId}&days=${days}`)
         : null;

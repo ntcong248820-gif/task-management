@@ -1,25 +1,22 @@
-import { pgTable, serial, integer, timestamp, text, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, integer, timestamp, text, index } from 'drizzle-orm/pg-core';
 import { tasks } from './tasks';
 
 export const timeLogs = pgTable('time_logs', {
-  id: serial('id').primaryKey(),
-  taskId: integer('task_id')
+  id: uuid('id').primaryKey().defaultRandom(),
+  taskId: uuid('task_id')
     .references(() => tasks.id, { onDelete: 'cascade' })
     .notNull(),
-
-  // Time tracking
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time'),
-  duration: integer('duration'), // seconds (computed on stop)
-
-  // Notes
-  notes: text('notes'),
+  workspaceId: text('workspace_id').notNull(),
+  userId: text('user_id').notNull(),
+  startedAt: timestamp('started_at').notNull(),
+  endedAt: timestamp('ended_at'),
+  duration: integer('duration'),
+  note: text('note'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 }, (table) => ({
-  // Index for fast lookups
   taskIdIdx: index('time_logs_task_id_idx').on(table.taskId),
+  userIdx: index('time_logs_user_idx').on(table.userId),
 }));
 
-// Type exports for TypeScript
 export type TimeLog = typeof timeLogs.$inferSelect;
 export type NewTimeLog = typeof timeLogs.$inferInsert;

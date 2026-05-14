@@ -1,6 +1,6 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-13
+> **Last Updated:** 2026-05-14
 > **Overall Progress:** ~97% (MVP deployed, Phase 7 continued, Database migration to new Supabase project complete, GitHub Actions cron verified working)
 
 ## v2 Greenfield Rebuild
@@ -8,6 +8,7 @@
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
 | 1 | Auth + Workspace Foundation | Done | Better Auth package, email/password + Google OAuth, workspace/org roles, auth pages, Next auth handler, Hono workspace guard |
+| 2 | Data Schema Redesign | Done | UUID business schema, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
@@ -16,6 +17,14 @@
 - `/api/auth/callback/google` must be registered in Google Cloud Console
 - OAuth tokens are encrypted; GSC/GA4 OAuth state is HMAC signed and bound to the active session/workspace
 - Validation passed: root type-check, web tests `16/16`, lint pass, web build pass
+
+### Phase 02 Delivery Notes
+- Business tables reset to UUID primary keys and Better Auth workspace IDs (`organization.id` text)
+- `gsc_connections` and `ga4_connections` replace legacy `oauth_tokens`, `gsc_sites`, and `ga4_properties`
+- Analytics fact tables keep `project_id` only; workspace access resolves through `projects`
+- `tasks` now supports goals, sprints, assignees/reporters, recurring templates, and second-based estimates
+- Local DB backup before reset: `/tmp/seo-impact-os-phase02-20260514-084302/seo_impact_os_before_phase02.sql`
+- Validation passed: root type-check, forced tests `44/44`, lint pass with no warnings, production build pass with local placeholder env
 
 ## Phase Status
 

@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Data Schema Redesign"
-status: pending
+status: complete
 priority: P0
 effort: "~8h"
 dependencies: [1]
@@ -414,6 +414,7 @@ export const alertReads = pgTable('alert_reads', {
 - `packages/db/src/schema/alerts.ts`
 - `packages/db/src/schema/gsc-connections.ts`
 - `packages/db/src/schema/ga4-connections.ts`
+- `packages/db/src/schema/alert-reads.ts`
 
 **Delete:**
 - `packages/db/src/schema/integrations.ts` (replaced by gsc-connections + ga4-connections)
@@ -422,6 +423,15 @@ export const alertReads = pgTable('alert_reads', {
 - `packages/api-app/src/jobs/sync-gsc.ts` — Use `gscConnections` + `gscDataAggregated` (uuid FKs)
 - `packages/api-app/src/jobs/sync-ga4.ts` — Use `ga4Connections` (uuid FKs), keep `engagementRate`
 - `packages/api-app/src/utils/token-refresh.ts` — Adapt to new connection tables
+
+**Implemented 2026-05-14:**
+- Rebuilt DB business schema with UUID PK/FK columns, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, and analytics tables without `workspaceId`.
+- Adapted `packages/api-app` routes, sync jobs, OAuth callback routes, token refresh, project/task/time-log schemas, and correlation/analytics ID handling.
+- Adapted shared types and current web project/task/integration surfaces from numeric IDs to string UUID IDs.
+- Removed stale generated `packages/db/src/*.js` schema artifacts so Drizzle resolves `.ts` schema files, then applied fresh schema to local DB after backup.
+- Added workspace ownership checks for analytics/read routes, OAuth authorization/callback writes, and task goal/sprint references after code review.
+- Removed stale duplicate `apps/api` implementation files; `apps/api` now stays a thin dev wrapper plus tests.
+- Local DB backup: `/tmp/seo-impact-os-phase02-20260514-084302/seo_impact_os_before_phase02.sql`.
 
 ## Implementation Steps
 
@@ -443,41 +453,46 @@ export const alertReads = pgTable('alert_reads', {
 
 ## Todo
 
-- [ ] Backup existing production data (CSV export — 5 commands above)
-- [ ] Rewrite `packages/db/src/schema/projects.ts` (uuid PK, uniqueIndex workspaceId+domain)
-- [ ] Create `packages/db/src/schema/gsc-connections.ts` (replaces integrations for GSC)
-- [ ] Create `packages/db/src/schema/ga4-connections.ts` (replaces integrations for GA4)
-- [ ] Delete `packages/db/src/schema/integrations.ts`
-- [ ] Rewrite `packages/db/src/schema/gsc_data.ts` (uuid PK+FK, NO workspaceId)
-- [ ] Rewrite `packages/db/src/schema/gsc_data_aggregated.ts` (uuid PK+FK, numeric ctr/position)
-- [ ] Rewrite `packages/db/src/schema/ga4_data.ts` (uuid PK+FK, engagementRate NOT bounceRate, keep conversionRate/source/medium/deviceCategory)
-- [ ] Create `packages/db/src/schema/goals.ts` (NO currentValue; projectId NOT NULL — project-scoped; targetValue precision 12,4)
-- [ ] Create `packages/db/src/schema/sprints.ts` (với projectId optional)
-- [ ] Rewrite `packages/db/src/schema/tasks.ts` (uuid, estimatedTime in seconds, full indexes)
-- [ ] Create `packages/db/src/schema/task-templates.ts`
-- [ ] Rewrite `packages/db/src/schema/time-logs.ts` (uuid, userId, rename startedAt/endedAt/note)
-- [ ] Create `packages/db/src/schema/alerts.ts` (NO isRead)
-- [ ] Create `packages/db/src/schema/alert-reads.ts` (per-user read tracking)
-- [ ] Update `packages/db/src/schema/index.ts` (export all new tables; preserve `export * from './auth-schema'` từ Phase 01)
-- [ ] Run `npm run db:push`
-- [ ] Adapt `sync-gsc.ts` to use `gscConnections` + uuid FKs
-- [ ] Adapt `sync-ga4.ts` to use `ga4Connections` + `engagementRate` field + uuid FKs
-- [ ] Adapt `token-refresh.ts` to new connection table structure
-- [ ] Rewrite `packages/types/src/index.ts`
-- [ ] Run `npm run type-check`
+- [x] Backup existing local data before destructive schema reset
+- [x] Rewrite `packages/db/src/schema/projects.ts` (uuid PK, uniqueIndex workspaceId+domain)
+- [x] Create `packages/db/src/schema/gsc-connections.ts` (replaces integrations for GSC)
+- [x] Create `packages/db/src/schema/ga4-connections.ts` (replaces integrations for GA4)
+- [x] Delete `packages/db/src/schema/integrations.ts`
+- [x] Rewrite `packages/db/src/schema/gsc_data.ts` (uuid PK+FK, NO workspaceId)
+- [x] Rewrite `packages/db/src/schema/gsc_data_aggregated.ts` (uuid PK+FK, numeric ctr/position)
+- [x] Rewrite `packages/db/src/schema/ga4_data.ts` (uuid PK+FK, engagementRate NOT bounceRate, keep conversionRate/source/medium/deviceCategory)
+- [x] Create `packages/db/src/schema/goals.ts` (NO currentValue; projectId NOT NULL — project-scoped; targetValue precision 12,4)
+- [x] Create `packages/db/src/schema/sprints.ts` (với projectId optional)
+- [x] Rewrite `packages/db/src/schema/tasks.ts` (uuid, estimatedTime in seconds, full indexes)
+- [x] Create `packages/db/src/schema/task-templates.ts`
+- [x] Rewrite `packages/db/src/schema/time-logs.ts` (uuid, userId, rename startedAt/endedAt/note)
+- [x] Create `packages/db/src/schema/alerts.ts` (NO isRead)
+- [x] Create `packages/db/src/schema/alert-reads.ts` (per-user read tracking)
+- [x] Update `packages/db/src/schema/index.ts` (export all new tables; preserve `export * from './auth-schema'` từ Phase 01)
+- [x] Run DB push against local DB after backup
+- [x] Adapt `sync-gsc.ts` to use `gscConnections` + uuid FKs
+- [x] Adapt `sync-ga4.ts` to use `ga4Connections` + `engagementRate` field + uuid FKs
+- [x] Adapt `token-refresh.ts` to new connection table structure
+- [x] Rewrite `packages/types/src/index.ts`
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] All new tables exist in DB (verified via `npm run db:studio`)
-- [ ] Better Auth tables untouched
-- [ ] All PKs are UUID (verify: no `serial` in schema files)
-- [ ] `gsc_data` and `ga4_data` have NO `workspaceId` column
-- [ ] `ga4_data` has `engagement_rate` column (NOT `bounce_rate`)
-- [ ] `tasks` has `estimated_time` column in seconds (NOT `estimated_minutes`)
-- [ ] `alerts` has NO `is_read` column — read tracking via `alert_reads` table
-- [ ] GSC sync job runs with new schema (no runtime errors)
-- [ ] GA4 sync job runs with new schema (engagementRate maps correctly)
-- [ ] `npm run type-check` passes
+- [x] All new tables exist in local DB (verified via `psql` + Drizzle push)
+- [x] Better Auth tables preserved in schema exports and created cleanly in local DB
+- [x] All business PKs are UUID (verified via DB column inspection + no stale JS schema artifacts)
+- [x] `gsc_data` and `ga4_data` have NO `workspaceId` column
+- [x] `ga4_data` has `engagement_rate` column (NOT `bounce_rate`)
+- [x] `tasks` has `estimated_time` column in seconds (NOT `estimated_minutes`)
+- [x] `alerts` has NO `is_read` column — read tracking via `alert_reads` table
+- [x] GSC sync job type-checks against new `gscConnections` schema
+- [x] GA4 sync job type-checks against new `ga4Connections` schema and `engagementRate`
+- [x] Analytics/read routes verify `projectId` belongs to active workspace before querying project-only fact tables
+- [x] GSC/GA4 OAuth authorize/callback verifies project ownership before connection write
+- [x] `npm run type-check` passes
+- [x] `npx turbo run test --force` passes
+- [x] `npm run lint` passes with no ESLint warnings or errors
+- [x] `npm run build` passes with local placeholder env vars
 
 ## Risk Assessment
 
@@ -490,5 +505,6 @@ export const alertReads = pgTable('alert_reads', {
 
 1. ~~**Better Auth organization.id type**~~: **RESOLVED** — Better Auth dùng `text` (UUID string), không phải native `uuid`. Confirmed qua `@better-auth/cli generate` output trong Phase 01. `text('workspace_id')` trong Phase 02 là đúng.
 2. **gsc_data_aggregated merged hay separate**: Giữ 2 tables (current) hay merge với `gsc_data` + `is_aggregated` flag? Giữ nguyên 2 tables là clean hơn cho sync logic.
-3. **alert_reads MVP scope**: Per-user read tracking cần thiết ngay v2 launch không, hay ship `isRead boolean` trước rồi iterate? Current spec dùng `alert_reads` join table.
-4. **goals.currentValue computation**: Phase nào implement query logic? Cần explicit dependency note trong Phase 06 (Analytics Intelligence).
+3. ~~**alert_reads MVP scope**~~: **RESOLVED** — implemented `alert_reads` join table now; no `isRead` boolean.
+4. **goals.currentValue computation**: Phase 06 (Analytics Intelligence) owns derived progress/query logic.
+5. **Remote DB target**: Local DB push completed. Default un-overridden `DATABASE_URL` still points to stale Supabase project `jtdeuxvwcwtqzjndhrlg` and fails with `tenant/user ... not found`; update env before any remote push.

@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
 import { db, gscData, tasks, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('Correlation');
 
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 interface CorrelationDataPoint {
     date: string;
@@ -13,24 +15,30 @@ interface CorrelationDataPoint {
     impressions: number;
     position: number;
     completedTasks: {
-        id: number;
+        id: string;
         title: string;
         type: string;
         timeSpent: number;
     }[];
 }
 
-// GET /api/correlation?projectId=1&days=30
+const extractTrafficImpact = (value: unknown): number => {
+    if (!value || typeof value !== 'object') return 0;
+    const actualImpact = value as Record<string, unknown>;
+    const trafficIncrease = actualImpact.traffic_increase ?? actualImpact.trafficIncrease;
+    return typeof trafficIncrease === 'number' ? Math.round(trafficIncrease) : 0;
+};
+
+// GET /api/correlation?projectId=<uuid>&days=30
 app.get('/', async (c) => {
     try {
         const rawProjectId = c.req.query('projectId');
         if (!rawProjectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
-        const projectId = Number(rawProjectId);
-        if (isNaN(projectId)) {
-            return c.json({ success: false, error: 'projectId must be a number' }, 400);
-        }
+        const projectId = rawProjectId;
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
         const days = Number(c.req.query('days') || 30);
 
         const endDate = new Date();
@@ -64,6 +72,7 @@ app.get('/', async (c) => {
                 taskType: tasks.taskType,
                 timeSpent: tasks.timeSpent,
                 completedAt: tasks.completedAt,
+                actualImpact: tasks.actualImpact,
             })
             .from(tasks)
             .where(
@@ -161,7 +170,7 @@ app.get('/', async (c) => {
                     title: t.title,
                     type: t.taskType || 'technical',
                     date: t.completedAt?.toISOString().split('T')[0],
-                    impact: Math.round(Math.random() * 15 + 5), // Mock impact %
+                    impact: extractTrafficImpact(t.actualImpact),
                 })),
             },
         });
@@ -169,7 +178,7 @@ app.get('/', async (c) => {
         log.error('Correlation API error', error);
         return c.json({
             success: false,
-            error: error.message,
+            error: 'Failed to fetch correlation data',
         }, 500);
     }
 });

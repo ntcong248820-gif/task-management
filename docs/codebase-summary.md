@@ -9,20 +9,20 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | File/Dir | Purpose |
 |----------|---------|
 | `src/app.ts` | Hono app factory — CORS, rate limiting, route registration, validateEnv() |
-| `src/routes/projects.ts` | CRUD `/api/projects` |
-| `src/routes/tasks.ts` | CRUD `/api/tasks` with status/filter |
-| `src/routes/time-logs.ts` | Time tracking entries |
+| `src/routes/projects.ts` | Workspace-scoped CRUD `/api/projects` with UUID project IDs |
+| `src/routes/tasks.ts` | Workspace-scoped CRUD `/api/tasks` with goal/sprint/template fields |
+| `src/routes/time-logs.ts` | Workspace/user-scoped time tracking entries |
 | `src/routes/analytics.ts` | Combined GSC + GA4 metrics |
 | `src/routes/correlation.ts` | Task-traffic correlation data |
 | `src/routes/rankings.ts` | Keyword position tracking |
 | `src/routes/urls.ts` | URL performance + decline detection |
 | `src/routes/keywords.ts` | Keyword detail + SERP history |
 | `src/routes/diagnosis.ts` | AI rule-based diagnosis |
-| `src/routes/integrations/` | GSC + GA4 OAuth + sync routes |
+| `src/routes/integrations/` | GSC + GA4 OAuth + sync routes backed by connection tables |
 | `src/routes/cron/` | HTTP endpoints for GitHub Actions cron trigger (`sync-gsc`, `sync-ga4`) with Bearer token auth |
 | `src/utils/signed-oauth-state.ts` | HMAC signed OAuth state bound to project/user/workspace |
-| `src/jobs/sync-gsc.ts` | GSC sync logic (cron routes + local ENABLE_CRON mode) |
-| `src/jobs/sync-ga4.ts` | GA4 sync logic (cron routes + local ENABLE_CRON mode) |
+| `src/jobs/sync-gsc.ts` | GSC sync logic using `gsc_connections` and UUID project IDs |
+| `src/jobs/sync-ga4.ts` | GA4 sync logic using `ga4_connections` and `engagementRate` |
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
@@ -42,7 +42,7 @@ Shared Better Auth config used by web + API.
 
 ## apps/api
 
-Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves it via `@hono/node-server` on port 3001. Not deployed to production (local development only).
+Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves it via `@hono/node-server` on port 3001. Not deployed to production (local development only). Type-check scope intentionally includes only `src/index.ts`; legacy duplicate API files under `apps/api/src/**` are not the canonical API surface.
 
 | File/Dir | Purpose |
 |----------|---------|
@@ -81,19 +81,25 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 
 | File/Dir | Purpose |
 |----------|---------|
-| `src/schema/projects.ts` | Projects table |
-| `src/schema/tasks.ts` | Tasks table |
-| `src/schema/time-logs.ts` | Time logs table |
+| `src/schema/projects.ts` | Workspace-scoped projects with UUID IDs |
+| `src/schema/tasks.ts` | Task v2 table with UUID IDs, workspace, goal/sprint/template links, recurring fields |
+| `src/schema/time-logs.ts` | Time logs with UUID task IDs, workspace ID, user ID, started/ended timestamps |
 | `src/schema/auth-schema.ts` | Better Auth generated schema tables |
-| `src/schema/integrations.ts` | OAuth tokens (GSC+GA4), GSC sites, GA4 properties with sync tracking |
-| `src/schema/gsc-data.ts` | Raw GSC data |
-| `src/schema/gsc-data-aggregated.ts` | Aggregated GSC metrics |
-| `src/schema/ga4-data.ts` | GA4 data |
+| `src/schema/gsc-connections.ts` | GSC OAuth connection + sync status per project |
+| `src/schema/ga4-connections.ts` | GA4 OAuth connection + sync status per project |
+| `src/schema/goals.ts` | Project-scoped goals; current value is derived, not stored |
+| `src/schema/sprints.ts` | Workspace sprints/campaign periods with optional project scope |
+| `src/schema/task-templates.ts` | Recurring task templates |
+| `src/schema/alerts.ts` | Workspace/project alerts with severity/type metadata |
+| `src/schema/alert-reads.ts` | Per-user alert read tracking |
+| `src/schema/gsc_data.ts` | Raw GSC data with UUID project FK, no workspace column |
+| `src/schema/gsc_data_aggregated.ts` | Aggregated GSC metrics with numeric CTR/position |
+| `src/schema/ga4_data.ts` | GA4 data with `engagementRate`, conversion/source/medium/device dimensions |
 | `src/index.ts` | DB client export |
 
 ## packages/types
 
-Shared TypeScript interfaces: `Project`, `Task`, `TimeLog`, `GscData`, `Ga4Data`, etc.
+Shared TypeScript interfaces: `Project`, `Task`, `TimeLog`, `Goal`, `Sprint`, `Alert`, `GscConnection`, `Ga4Connection`, `GscData`, `Ga4Data`, etc.
 
 ## Root-level Scripts
 

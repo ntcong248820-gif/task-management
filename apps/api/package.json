@@ -9,9 +9,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "backfill-gsc": "tsx src/scripts/backfill-gsc.ts",
-    "backfill-gsc-agg": "tsx src/scripts/backfill-gsc-aggregated.ts"
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google-analytics/data": "^4.3.0",

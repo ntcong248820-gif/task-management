@@ -2,15 +2,15 @@ import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
 import { auth } from '@repo/auth-config';
-import { db, oauthTokens, gscData, gscDataAggregated, gscSites, eq, sql, and } from '@repo/db';
+import { db, gscConnections, gscData, gscDataAggregated, eq, sql, and } from '@repo/db';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
 import { createSignedOAuthState, verifySignedOAuthState } from '../../utils/signed-oauth-state';
+import { isUuid, projectBelongsToWorkspace } from '../../utils/project-access';
 
 const log = logger.child('GSC');
 
-// Inline GSCClient to avoid monorepo import issues
 class GSCClient {
     private oauth2Client: Auth.OAuth2Client;
     private searchconsole: ReturnType<typeof google.searchconsole>;
@@ -19,13 +19,17 @@ class GSCClient {
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GOOGLE_CLIENT_ID!,
             process.env.GOOGLE_CLIENT_SECRET!
-            // redirect URI not needed for data fetching
         );
         this.oauth2Client.setCredentials({
             access_token: accessToken,
             refresh_token: refreshToken,
         });
         this.searchconsole = google.searchconsole({ version: 'v1', auth: this.oauth2Client });
+    }
+
+    async listSites() {
+        const response = await this.searchconsole.sites.list();
+        return response.data.siteEntry || [];
     }
 
     async fetchSearchAnalytics(options: any) {
@@ -59,35 +63,15 @@ class GSCClient {
         const rowLimit = 25000;
         let pageNumber = 1;
 
-        log.info(`Fetching all data for ${options.siteUrl} (${options.startDate} to ${options.endDate})`);
-
         while (true) {
-            log.info(`Fetching page ${pageNumber} (startRow: ${startRow})...`);
-
-            const batch = await this.fetchSearchAnalytics({
-                ...options,
-                rowLimit,
-                startRow,
-            });
-
-            if (batch.length === 0) {
-                log.info(`No more data. Total rows fetched: ${allData.length}`);
-                break;
-            }
-
+            const batch = await this.fetchSearchAnalytics({ ...options, rowLimit, startRow });
+            if (batch.length === 0) break;
             allData.push(...batch);
-            log.info(`Page ${pageNumber}: ${batch.length} rows (Total: ${allData.length})`);
-
-            if (batch.length < rowLimit) {
-                log.info(`Last page reached. Total rows fetched: ${allData.length}`);
-                break;
-            }
-
+            if (batch.length < rowLimit) break;
             startRow += rowLimit;
             pageNumber++;
-
             if (pageNumber > 100) {
-                log.warn(`Safety limit reached (100 pages). Stopping pagination.`);
+                log.warn('Safety limit reached (100 pages). Stopping pagination.');
                 break;
             }
         }
@@ -104,16 +88,12 @@ class GSCClient {
         while (currentStart <= end) {
             const currentEnd = new Date(currentStart);
             currentEnd.setDate(currentEnd.getDate() + chunkDays - 1);
-
-            if (currentEnd > end) {
-                currentEnd.setTime(end.getTime());
-            }
+            if (currentEnd > end) currentEnd.setTime(end.getTime());
 
             chunks.push({
                 startDate: currentStart.toISOString().split('T')[0],
                 endDate: currentEnd.toISOString().split('T')[0],
             });
-
             currentStart.setDate(currentStart.getDate() + chunkDays);
         }
 
@@ -124,300 +104,221 @@ class GSCClient {
         const chunks = this.chunkDateRange(options.startDate, options.endDate, chunkDays);
         const allData: any[] = [];
 
-        log.info(`Fetching data in ${chunks.length} chunks (${chunkDays} days each)`);
-
-        for (let i = 0; i < chunks.length; i++) {
-            const chunk = chunks[i];
-            log.info(`Processing chunk ${i + 1}/${chunks.length}: ${chunk.startDate} to ${chunk.endDate}`);
-
-            try {
-                const chunkData = await this.fetchAllSearchAnalytics({
-                    ...options,
-                    startDate: chunk.startDate,
-                    endDate: chunk.endDate,
-                });
-
-                allData.push(...chunkData);
-                log.info(`Chunk ${i + 1} complete: ${chunkData.length} rows (Total: ${allData.length})`);
-            } catch (error: any) {
-                log.error(`Error fetching chunk ${i + 1}:`, error);
-            }
+        for (const chunk of chunks) {
+            const chunkData = await this.fetchAllSearchAnalytics({
+                ...options,
+                startDate: chunk.startDate,
+                endDate: chunk.endDate,
+            });
+            allData.push(...chunkData);
         }
 
-        log.info(`All chunks complete. Total rows: ${allData.length}`);
         return allData;
     }
 }
 
 const app = new Hono<{ Variables: { userId: string; workspaceId: string } }>();
 
-// OAuth configuration - GSC uses its own redirect URI
-const getOAuthConfig = () => {
-    const redirectUri = process.env.GOOGLE_GSC_REDIRECT_URI!;
+const getFrontendUrl = () => process.env.FRONTEND_URL || 'http://localhost:3002';
 
-    log.info(`Using redirect URI: ${redirectUri}`);
+const getOAuthConfig = () => ({
+    clientId: process.env.GOOGLE_CLIENT_ID!,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    redirectUri: process.env.GOOGLE_GSC_REDIRECT_URI!,
+    scopes: [
+        'https://www.googleapis.com/auth/webmasters.readonly',
+        'https://www.googleapis.com/auth/userinfo.email',
+        'openid',
+    ],
+});
 
-    return {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        redirectUri,
-        scopes: [
-            'https://www.googleapis.com/auth/webmasters.readonly',
-            'https://www.googleapis.com/auth/userinfo.email',
-            'openid',
-        ],
-    };
-};
+async function findProjectConnection(projectId: string, workspaceId: string, siteUrl?: string) {
+    const conditions = [
+        eq(gscConnections.projectId, projectId),
+        eq(gscConnections.workspaceId, workspaceId),
+    ];
 
-/**
- * GET /api/integrations/gsc/authorize
- * Initiates OAuth flow for Google Search Console
- */
+    if (siteUrl) conditions.push(eq(gscConnections.siteUrl, siteUrl));
+
+    const [connection] = await db
+        .select()
+        .from(gscConnections)
+        .where(and(...conditions))
+        .limit(1);
+
+    return connection ?? null;
+}
+
 app.get('/authorize', async (c) => {
     try {
         const { projectId } = c.req.query();
 
-        if (!projectId) {
-            return c.json({ success: false, error: 'Project ID is required' }, 400);
-        }
-
-        const parsedProjectId = parseInt(projectId);
-        if (isNaN(parsedProjectId)) {
+        if (!projectId || !isUuid(projectId)) {
             return c.json({ success: false, error: 'Invalid project ID' }, 400);
         }
+        if (!(await projectBelongsToWorkspace(projectId, c.get('workspaceId')))) {
+            return c.json({ success: false, error: 'Project not found' }, 404);
+        }
 
-        // Create OAuth2 client
+        const oauthConfig = getOAuthConfig();
         const oauth2Client = new google.auth.OAuth2(
-            getOAuthConfig().clientId,
-            getOAuthConfig().clientSecret,
-            getOAuthConfig().redirectUri
+            oauthConfig.clientId,
+            oauthConfig.clientSecret,
+            oauthConfig.redirectUri
         );
 
-        // Signed state prevents projectId tampering on the public Google callback.
         const state = createSignedOAuthState({
             integration: 'gsc',
-            projectId: parsedProjectId,
+            projectId,
             userId: c.get('userId'),
             workspaceId: c.get('workspaceId'),
         });
 
-        // Generate authorization URL
         const authUrl = oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: getOAuthConfig().scopes,
+            scope: oauthConfig.scopes,
             state,
             prompt: 'consent',
         });
 
-        return c.json({
-            success: true,
-            data: {
-                authUrl,
-                state,
-            },
-        });
+        return c.json({ success: true, data: { authUrl, state } });
     } catch (error) {
-        log.error('GSC authorize error:', error);
+        log.error('GSC authorize error', error);
         return c.json({ success: false, error: 'Failed to generate authorization URL' }, 500);
     }
 });
 
-/**
- * GET /api/integrations/gsc/callback
- * Handles OAuth callback from Google
- */
 app.get('/callback', async (c) => {
     try {
-        log.info('Starting callback processing...');
         const { code, state, error } = c.req.query();
 
-        // Handle OAuth error
         if (error) {
-            log.error(`OAuth error received: ${error}`);
-            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=${encodeURIComponent(error)}`);
+            return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=${encodeURIComponent(error)}`);
         }
 
-        if (!code) {
-            log.error('No code received');
-            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=no_code`);
+        if (!code || !state) {
+            return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=no_code`);
         }
 
-        log.info('OAuth callback received with authorization code');
+        const stateData = verifySignedOAuthState(state, 'gsc');
+        const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
-        // Parse state to get projectId
-        let projectId: number;
-        try {
-            if (!state) {
-                throw new Error('State parameter missing');
-            }
-            const stateData = verifySignedOAuthState(state, 'gsc');
-            projectId = stateData.projectId;
-
-            if (!projectId || isNaN(projectId)) {
-                throw new Error('Invalid projectId in state');
-            }
-
-            const session = await auth.api.getSession({ headers: c.req.raw.headers });
-            if (
-                !session ||
-                session.user.id !== stateData.userId ||
-                session.session.activeOrganizationId !== stateData.workspaceId
-            ) {
-                throw new Error('OAuth state does not match active session');
-            }
-        } catch (stateError) {
-            log.error('State parsing error:', stateError);
-            return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=invalid_state`);
+        if (
+            !session ||
+            session.user.id !== stateData.userId ||
+            session.session.activeOrganizationId !== stateData.workspaceId
+        ) {
+            throw new Error('OAuth state does not match active session');
+        }
+        if (!(await projectBelongsToWorkspace(stateData.projectId, stateData.workspaceId))) {
+            throw new Error('OAuth project does not belong to workspace');
         }
 
-        // Create OAuth2 client
+        const oauthConfig = getOAuthConfig();
         const oauth2Client = new google.auth.OAuth2(
-            getOAuthConfig().clientId,
-            getOAuthConfig().clientSecret,
-            getOAuthConfig().redirectUri
+            oauthConfig.clientId,
+            oauthConfig.clientSecret,
+            oauthConfig.redirectUri
         );
-
-        // Exchange code for tokens
-        log.info('Exchanging code for tokens...');
         const { tokens } = await oauth2Client.getToken(code);
-        log.info(`Tokens received. Access token exists: ${!!tokens.access_token}`);
 
         if (!tokens.access_token || !tokens.refresh_token) {
             throw new Error('Missing tokens from Google OAuth');
         }
 
-        // Get user info (email)
-        log.info('Fetching user info...');
         oauth2Client.setCredentials(tokens);
         const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
         const userInfo = await oauth2.userinfo.get();
         const accountEmail = userInfo.data.email || null;
-        log.info(`User email: ${accountEmail}`);
 
-        // Check if token already exists for this project
-        const existingToken = await db
-            .select()
-            .from(oauthTokens)
-            .where(
-                and(
-                    eq(oauthTokens.projectId, projectId),
-                    eq(oauthTokens.provider, 'google_search_console')
-                )
-            )
-            .limit(1);
+        const client = new GSCClient(tokens.access_token, tokens.refresh_token);
+        const sites = await client.listSites();
+        const selectedSite = sites.find((site: any) => site.siteUrl?.startsWith('sc-domain:')) || sites[0];
+        const existingConnection = await findProjectConnection(stateData.projectId, stateData.workspaceId);
 
-        log.info(`Existing token found: ${existingToken.length > 0}`);
+        const connectionData = {
+            workspaceId: stateData.workspaceId,
+            authorizedByUserId: stateData.userId,
+            accountEmail,
+            siteUrl: selectedSite?.siteUrl || '',
+            permissionLevel: selectedSite?.permissionLevel || null,
+            accessToken: encryptToken(tokens.access_token),
+            refreshToken: encryptToken(tokens.refresh_token),
+            tokenExpiresAt: new Date(tokens.expiry_date ?? Date.now() + 3600_000),
+            syncStatus: 'idle' as const,
+            syncError: null,
+            updatedAt: new Date(),
+        };
 
-        if (existingToken.length > 0) {
-            // Update existing token
-            log.info('Updating existing token...');
+        if (existingConnection) {
             await db
-                .update(oauthTokens)
-                .set({
-                    accessToken: encryptToken(tokens.access_token),
-                    refreshToken: encryptToken(tokens.refresh_token),
-                    expiresAt: new Date(tokens.expiry_date!),
-                    tokenType: tokens.token_type || 'Bearer',
-                    scope: tokens.scope || '',
-                    accountEmail,
-                    updatedAt: new Date(),
-                })
-                .where(eq(oauthTokens.id, existingToken[0].id));
+                .update(gscConnections)
+                .set(connectionData)
+                .where(eq(gscConnections.id, existingConnection.id));
         } else {
-            // Insert new token
-            log.info('Inserting new token...');
-            await db.insert(oauthTokens).values({
-                projectId,
-                provider: 'google_search_console',
-                accessToken: encryptToken(tokens.access_token),
-                refreshToken: encryptToken(tokens.refresh_token),
-                expiresAt: new Date(tokens.expiry_date!),
-                tokenType: tokens.token_type || 'Bearer',
-                scope: tokens.scope || '',
-                accountEmail,
+            await db.insert(gscConnections).values({
+                projectId: stateData.projectId,
+                ...connectionData,
             });
         }
 
-        log.info(`GSC connected successfully for project ${projectId}`);
-
-        // Redirect back to integrations page with success
-        const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?success=gsc_connected`;
-        log.info(`Redirecting to: ${redirectUrl}`);
-        return c.redirect(redirectUrl);
-    } catch (error: any) {
-        log.error('GSC callback error:', error);
-        return c.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3002'}/dashboard/integrations?error=connection_failed`);
+        return c.redirect(`${getFrontendUrl()}/dashboard/integrations?success=gsc_connected`);
+    } catch (callbackError) {
+        log.error('GSC callback error', callbackError);
+        return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=connection_failed`);
     }
 });
 
-/**
- * GET /api/integrations/gsc/sites
- * Discover and list available GSC sites
- */
 app.get('/sites', async (c) => {
     try {
         const { projectId, save } = c.req.query();
 
-        if (!projectId) {
-            return c.json({ success: false, error: 'projectId is required' }, 400);
+        if (!projectId || !isUuid(projectId)) {
+            return c.json({ success: false, error: 'Invalid project ID' }, 400);
         }
 
-        // Get OAuth tokens
-        const [tokenRecord] = await db
-            .select()
-            .from(oauthTokens)
-            .where(
-                and(
-                    eq(oauthTokens.projectId, parseInt(projectId)),
-                    eq(oauthTokens.provider, 'google_search_console')
-                )
-            )
-            .limit(1);
+        const workspaceId = c.get('workspaceId');
+        if (!(await projectBelongsToWorkspace(projectId, workspaceId))) {
+            return c.json({ success: false, error: 'Project not found' }, 404);
+        }
+        const tokenRecord = await findProjectConnection(projectId, workspaceId);
 
         if (!tokenRecord) {
             return c.json({ success: false, error: 'GSC not connected' }, 404);
         }
 
-        // Get valid access token (auto-refresh if expired)
-        const validAccessToken = await getValidAccessToken(tokenRecord);
+        const validAccessToken = await getValidAccessToken(tokenRecord, 'gsc');
+        const client = new GSCClient(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
+        const sites = await client.listSites();
 
-        // Create OAuth2 client (no redirect URI needed for data fetching)
-        const oauth2Client = new google.auth.OAuth2(
-            process.env.GOOGLE_CLIENT_ID!,
-            process.env.GOOGLE_CLIENT_SECRET!
-        );
-        oauth2Client.setCredentials({
-            access_token: validAccessToken,
-            refresh_token: decryptTokenValue(tokenRecord.refreshToken),
-        });
-
-        // List sites
-        const searchconsole = google.searchconsole({ version: 'v1', auth: oauth2Client });
-        const response = await searchconsole.sites.list();
-
-        const sites = response.data.siteEntry || [];
-
-        // Optionally save to database
-        if (save === 'true' && sites.length > 0) {
+        if (save === 'true') {
             for (const site of sites) {
-                // Check if site already exists
-                const existing = await db
-                    .select()
-                    .from(gscSites)
-                    .where(
-                        and(
-                            eq(gscSites.projectId, parseInt(projectId)),
-                            eq(gscSites.siteUrl, site.siteUrl!)
-                        )
-                    )
-                    .limit(1);
+                if (!site.siteUrl) continue;
 
-                if (existing.length === 0) {
-                    // Insert new site
-                    await db.insert(gscSites).values({
-                        projectId: parseInt(projectId),
-                        siteUrl: site.siteUrl!,
-                        permissionLevel: site.permissionLevel || null,
+                const existingConnection = await findProjectConnection(projectId, workspaceId, site.siteUrl);
+                const connectionData = {
+                    workspaceId,
+                    authorizedByUserId: c.get('userId'),
+                    accountEmail: tokenRecord.accountEmail,
+                    siteUrl: site.siteUrl,
+                    permissionLevel: site.permissionLevel || null,
+                    accessToken: tokenRecord.accessToken,
+                    refreshToken: tokenRecord.refreshToken,
+                    tokenExpiresAt: tokenRecord.tokenExpiresAt,
+                    syncStatus: 'idle' as const,
+                    syncError: null,
+                    updatedAt: new Date(),
+                };
+
+                if (existingConnection) {
+                    await db
+                        .update(gscConnections)
+                        .set(connectionData)
+                        .where(eq(gscConnections.id, existingConnection.id));
+                } else {
+                    await db.insert(gscConnections).values({
+                        projectId,
+                        ...connectionData,
                     });
                 }
             }
@@ -426,95 +327,63 @@ app.get('/sites', async (c) => {
         return c.json({
             success: true,
             data: {
-                sites: sites.map(s => ({
-                    siteUrl: s.siteUrl,
-                    permissionLevel: s.permissionLevel,
+                sites: sites.map(site => ({
+                    siteUrl: site.siteUrl,
+                    permissionLevel: site.permissionLevel,
                 })),
                 saved: save === 'true',
             },
         });
-    } catch (error: any) {
-        log.error('GSC sites discovery error:', error);
-        return c.json({
-            success: false,
-            error: error.message || 'Failed to discover GSC sites',
-        }, 500);
+    } catch (siteError: any) {
+        log.error('GSC sites discovery error', siteError);
+        return c.json({ success: false, error: 'Failed to discover GSC sites' }, 500);
     }
 });
 
-/**
- * POST /api/integrations/gsc/sync
- * Manually trigger GSC data sync
- */
 app.post('/sync', async (c) => {
     try {
         const { projectId, siteUrl, days: rawDays = 30 } = await c.req.json();
 
-        if (!projectId || !siteUrl) {
-            return c.json({ success: false, error: 'projectId and siteUrl are required' }, 400);
+        if (!projectId || !isUuid(projectId) || !siteUrl) {
+            return c.json({ success: false, error: 'Valid projectId and siteUrl are required' }, 400);
         }
 
-        const days = Math.min(Math.max(parseInt(rawDays) || 30, 1), 365);
-
-        // Get OAuth tokens
-        const [tokenRecord] = await db
-            .select()
-            .from(oauthTokens)
-            .where(
-                and(
-                    eq(oauthTokens.projectId, projectId),
-                    eq(oauthTokens.provider, 'google_search_console')
-                )
-            )
-            .limit(1);
+        const workspaceId = c.get('workspaceId');
+        if (!(await projectBelongsToWorkspace(projectId, workspaceId))) {
+            return c.json({ success: false, error: 'Project not found' }, 404);
+        }
+        const tokenRecord = await findProjectConnection(projectId, workspaceId, siteUrl)
+            ?? await findProjectConnection(projectId, workspaceId);
 
         if (!tokenRecord) {
             return c.json({ success: false, error: 'GSC not connected' }, 404);
         }
 
-        // Get valid access token (auto-refresh if expired)
-        const validAccessToken = await getValidAccessToken(tokenRecord);
+        await db
+            .update(gscConnections)
+            .set({ syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
+            .where(eq(gscConnections.id, tokenRecord.id));
 
-        // Initialize GSC client with valid token
-        const gscClient = new GSCClient(
-            validAccessToken,
-            decryptTokenValue(tokenRecord.refreshToken)
-        );
-
-        // Calculate date range
+        const days = Math.min(Math.max(parseInt(String(rawDays)) || 30, 1), 365);
+        const validAccessToken = await getValidAccessToken(tokenRecord, 'gsc');
+        const gscClient = new GSCClient(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
-
         const formatDate = (date: Date) => date.toISOString().split('T')[0];
 
-        log.info(`Starting sync for project ${projectId}, site: ${siteUrl}`);
-        log.info(`Date range: ${formatDate(startDate)} to ${formatDate(endDate)} (${days} days)`);
-
-        // Fetch data from GSC with pagination and chunking
         const data = await gscClient.fetchAllWithChunking({
             siteUrl,
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
             dimensions: ['date', 'page', 'query', 'country', 'device'],
-        }, 7); // 7-day chunks
+        }, 7);
 
-        if (data.length === 0) {
-            return c.json({
-                success: true,
-                message: 'No data found for the specified period',
-                rowsSynced: 0,
-            });
-        }
-
-        // Batch insert data
         const batchSize = 1000;
         let totalInserted = 0;
 
         for (let i = 0; i < data.length; i += batchSize) {
-            const batch = data.slice(i, i + batchSize);
-
-            const rows = batch.map((row: any) => ({
+            const rows = data.slice(i, i + batchSize).map((row: any) => ({
                 projectId,
                 date: row.date,
                 page: row.page,
@@ -527,38 +396,20 @@ app.post('/sync', async (c) => {
                 position: row.position.toString(),
             }));
 
-            // Upsert (insert or update on conflict)
-            await db
-                .insert(gscData)
-                .values(rows)
-                .onConflictDoUpdate({
-                    target: [
-                        gscData.projectId,
-                        gscData.date,
-                        gscData.page,
-                        gscData.query,
-                        gscData.country,
-                        gscData.device,
-                    ],
-                    set: {
-                        clicks: sql`EXCLUDED.clicks`,
-                        impressions: sql`EXCLUDED.impressions`,
-                        ctr: sql`EXCLUDED.ctr`,
-                        position: sql`EXCLUDED.position`,
-                        updatedAt: sql`NOW()`,
-                    },
-                });
+            await db.insert(gscData).values(rows).onConflictDoUpdate({
+                target: [gscData.projectId, gscData.date, gscData.page, gscData.query, gscData.country, gscData.device],
+                set: {
+                    clicks: sql`EXCLUDED.clicks`,
+                    impressions: sql`EXCLUDED.impressions`,
+                    ctr: sql`EXCLUDED.ctr`,
+                    position: sql`EXCLUDED.position`,
+                    updatedAt: sql`NOW()`,
+                },
+            });
 
             totalInserted += rows.length;
         }
 
-        // Record successful sync timestamp
-        await db
-            .update(oauthTokens)
-            .set({ lastSyncedAt: new Date() })
-            .where(and(eq(oauthTokens.projectId, projectId), eq(oauthTokens.provider, 'google_search_console')));
-
-        // Also sync to gsc_data_aggregated for the full date range
         const aggAllData = await gscClient.fetchAllSearchAnalytics({
             siteUrl,
             startDate: formatDate(startDate),
@@ -567,47 +418,42 @@ app.post('/sync', async (c) => {
         });
 
         if (aggAllData.length > 0) {
-            const aggBatchSize = 1000;
-            for (let i = 0; i < aggAllData.length; i += aggBatchSize) {
-                const aggBatch = aggAllData.slice(i, i + aggBatchSize);
-                const aggRows = aggBatch.map((row: any) => ({
-                    projectId,
-                    siteUrl,
-                    date: row.date,
-                    clicks: row.clicks,
-                    impressions: row.impressions,
-                    ctr: row.ctr.toString(),
-                    position: row.position.toString(),
-                }));
+            const aggRows = aggAllData.map((row: any) => ({
+                projectId,
+                siteUrl,
+                date: row.date,
+                clicks: row.clicks,
+                impressions: row.impressions,
+                ctr: row.ctr.toString(),
+                position: row.position.toString(),
+            }));
 
-                await db.insert(gscDataAggregated).values(aggRows).onConflictDoUpdate({
-                    target: [gscDataAggregated.projectId, gscDataAggregated.siteUrl, gscDataAggregated.date],
-                    set: {
-                        clicks: sql`EXCLUDED.clicks`,
-                        impressions: sql`EXCLUDED.impressions`,
-                        ctr: sql`EXCLUDED.ctr`,
-                        position: sql`EXCLUDED.position`,
-                        updatedAt: sql`NOW()`,
-                    },
-                });
-            }
+            await db.insert(gscDataAggregated).values(aggRows).onConflictDoUpdate({
+                target: [gscDataAggregated.projectId, gscDataAggregated.siteUrl, gscDataAggregated.date],
+                set: {
+                    clicks: sql`EXCLUDED.clicks`,
+                    impressions: sql`EXCLUDED.impressions`,
+                    ctr: sql`EXCLUDED.ctr`,
+                    position: sql`EXCLUDED.position`,
+                    updatedAt: sql`NOW()`,
+                },
+            });
         }
+
+        await db
+            .update(gscConnections)
+            .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+            .where(eq(gscConnections.id, tokenRecord.id));
 
         return c.json({
             success: true,
             message: `Successfully synced ${totalInserted} rows`,
             rowsSynced: totalInserted,
-            dateRange: {
-                start: formatDate(startDate),
-                end: formatDate(endDate),
-            },
+            dateRange: { start: formatDate(startDate), end: formatDate(endDate) },
         });
-    } catch (error: any) {
-        log.error('GSC sync error:', error);
-        return c.json({
-            success: false,
-            error: error.message || 'Failed to sync GSC data',
-        }, 500);
+    } catch (syncError: any) {
+        log.error('GSC sync error', syncError);
+        return c.json({ success: false, error: 'Failed to sync GSC data' }, 500);
     }
 });
 

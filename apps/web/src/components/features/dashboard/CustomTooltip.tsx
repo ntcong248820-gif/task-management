@@ -3,7 +3,7 @@
 import { Hammer } from 'lucide-react';
 
 interface CompletedTask {
-    id: number;
+    id: string;
     title: string;
     type: string;
     timeSpent: number;

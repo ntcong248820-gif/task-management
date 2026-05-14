@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { db, gscData, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('Keywords');
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 /**
  * GET /api/keywords/detail
@@ -16,6 +18,8 @@ app.get('/detail', async (c) => {
         if (!projectId || !keyword) {
             return c.json({ success: false, error: 'projectId and keyword are required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const numDays = parseInt(days);
         const decodedKeyword = decodeURIComponent(keyword);
@@ -35,7 +39,7 @@ app.get('/detail', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.query, decodedKeyword),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
@@ -55,7 +59,7 @@ app.get('/detail', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.query, decodedKeyword),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
@@ -73,7 +77,7 @@ app.get('/detail', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.query, decodedKeyword),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
@@ -124,7 +128,7 @@ app.get('/detail', async (c) => {
         });
     } catch (error: any) {
         log.error('Keyword detail error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch keyword detail' }, 500);
     }
 });
 
@@ -147,6 +151,8 @@ app.get('/list', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const numDays = parseInt(days);
         const pageNum = parseInt(page);
@@ -169,7 +175,7 @@ app.get('/list', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0]),
                     search ? sql`${gscData.query} ILIKE ${'%' + search + '%'}` : undefined
@@ -214,7 +220,7 @@ app.get('/list', async (c) => {
         });
     } catch (error: any) {
         log.error('Keywords list error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch keywords' }, 500);
     }
 });
 

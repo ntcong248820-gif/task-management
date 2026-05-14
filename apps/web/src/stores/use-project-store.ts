@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface ProjectStore {
-    selectedProjectId: number | null;
-    setSelectedProjectId: (id: number) => void;
+    selectedProjectId: string | null;
+    setSelectedProjectId: (id: string) => void;
 }
 
 export const useProjectStore = create<ProjectStore>()(

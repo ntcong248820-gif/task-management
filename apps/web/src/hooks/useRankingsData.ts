@@ -90,7 +90,7 @@ export interface UseRankingsDataReturn {
     mutate: () => void;
 }
 
-export function useRankingsData(projectId: number | null): UseRankingsDataReturn {
+export function useRankingsData(projectId: string | null): UseRankingsDataReturn {
     const { dateRange } = useDateContext();
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

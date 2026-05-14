@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { getApiUrl } from '@/lib/config';
 import type { Task, Project, TaskStatus, TaskPriority } from '@/types/task.types';
 
@@ -36,27 +36,7 @@ export function useTaskForm({ mode, task, onSuccess }: UseTaskFormProps) {
 
     const isEditMode = mode === 'edit';
 
-    // Fetch projects on mount
-    useEffect(() => {
-        fetchProjects();
-    }, []);
-
-    // Pre-fill form data in edit mode
-    useEffect(() => {
-        if (isEditMode && task) {
-            setFormData({
-                projectId: task.projectId.toString(),
-                title: task.title,
-                description: task.description || '',
-                status: task.status,
-                priority: task.priority,
-                estimatedTime: task.estimatedTime ? (task.estimatedTime / 3600).toString() : '',
-                tags: task.tags?.join(', ') || '',
-            });
-        }
-    }, [isEditMode, task]);
-
-    const fetchProjects = async () => {
+    const fetchProjects = useCallback(async () => {
         try {
             const response = await fetch(getApiUrl('/api/projects'), { credentials: 'include' });
             const data = await response.json();
@@ -75,7 +55,27 @@ export function useTaskForm({ mode, task, onSuccess }: UseTaskFormProps) {
         } catch (error) {
             console.error('Failed to fetch projects:', error);
         }
-    };
+    }, [isEditMode]);
+
+    // Fetch projects on mount
+    useEffect(() => {
+        fetchProjects();
+    }, [fetchProjects]);
+
+    // Pre-fill form data in edit mode
+    useEffect(() => {
+        if (isEditMode && task) {
+            setFormData({
+                projectId: task.projectId.toString(),
+                title: task.title,
+                description: task.description || '',
+                status: task.status,
+                priority: task.priority,
+                estimatedTime: task.estimatedTime ? (task.estimatedTime / 3600).toString() : '',
+                tags: task.tags?.join(', ') || '',
+            });
+        }
+    }, [isEditMode, task]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -95,7 +95,7 @@ export function useTaskForm({ mode, task, onSuccess }: UseTaskFormProps) {
 
             // Prepare request body
             const requestBody = {
-                projectId: parseInt(formData.projectId),
+                projectId: formData.projectId,
                 title: formData.title,
                 description: formData.description || undefined,
                 status: formData.status,

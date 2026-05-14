@@ -12,14 +12,17 @@ interface KanbanColumnProps {
     status: TaskStatus;
     title: string;
     tasks: Task[];
-    onDeleteTask?: (taskId: number) => void;
+    onDeleteTask?: (taskId: string) => void;
     onEditTask?: (task: Task) => void;
     onStartTimer?: (task: Task) => void;
 }
 
 const statusColors: Record<TaskStatus, string> = {
+    backlog: 'bg-zinc-100 text-zinc-800 border-zinc-200',
     todo: 'bg-slate-100 text-slate-800 border-slate-200',
     in_progress: 'bg-blue-100 text-blue-800 border-blue-200',
+    blocked: 'bg-red-100 text-red-800 border-red-200',
+    in_review: 'bg-amber-100 text-amber-800 border-amber-200',
     done: 'bg-green-100 text-green-800 border-green-200',
 };
 

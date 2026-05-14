@@ -60,7 +60,7 @@ export interface UseAnalyticsDataReturn {
 /**
  * Custom hook for fetching GSC and GA4 analytics data using SWR
  */
-export function useAnalyticsData(projectId: number | null): UseAnalyticsDataReturn {
+export function useAnalyticsData(projectId: string | null): UseAnalyticsDataReturn {
     const { dateRange } = useDateContext();
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

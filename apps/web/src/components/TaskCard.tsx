@@ -12,7 +12,7 @@ import type { Task } from '@/types/task.types';
 
 interface TaskCardProps {
     task: Task;
-    onDelete?: (taskId: number) => void;
+    onDelete?: (taskId: string) => void;
     onEdit?: (task: Task) => void;
     onStartTimer?: (task: Task) => void;
 }

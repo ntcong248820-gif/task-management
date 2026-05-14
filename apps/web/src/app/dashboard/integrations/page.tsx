@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -50,12 +50,17 @@ export default function IntegrationsPage() {
     const [syncResult, setSyncResult] = useState<{ id: string; message: string; success: boolean } | null>(null)
     const [callbackAlert, setCallbackAlert] = useState<{ message: string; success: boolean } | null>(null)
 
-    // Check connection status on mount
-    useEffect(() => {
-        checkConnectionStatus()
+    const getSelectedProjectId = useCallback(() => localStorage.getItem('selectedProjectId'), [])
+
+    const updateIntegration = useCallback((id: string, updates: Partial<Integration>) => {
+        setIntegrations((prev) =>
+            prev.map((integration) =>
+                integration.id === id ? { ...integration, ...updates } : integration
+            )
+        )
     }, [])
 
-    const checkConnectionStatus = async () => {
+    const checkConnectionStatus = useCallback(async () => {
         try {
             // Check URL params for OAuth callback
             const params = new URLSearchParams(window.location.search)
@@ -82,9 +87,9 @@ export default function IntegrationsPage() {
                 window.history.replaceState({}, '', '/dashboard/integrations')
             }
 
-            // Fetch actual connection status from API
-            // Get projectId from localStorage or use default
-            const projectId = localStorage.getItem('selectedProjectId') || '2'
+            const projectId = getSelectedProjectId()
+            if (!projectId) return
+
             const response = await fetch(getApiUrl(`/api/integrations/status?projectId=${projectId}`), {
                 credentials: 'include',
             })
@@ -110,21 +115,19 @@ export default function IntegrationsPage() {
         } catch (error) {
             console.error('Failed to check connection status:', error)
         }
-    }
+    }, [getSelectedProjectId, updateIntegration])
 
-    const updateIntegration = (id: string, updates: Partial<Integration>) => {
-        setIntegrations((prev) =>
-            prev.map((integration) =>
-                integration.id === id ? { ...integration, ...updates } : integration
-            )
-        )
-    }
+    // Check connection status on mount
+    useEffect(() => {
+        checkConnectionStatus()
+    }, [checkConnectionStatus])
 
     const handleConnect = async (integration: Integration) => {
         try {
             setConnecting(integration.id)
 
-            const projectId = localStorage.getItem('selectedProjectId') || '2'
+            const projectId = getSelectedProjectId()
+            if (!projectId) throw new Error('Select a project before connecting integrations.')
             const response = await fetch(
                 getApiUrl(`/api/integrations/${integration.id}/authorize?projectId=${projectId}`),
                 { credentials: 'include' }
@@ -149,7 +152,8 @@ export default function IntegrationsPage() {
         try {
             setDisconnecting(integration.id)
 
-            const projectId = localStorage.getItem('selectedProjectId') || '2'
+            const projectId = getSelectedProjectId()
+            if (!projectId) throw new Error('Select a project before disconnecting integrations.')
             const response = await fetch(
                 getApiUrl(`/api/integrations/${integration.id}/disconnect?projectId=${projectId}`),
                 { method: 'DELETE', credentials: 'include' }
@@ -177,7 +181,8 @@ export default function IntegrationsPage() {
             setSyncing(integration.id)
             setSyncResult(null)
 
-            const projectId = localStorage.getItem('selectedProjectId') || '2'
+            const projectId = getSelectedProjectId()
+            if (!projectId) throw new Error('Select a project before syncing integrations.')
 
             if (integration.id === 'gsc') {
                 // First, discover available sites
@@ -203,7 +208,7 @@ export default function IntegrationsPage() {
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            projectId: parseInt(projectId),
+                            projectId,
                             siteUrl,
                             days: 30
                         })
@@ -243,7 +248,7 @@ export default function IntegrationsPage() {
                         credentials: 'include',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            projectId: parseInt(projectId),
+                            projectId,
                             propertyId,
                             days: 30
                         })

@@ -60,9 +60,15 @@ export const db = drizzle(queryClient, {
 
 // Export all schemas
 export * from './schema/projects';
+export * from './schema/gsc-connections';
+export * from './schema/ga4-connections';
+export * from './schema/goals';
+export * from './schema/sprints';
+export * from './schema/task-templates';
 export * from './schema/tasks';
 export * from './schema/time-logs';
-export * from './schema/integrations';
+export * from './schema/alerts';
+export * from './schema/alert-reads';
 export * from './schema/gsc_data';
 export * from './schema/gsc_data_aggregated';
 export * from './schema/ga4_data';

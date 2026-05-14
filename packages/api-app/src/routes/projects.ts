@@ -1,17 +1,31 @@
 import { Hono } from 'hono';
+import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
-import { db, projects, eq, type NewProject } from '@repo/db';
+import { db, projects, eq, and, type NewProject } from '@repo/db';
 import { logger } from '../utils/logger';
 import { createProjectSchema, updateProjectSchema } from '../schemas/project-schema';
 
 const log = logger.child('Projects');
+const uuidSchema = z.string().uuid();
 
-const app = new Hono();
+type AppVariables = {
+  userId: string;
+  workspaceId: string;
+};
 
-// GET /api/projects - List all projects
+const app = new Hono<{ Variables: AppVariables }>();
+
+const getWorkspaceId = (c: { get: (key: 'workspaceId') => string }) => c.get('workspaceId');
+const isUuid = (value: string) => uuidSchema.safeParse(value).success;
+
 app.get('/', async (c) => {
   try {
-    const allProjects = await db.select().from(projects);
+    const workspaceId = getWorkspaceId(c);
+    const allProjects = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.workspaceId, workspaceId));
+
     return c.json({ success: true, data: allProjects, count: allProjects.length });
   } catch (error) {
     log.error('Error fetching projects', error);
@@ -19,15 +33,20 @@ app.get('/', async (c) => {
   }
 });
 
-// GET /api/projects/:id - Get single project by ID
 app.get('/:id', async (c) => {
   try {
-    const id = parseInt(c.req.param('id'));
-    if (isNaN(id)) {
+    const id = c.req.param('id');
+    if (!isUuid(id)) {
       return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
-    const project = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+    const workspaceId = getWorkspaceId(c);
+    const project = await db
+      .select()
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.workspaceId, workspaceId)))
+      .limit(1);
+
     if (!project.length) {
       return c.json({ success: false, error: 'Project not found' }, 404);
     }
@@ -39,17 +58,18 @@ app.get('/:id', async (c) => {
   }
 });
 
-// POST /api/projects - Create new project
 app.post('/', zValidator('json', createProjectSchema), async (c) => {
   try {
     const body = c.req.valid('json');
+    const workspaceId = getWorkspaceId(c);
 
     const newProject: NewProject = {
+      workspaceId,
       name: body.name,
-      client: body.client ?? null,
       domain: body.domain ?? null,
-      status: body.status,
       description: body.description ?? null,
+      color: body.color ?? null,
+      isActive: body.isActive,
     };
 
     const result = await db.insert(projects).values(newProject).returning();
@@ -61,17 +81,22 @@ app.post('/', zValidator('json', createProjectSchema), async (c) => {
   }
 });
 
-// PUT /api/projects/:id - Update existing project
 app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
   try {
-    const id = parseInt(c.req.param('id'));
-    if (isNaN(id)) {
+    const id = c.req.param('id');
+    if (!isUuid(id)) {
       return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
     const body = c.req.valid('json');
+    const workspaceId = getWorkspaceId(c);
 
-    const existingProject = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+    const existingProject = await db
+      .select({ id: projects.id })
+      .from(projects)
+      .where(and(eq(projects.id, id), eq(projects.workspaceId, workspaceId)))
+      .limit(1);
+
     if (!existingProject.length) {
       return c.json({ success: false, error: 'Project not found' }, 404);
     }
@@ -79,12 +104,16 @@ app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
     const updateData: Partial<NewProject> & { updatedAt: Date } = { updatedAt: new Date() };
 
     if (body.name !== undefined) updateData.name = body.name;
-    if (body.client !== undefined) updateData.client = body.client;
     if (body.domain !== undefined) updateData.domain = body.domain;
-    if (body.status !== undefined) updateData.status = body.status;
     if (body.description !== undefined) updateData.description = body.description;
+    if (body.color !== undefined) updateData.color = body.color;
+    if (body.isActive !== undefined) updateData.isActive = body.isActive;
 
-    const result = await db.update(projects).set(updateData).where(eq(projects.id, id)).returning();
+    const result = await db
+      .update(projects)
+      .set(updateData)
+      .where(and(eq(projects.id, id), eq(projects.workspaceId, workspaceId)))
+      .returning();
 
     return c.json({ success: true, data: result[0], message: 'Project updated successfully' });
   } catch (error) {
@@ -93,20 +122,22 @@ app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
   }
 });
 
-// DELETE /api/projects/:id - Delete project
 app.delete('/:id', async (c) => {
   try {
-    const id = parseInt(c.req.param('id'));
-    if (isNaN(id)) {
+    const id = c.req.param('id');
+    if (!isUuid(id)) {
       return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
 
-    const existingProject = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
-    if (!existingProject.length) {
+    const workspaceId = getWorkspaceId(c);
+    const result = await db
+      .delete(projects)
+      .where(and(eq(projects.id, id), eq(projects.workspaceId, workspaceId)))
+      .returning();
+
+    if (!result.length) {
       return c.json({ success: false, error: 'Project not found' }, 404);
     }
-
-    await db.delete(projects).where(eq(projects.id, id));
 
     return c.json({ success: true, message: 'Project deleted successfully' });
   } catch (error) {

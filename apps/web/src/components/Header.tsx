@@ -14,12 +14,11 @@ import { getApiUrl } from "@/lib/config"
 import { useProject } from "@/contexts/ProjectContext"
 
 interface Project {
-  id: number
+  id: string
   name: string
-  client: string | null
   domain: string | null
-  status: string
   description: string | null
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }
@@ -69,7 +68,7 @@ export function Header() {
         <div className="min-w-[280px]">
           <Select
             value={selectedProjectId?.toString() || ""}
-            onValueChange={(value) => setSelectedProjectId(parseInt(value))}
+            onValueChange={(value) => setSelectedProjectId(value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select project" />

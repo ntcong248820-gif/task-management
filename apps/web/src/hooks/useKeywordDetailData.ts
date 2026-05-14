@@ -37,7 +37,7 @@ export interface UseKeywordDetailDataReturn {
     mutate: () => void;
 }
 
-export function useKeywordDetailData(projectId: number | null): UseKeywordDetailDataReturn {
+export function useKeywordDetailData(projectId: string | null): UseKeywordDetailDataReturn {
     const { data, error, isLoading, mutate: mutateData } = useSWR(
         projectId ? getApiUrl(`/api/keywords/detail?projectId=${projectId}&days=30`) : null,
         fetcher

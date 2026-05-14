@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
-import { db, oauthTokens, gscData, gscDataAggregated, gscSites, projects, eq, sql } from '@repo/db';
+import { db, gscConnections, gscData, gscDataAggregated, projects, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
@@ -26,12 +26,12 @@ class GSCClient {
         this.searchconsole = google.searchconsole({ version: 'v1', auth: this.oauth2Client });
     }
 
-    async getOrDiscoverSiteUrl(projectId: number): Promise<string | null> {
+    async getOrDiscoverSiteUrl(projectId: string): Promise<string | null> {
         // 1. Check DB for configured sites
         const configuredSites = await db
             .select()
-            .from(gscSites)
-            .where(eq(gscSites.projectId, projectId));
+            .from(gscConnections)
+            .where(eq(gscConnections.projectId, projectId));
 
         if (configuredSites.length === 1) {
             return configuredSites[0].siteUrl;
@@ -145,8 +145,7 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
         // Get all GSC connections
         const connections = await db
             .select()
-            .from(oauthTokens)
-            .where(eq(oauthTokens.provider, 'google_search_console'));
+            .from(gscConnections);
 
         log.info(`Found ${connections.length} GSC connections`);
 
@@ -160,16 +159,15 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                 log.info(`Syncing project ${connection.projectId}...`);
 
                 // Get valid access token (auto-refresh if expired)
-                const validAccessToken = await getValidAccessToken(connection);
+                const validAccessToken = await getValidAccessToken(connection, 'gsc');
 
                 const client = new GSCClient(validAccessToken, decryptTokenValue(connection.refreshToken));
 
-                // Auto-discover siteUrl
-                const siteUrl = await client.getOrDiscoverSiteUrl(connection.projectId);
+                const siteUrl = connection.siteUrl;
 
                 if (!siteUrl) {
-                    result.errors.push(`project ${connection.projectId}: no siteUrl`);
-                    log.error(`No siteUrl found for project ${connection.projectId}. Skipping.`);
+                    result.errors.push(`connection ${connection.id}: no siteUrl`);
+                    log.error(`No siteUrl configured for connection ${connection.id}. Skipping.`);
                     continue;
                 }
 
@@ -265,14 +263,18 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
 
                 // Always update lastSyncedAt on success
                 await db
-                    .update(oauthTokens)
-                    .set({ lastSyncedAt: new Date() })
-                    .where(eq(oauthTokens.id, connection.id));
+                    .update(gscConnections)
+                    .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                    .where(eq(gscConnections.id, connection.id));
 
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
                 result.synced++;
 
             } catch (error: any) {
+                await db
+                    .update(gscConnections)
+                    .set({ syncStatus: 'error', syncError: error.message, updatedAt: new Date() })
+                    .where(eq(gscConnections.id, connection.id));
                 result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);
             }

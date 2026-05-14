@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createTestProject, createTestTask, cleanupTestData } from '../../__tests__/helpers';
+import { createTestProject, createTestTask, cleanupTestData, TEST_USER_ID, TEST_WORKSPACE_ID } from '../../__tests__/helpers';
 
 describe('Tasks API', () => {
-    let testProjectId: number;
+    let testProjectId: string;
 
     beforeEach(async () => {
         await cleanupTestData();
@@ -27,6 +27,8 @@ describe('Tasks API', () => {
             expect(task.description).toBe('Test Description 1');
             expect(task.status).toBe('todo');
             expect(task.projectId).toBe(testProjectId);
+            expect(task.workspaceId).toBe(TEST_WORKSPACE_ID);
+            expect(task.reporterId).toBe(TEST_USER_ID);
         });
 
         it('should create task with default values', async () => {

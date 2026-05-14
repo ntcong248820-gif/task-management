@@ -19,7 +19,7 @@
     "noEmit": false
   },
   "include": [
-    "src/**/*"
+    "src/index.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,19 +1,15 @@
 // Export all schemas
 export * from './projects';
+export * from './gsc-connections';
+export * from './ga4-connections';
+export * from './goals';
+export * from './sprints';
+export * from './task-templates';
 export * from './tasks';
 export * from './time-logs';
-export * from './integrations';
+export * from './alerts';
+export * from './alert-reads';
 export * from './gsc_data';
 export * from './gsc_data_aggregated';
 export * from './ga4_data';
 export * from './auth-schema';
-
-// Future schemas will be exported here:
-// export * from './gsc-data';
-// export * from './ga4-data';
-// export * from './ahrefs-site-metrics';
-// export * from './ahrefs-keyword-rankings';
-// export * from './ahrefs-backlinks';
-// export * from './ahrefs-competitors';
-// export * from './external-events';
-// export * from './url-performance-snapshots';

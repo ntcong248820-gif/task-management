@@ -1,10 +1,12 @@
 import { Hono } from 'hono';
-import { db, gscData, gscSites, ga4Data, gscDataAggregated, eq, sql, and, gte, lte } from '@repo/db';
+import { db, gscData, gscConnections, ga4Data, gscDataAggregated, eq, sql, and, gte, lte } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('Analytics');
 
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 // Helper to fill missing dates with 0
 const fillDateGaps = (data: any[], startDate: string, endDate: string, valueKeys: string[]) => {
@@ -45,6 +47,8 @@ app.get('/', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         // Default to last 30 days if no date range provided
         const end = endDate || new Date().toISOString().split('T')[0];
@@ -56,7 +60,7 @@ app.get('/', async (c) => {
 
         // Build where conditions for GSC query
         const gscWhereConditions = [
-            eq(gscDataAggregated.projectId, parseInt(projectId)),
+            eq(gscDataAggregated.projectId, projectId),
             gte(gscDataAggregated.date, start),
             lte(gscDataAggregated.date, end),
         ];
@@ -91,7 +95,7 @@ app.get('/', async (c) => {
             .from(ga4Data)
             .where(
                 and(
-                    eq(ga4Data.projectId, parseInt(projectId)),
+                    eq(ga4Data.projectId, projectId),
                     gte(ga4Data.date, start),
                     lte(ga4Data.date, end)
                 )
@@ -119,7 +123,7 @@ app.get('/', async (c) => {
         });
     } catch (error: any) {
         log.error('Analytics combined error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch analytics' }, 500);
     }
 });
 
@@ -134,6 +138,8 @@ app.get('/gsc', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         // Default to last 30 days if no date range provided
         const end = endDate || new Date().toISOString().split('T')[0];
@@ -145,7 +151,7 @@ app.get('/gsc', async (c) => {
 
         // Build where conditions
         const whereConditions = [
-            eq(gscDataAggregated.projectId, parseInt(projectId)),
+            eq(gscDataAggregated.projectId, projectId),
             gte(gscDataAggregated.date, start),
             lte(gscDataAggregated.date, end),
         ];
@@ -176,7 +182,7 @@ app.get('/gsc', async (c) => {
 
         // Build previous period where conditions
         const prevWhereConditions = [
-            eq(gscDataAggregated.projectId, parseInt(projectId)),
+            eq(gscDataAggregated.projectId, projectId),
             gte(gscDataAggregated.date, prevStart.toISOString().split('T')[0]),
             lte(gscDataAggregated.date, prevEnd.toISOString().split('T')[0]),
         ];
@@ -207,7 +213,7 @@ app.get('/gsc', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end)
                 )
@@ -258,7 +264,7 @@ app.get('/gsc', async (c) => {
         });
     } catch (error: any) {
         log.error('Analytics GSC error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch GSC analytics' }, 500);
     }
 });
 
@@ -273,6 +279,8 @@ app.get('/ga4', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         // Default to last 30 days
         const end = endDate || new Date().toISOString().split('T')[0];
@@ -293,7 +301,7 @@ app.get('/ga4', async (c) => {
             .from(ga4Data)
             .where(
                 and(
-                    eq(ga4Data.projectId, parseInt(projectId)),
+                    eq(ga4Data.projectId, projectId),
                     gte(ga4Data.date, start),
                     lte(ga4Data.date, end)
                 )
@@ -316,7 +324,7 @@ app.get('/ga4', async (c) => {
             .from(ga4Data)
             .where(
                 and(
-                    eq(ga4Data.projectId, parseInt(projectId)),
+                    eq(ga4Data.projectId, projectId),
                     gte(ga4Data.date, prevStart.toISOString().split('T')[0]),
                     lte(ga4Data.date, prevEnd.toISOString().split('T')[0])
                 )
@@ -332,7 +340,7 @@ app.get('/ga4', async (c) => {
             .from(ga4Data)
             .where(
                 and(
-                    eq(ga4Data.projectId, parseInt(projectId)),
+                    eq(ga4Data.projectId, projectId),
                     gte(ga4Data.date, start),
                     lte(ga4Data.date, end)
                 )
@@ -355,7 +363,7 @@ app.get('/ga4', async (c) => {
             .from(ga4Data)
             .where(
                 and(
-                    eq(ga4Data.projectId, parseInt(projectId)),
+                    eq(ga4Data.projectId, projectId),
                     gte(ga4Data.date, start),
                     lte(ga4Data.date, end)
                 )
@@ -411,7 +419,7 @@ app.get('/ga4', async (c) => {
         });
     } catch (error: any) {
         log.error('Analytics GA4 error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch GA4 analytics' }, 500);
     }
 });
 
@@ -419,15 +427,17 @@ app.get('/ga4', async (c) => {
 app.get('/sites/:projectId', async (c) => {
     try {
         const projectId = c.req.param('projectId');
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const sites = await db
             .select({
-                id: gscSites.id,
-                siteUrl: gscSites.siteUrl,
+                id: gscConnections.id,
+                siteUrl: gscConnections.siteUrl,
             })
-            .from(gscSites)
-            .where(eq(gscSites.projectId, parseInt(projectId)))
-            .orderBy(gscSites.siteUrl);
+            .from(gscConnections)
+            .where(and(eq(gscConnections.projectId, projectId), eq(gscConnections.workspaceId, c.get('workspaceId'))))
+            .orderBy(gscConnections.siteUrl);
 
         return c.json({
             success: true,
@@ -435,7 +445,7 @@ app.get('/sites/:projectId', async (c) => {
         });
     } catch (error: any) {
         log.error('List sites error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to list sites' }, 500);
     }
 });
 

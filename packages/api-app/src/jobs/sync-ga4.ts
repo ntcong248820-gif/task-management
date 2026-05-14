@@ -1,7 +1,7 @@
 import { CronJob } from 'cron';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
-import { db, oauthTokens, ga4Data, ga4Properties, eq, sql, and } from '@repo/db';
+import { db, ga4Connections, ga4Data, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
@@ -26,19 +26,19 @@ class GA4Client {
         this.analyticsdata = google.analyticsdata('v1beta');
     }
 
-    async getOrDiscoverPropertyId(projectId: number): Promise<string | null> {
+    async getOrDiscoverPropertyId(projectId: string): Promise<string | null> {
         // 1. Check DB for configured property
         const configuredProp = await db
             .select()
-            .from(ga4Properties)
-            .where(eq(ga4Properties.projectId, projectId))
+            .from(ga4Connections)
+            .where(eq(ga4Connections.projectId, projectId))
             .limit(1);
 
         if (configuredProp.length > 0) {
             return configuredProp[0].propertyId;
         }
 
-        // 2. If not found, discover from API and auto-save first property
+        // 2. If not found, discover first available property from API
         try {
             const admin = google.analyticsadmin({ version: 'v1beta', auth: this.oauth2Client });
             const response = await admin.accountSummaries.list();
@@ -52,30 +52,6 @@ class GA4Client {
             if (allProperties.length === 0) {
                 log.warn(`No properties found for project ${projectId}`);
                 return null;
-            }
-
-            // Save all discovered properties to DB (user can pick later via /properties endpoint)
-            for (const prop of allProperties) {
-                const propertyId = prop.property?.split('/')[1];
-                if (!propertyId) continue;
-
-                const existing = await db
-                    .select({ id: ga4Properties.id })
-                    .from(ga4Properties)
-                    .where(and(
-                        eq(ga4Properties.projectId, projectId),
-                        eq(ga4Properties.propertyId, propertyId)
-                    ))
-                    .limit(1);
-
-                if (existing.length === 0) {
-                    await db.insert(ga4Properties).values({
-                        projectId,
-                        propertyId,
-                        propertyName: prop.displayName || null,
-                    });
-                    log.info(`Auto-saved GA4 property ${propertyId} (${prop.displayName}) for project ${projectId}`);
-                }
             }
 
             // Return first property ID (use first as default)
@@ -143,8 +119,7 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
         // Get all GA4 connections
         const connections = await db
             .select()
-            .from(oauthTokens)
-            .where(eq(oauthTokens.provider, 'google_analytics'));
+            .from(ga4Connections);
 
         log.info(`Found ${connections.length} GA4 connections`);
 
@@ -158,16 +133,15 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                 log.info(`Syncing project ${connection.projectId}...`);
 
                 // Get valid access token (auto-refresh if expired)
-                const validAccessToken = await getValidAccessToken(connection);
+                const validAccessToken = await getValidAccessToken(connection, 'ga4');
 
                 const client = new GA4Client(validAccessToken, decryptTokenValue(connection.refreshToken));
 
-                // Auto-discover propertyId
-                const propertyId = await client.getOrDiscoverPropertyId(connection.projectId);
+                const propertyId = connection.propertyId;
 
                 if (!propertyId) {
-                    result.errors.push(`project ${connection.projectId}: no propertyId`);
-                    log.error(`No propertyId found for project ${connection.projectId}. Skipping.`);
+                    result.errors.push(`connection ${connection.id}: no propertyId`);
+                    log.error(`No propertyId configured for connection ${connection.id}. Skipping.`);
                     continue;
                 }
 
@@ -200,7 +174,7 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                         engagementRate: row.engagementRate.toString(),
                         averageSessionDuration: row.averageSessionDuration.toString(),
                         conversions: row.conversions,
-                        conversionRate: row.conversions > 0 ? (row.conversions / row.sessions).toFixed(4) : '0',
+                        conversionRate: row.sessions > 0 ? (row.conversions / row.sessions).toFixed(4) : '0',
                         revenue: row.revenue.toString(),
                         source: row.source,
                         medium: row.medium,
@@ -236,14 +210,18 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
 
                 // Always update lastSyncedAt on success
                 await db
-                    .update(oauthTokens)
-                    .set({ lastSyncedAt: new Date() })
-                    .where(eq(oauthTokens.id, connection.id));
+                    .update(ga4Connections)
+                    .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                    .where(eq(ga4Connections.id, connection.id));
 
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
                 result.synced++;
 
             } catch (error: any) {
+                await db
+                    .update(ga4Connections)
+                    .set({ syncStatus: 'error', syncError: error.message, updatedAt: new Date() })
+                    .where(eq(ga4Connections.id, connection.id));
                 result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);
             }

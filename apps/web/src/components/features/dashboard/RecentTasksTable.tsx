@@ -11,7 +11,7 @@ import {
 import { ListTodo } from 'lucide-react';
 
 interface RecentTask {
-    id: number;
+    id: string;
     title: string;
     type: string;
     date: string;

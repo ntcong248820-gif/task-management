@@ -41,7 +41,7 @@ export interface UseDiagnosisDataReturn {
     mutate: () => void;
 }
 
-export function useDiagnosisData(projectId: number | null): UseDiagnosisDataReturn {
+export function useDiagnosisData(projectId: string | null): UseDiagnosisDataReturn {
     const { dateRange } = useDateContext();
     const startDate = format(dateRange.from, 'yyyy-MM-dd');
     const endDate = format(dateRange.to, 'yyyy-MM-dd');

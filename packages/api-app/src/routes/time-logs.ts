@@ -1,133 +1,117 @@
 import { Hono } from 'hono';
-import { db, timeLogs, eq, desc } from '@repo/db';
+import { z } from 'zod';
+import { db, timeLogs, tasks, eq, and, desc } from '@repo/db';
 import { logger } from '../utils/logger';
 
 const log = logger.child('TimeLogs');
+const uuidSchema = z.string().uuid();
 
-const app = new Hono();
+type AppVariables = {
+  userId: string;
+  workspaceId: string;
+};
 
-// GET /api/time-logs?taskId=X - Get time logs for a task
+const app = new Hono<{ Variables: AppVariables }>();
+
+const isUuid = (value: string) => uuidSchema.safeParse(value).success;
+
 app.get('/', async (c) => {
-    try {
-        const taskId = c.req.query('taskId');
+  try {
+    const workspaceId = c.get('workspaceId');
+    const taskId = c.req.query('taskId');
 
-        if (taskId) {
-            const logs = await db
-                .select()
-                .from(timeLogs)
-                .where(eq(timeLogs.taskId, Number(taskId)))
-                .orderBy(desc(timeLogs.startTime));
-
-            return c.json({
-                success: true,
-                data: logs,
-                count: logs.length,
-            });
-        }
-
-        // Get all time logs if no taskId specified
-        const logs = await db
-            .select()
-            .from(timeLogs)
-            .orderBy(desc(timeLogs.startTime));
-
-        return c.json({
-            success: true,
-            data: logs,
-            count: logs.length,
-        });
-    } catch (error) {
-        log.error('Error fetching time logs', error);
-        return c.json(
-            {
-                success: false,
-                error: 'Failed to fetch time logs',
-            },
-            500
-        );
+    if (taskId && !isUuid(taskId)) {
+      return c.json({ success: false, error: 'Invalid task ID' }, 400);
     }
+
+    const where = taskId
+      ? and(eq(timeLogs.workspaceId, workspaceId), eq(timeLogs.taskId, taskId))
+      : eq(timeLogs.workspaceId, workspaceId);
+
+    const logs = await db
+      .select()
+      .from(timeLogs)
+      .where(where)
+      .orderBy(desc(timeLogs.startedAt));
+
+    return c.json({ success: true, data: logs, count: logs.length });
+  } catch (error) {
+    log.error('Error fetching time logs', error);
+    return c.json({ success: false, error: 'Failed to fetch time logs' }, 500);
+  }
 });
 
-// POST /api/time-logs - Create a new time log
 app.post('/', async (c) => {
-    try {
-        const body = await c.req.json();
-        const { taskId, startTime, endTime, duration } = body;
+  try {
+    const body = await c.req.json();
+    const taskId = body.taskId;
+    const startedAt = body.startedAt ?? body.startTime;
+    const endedAt = body.endedAt ?? body.endTime;
+    const duration = body.duration;
 
-        // Validation
-        if (!taskId || !startTime || !endTime || !duration) {
-            return c.json(
-                {
-                    success: false,
-                    error: 'Missing required fields: taskId, startTime, endTime, duration',
-                },
-                400
-            );
-        }
-
-        // Insert time log
-        const [newLog] = await db
-            .insert(timeLogs)
-            .values({
-                taskId: Number(taskId),
-                startTime: new Date(startTime),
-                endTime: new Date(endTime),
-                duration: Number(duration),
-            })
-            .returning();
-
-        return c.json({
-            success: true,
-            data: newLog,
-            message: 'Time log created successfully',
-        });
-    } catch (error) {
-        log.error('Error creating time log', error);
-        return c.json(
-            {
-                success: false,
-                error: 'Failed to create time log',
-            },
-            500
-        );
+    if (!taskId || !startedAt || !endedAt || !duration) {
+      return c.json({
+        success: false,
+        error: 'Missing required fields: taskId, startedAt, endedAt, duration',
+      }, 400);
     }
+
+    if (!isUuid(taskId)) {
+      return c.json({ success: false, error: 'Invalid task ID' }, 400);
+    }
+
+    const workspaceId = c.get('workspaceId');
+    const existingTask = await db
+      .select({ id: tasks.id })
+      .from(tasks)
+      .where(and(eq(tasks.id, taskId), eq(tasks.workspaceId, workspaceId)))
+      .limit(1);
+
+    if (!existingTask.length) {
+      return c.json({ success: false, error: 'Task not found' }, 404);
+    }
+
+    const [newLog] = await db
+      .insert(timeLogs)
+      .values({
+        taskId,
+        workspaceId,
+        userId: c.get('userId'),
+        startedAt: new Date(startedAt),
+        endedAt: new Date(endedAt),
+        duration: Number(duration),
+        note: body.note ?? body.notes ?? null,
+      })
+      .returning();
+
+    return c.json({ success: true, data: newLog, message: 'Time log created successfully' });
+  } catch (error) {
+    log.error('Error creating time log', error);
+    return c.json({ success: false, error: 'Failed to create time log' }, 500);
+  }
 });
 
-// DELETE /api/time-logs/:id - Delete a time log
 app.delete('/:id', async (c) => {
-    try {
-        const id = c.req.param('id');
-
-        const [deletedLog] = await db
-            .delete(timeLogs)
-            .where(eq(timeLogs.id, Number(id)))
-            .returning();
-
-        if (!deletedLog) {
-            return c.json(
-                {
-                    success: false,
-                    error: 'Time log not found',
-                },
-                404
-            );
-        }
-
-        return c.json({
-            success: true,
-            data: deletedLog,
-            message: 'Time log deleted successfully',
-        });
-    } catch (error) {
-        log.error('Error deleting time log', error);
-        return c.json(
-            {
-                success: false,
-                error: 'Failed to delete time log',
-            },
-            500
-        );
+  try {
+    const id = c.req.param('id');
+    if (!isUuid(id)) {
+      return c.json({ success: false, error: 'Invalid time log ID' }, 400);
     }
+
+    const [deletedLog] = await db
+      .delete(timeLogs)
+      .where(and(eq(timeLogs.id, id), eq(timeLogs.workspaceId, c.get('workspaceId'))))
+      .returning();
+
+    if (!deletedLog) {
+      return c.json({ success: false, error: 'Time log not found' }, 404);
+    }
+
+    return c.json({ success: true, data: deletedLog, message: 'Time log deleted successfully' });
+  } catch (error) {
+    log.error('Error deleting time log', error);
+    return c.json({ success: false, error: 'Failed to delete time log' }, 500);
+  }
 });
 
 export default app;

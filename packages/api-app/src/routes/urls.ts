@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { db, gscData, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('URLs');
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 /**
  * GET /api/urls/overview
@@ -16,6 +18,8 @@ app.get('/overview', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const numDays = parseInt(days);
         const endDate = new Date();
@@ -38,7 +42,7 @@ app.get('/overview', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
                 )
@@ -56,7 +60,7 @@ app.get('/overview', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, prevStartDate.toISOString().split('T')[0]),
                     lte(gscData.date, prevEndDate.toISOString().split('T')[0])
                 )
@@ -121,7 +125,7 @@ app.get('/overview', async (c) => {
         });
     } catch (error: any) {
         log.error('URLs overview error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch URL overview' }, 500);
     }
 });
 
@@ -145,6 +149,8 @@ app.get('/list', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const numDays = parseInt(days);
         const pageNum = parseInt(page);
@@ -172,7 +178,7 @@ app.get('/list', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0]),
                     search ? sql`${gscData.page} ILIKE ${'%' + search + '%'}` : undefined
@@ -189,7 +195,7 @@ app.get('/list', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, prevStartDate.toISOString().split('T')[0]),
                     lte(gscData.date, prevEndDate.toISOString().split('T')[0])
                 )
@@ -253,7 +259,7 @@ app.get('/list', async (c) => {
         });
     } catch (error: any) {
         log.error('URLs list error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch URLs' }, 500);
     }
 });
 
@@ -268,6 +274,8 @@ app.get('/detail', async (c) => {
         if (!projectId || !url) {
             return c.json({ success: false, error: 'projectId and url are required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const numDays = parseInt(days);
         const endDate = new Date();
@@ -285,7 +293,7 @@ app.get('/detail', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.page, decodeURIComponent(url)),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
@@ -304,7 +312,7 @@ app.get('/detail', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.page, decodeURIComponent(url)),
                     gte(gscData.date, startDate.toISOString().split('T')[0]),
                     lte(gscData.date, endDate.toISOString().split('T')[0])
@@ -336,7 +344,7 @@ app.get('/detail', async (c) => {
         });
     } catch (error: any) {
         log.error('URL detail error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch URL detail' }, 500);
     }
 });
 

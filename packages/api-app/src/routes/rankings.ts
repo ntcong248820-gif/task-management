@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { db, gscData, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('Rankings');
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 /**
  * GET /api/rankings/overview
@@ -16,6 +18,8 @@ app.get('/overview', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         let start: string;
         let end: string;
@@ -41,7 +45,7 @@ app.get('/overview', async (c) => {
 
         const prevStartStr = prevStart.toISOString().split('T')[0];
         const prevEndStr = prevEnd.toISOString().split('T')[0];
-        const pid = parseInt(projectId);
+        const pid = projectId;
 
         // Single query: FILTER aggregation covers both periods in one DB round trip
         type RankingRow = {
@@ -121,7 +125,7 @@ app.get('/overview', async (c) => {
         });
     } catch (error: any) {
         log.error('Rankings overview error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch rankings overview' }, 500);
     }
 });
 
@@ -146,6 +150,8 @@ app.get('/keywords', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
@@ -178,7 +184,7 @@ app.get('/keywords', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end),
                     search ? sql`${gscData.query} ILIKE ${'%' + search + '%'}` : undefined
@@ -192,7 +198,7 @@ app.get('/keywords', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end),
                     search ? sql`${gscData.query} ILIKE ${'%' + search + '%'}` : undefined
@@ -242,7 +248,7 @@ app.get('/keywords', async (c) => {
         });
     } catch (error: any) {
         log.error('Rankings keywords error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch ranking keywords' }, 500);
     }
 });
 
@@ -257,6 +263,8 @@ app.get('/chart', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const keywordLimit = parseInt(limit);
         let start: string;
@@ -283,7 +291,7 @@ app.get('/chart', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end)
                 )
@@ -311,7 +319,7 @@ app.get('/chart', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end),
                     sql`${gscData.query} IN (${sql.join(keywordList.map(k => sql`${k}`), sql`, `)})`
@@ -347,7 +355,7 @@ app.get('/chart', async (c) => {
         });
     } catch (error: any) {
         log.error('Rankings chart error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch rankings chart' }, 500);
     }
 });
 
@@ -362,6 +370,8 @@ app.get('/distribution', async (c) => {
         if (!projectId) {
             return c.json({ success: false, error: 'projectId is required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         let start: string;
         let end: string;
@@ -387,7 +397,7 @@ app.get('/distribution', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     gte(gscData.date, start),
                     lte(gscData.date, end)
                 )
@@ -429,7 +439,7 @@ app.get('/distribution', async (c) => {
         });
     } catch (error: any) {
         log.error('Rankings distribution error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to fetch rankings distribution' }, 500);
     }
 });
 

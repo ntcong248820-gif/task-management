@@ -78,7 +78,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 | # | Phase | Key Deliverables | Effort | Status | Review |
 |---|-------|-----------------|--------|--------|--------|
 | 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth, workspace, roles, invite, middleware.ts | ~8h | ✅ Complete (implemented 2026-05-13) | ✅ Reviewed — `reports/better-auth-260510-1952-phase-01-review.md`; validation passed 2026-05-13 |
-| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | pending | ✅ Reviewed — `reports/databases-260510-2117-phase-02-schema-review.md` (effort ~6h→~8h) |
+| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete (implemented 2026-05-14) | ✅ Reviewed — `reports/databases-260510-2117-phase-02-schema-review.md`; validation passed 2026-05-14 |
 | 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | pending | ✅ Reviewed — `reports/ui-ux-review-260510-2154-phase-03-ui-shell.md` (effort ~6h→~7-8h) |
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
 | 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (project-scoped goals, standalone sprints OK, batch progress query) |

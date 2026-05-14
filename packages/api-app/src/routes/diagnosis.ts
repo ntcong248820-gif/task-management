@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { db, gscData, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
+import { requireProjectInWorkspace } from '../utils/project-access';
 
 const log = logger.child('Diagnosis');
-const app = new Hono();
+type AppVariables = { workspaceId: string };
+const app = new Hono<{ Variables: AppVariables }>();
 
 interface DiagnosisIssue {
     type: 'declining_traffic' | 'position_drop' | 'low_ctr' | 'high_bounce' | 'content_stale';
@@ -24,6 +26,8 @@ app.get('/url', async (c) => {
         if (!projectId || !url) {
             return c.json({ success: false, error: 'projectId and url are required' }, 400);
         }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const decodedUrl = decodeURIComponent(url);
         let start: string;
@@ -59,7 +63,7 @@ app.get('/url', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.page, decodedUrl),
                     gte(gscData.date, start),
                     lte(gscData.date, end)
@@ -75,7 +79,7 @@ app.get('/url', async (c) => {
             .from(gscData)
             .where(
                 and(
-                    eq(gscData.projectId, parseInt(projectId)),
+                    eq(gscData.projectId, projectId),
                     eq(gscData.page, decodedUrl),
                     gte(gscData.date, prevStart.toISOString().split('T')[0]),
                     lte(gscData.date, prevEnd.toISOString().split('T')[0])
@@ -219,7 +223,7 @@ app.get('/url', async (c) => {
         });
     } catch (error: any) {
         log.error('Diagnosis error', error);
-        return c.json({ success: false, error: error.message }, 500);
+        return c.json({ success: false, error: 'Failed to run diagnosis' }, 500);
     }
 });
 

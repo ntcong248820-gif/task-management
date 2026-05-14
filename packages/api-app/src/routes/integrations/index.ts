@@ -1,12 +1,17 @@
 import { Hono } from 'hono';
-import { db, oauthTokens, eq, and } from '@repo/db';
+import { z } from 'zod';
+import { db, gscConnections, ga4Connections, eq, and } from '@repo/db';
 
-const app = new Hono();
+type AppVariables = {
+    userId: string;
+    workspaceId: string;
+};
 
-/**
- * GET /api/integrations/status
- * Get connection status for all integrations
- */
+const app = new Hono<{ Variables: AppVariables }>();
+const uuidSchema = z.string().uuid();
+
+const isUuid = (value: string) => uuidSchema.safeParse(value).success;
+
 app.get('/status', async (c) => {
     try {
         const { projectId } = c.req.query();
@@ -15,40 +20,43 @@ app.get('/status', async (c) => {
             return c.json({ success: false, error: 'Project ID is required' }, 400);
         }
 
-        // Fetch all tokens for this project
-        const tokens = await db
-            .select({
-                provider: oauthTokens.provider,
-                createdAt: oauthTokens.createdAt,
-                lastSyncedAt: oauthTokens.lastSyncedAt,
-                scope: oauthTokens.scope,
-                accountEmail: oauthTokens.accountEmail,
-            })
-            .from(oauthTokens)
-            .where(eq(oauthTokens.projectId, parseInt(projectId)));
+        if (!isUuid(projectId)) {
+            return c.json({ success: false, error: 'Invalid project ID' }, 400);
+        }
 
-        // Transform to integration status format
-        const integrations = {
-            gsc: tokens.find(t => t.provider === 'google_search_console'),
-            ga4: tokens.find(t => t.provider === 'google_analytics'),
-        };
+        const workspaceId = c.get('workspaceId');
+        const [gscConnection] = await db
+            .select()
+            .from(gscConnections)
+            .where(and(eq(gscConnections.projectId, projectId), eq(gscConnections.workspaceId, workspaceId)))
+            .limit(1);
+
+        const [ga4Connection] = await db
+            .select()
+            .from(ga4Connections)
+            .where(and(eq(ga4Connections.projectId, projectId), eq(ga4Connections.workspaceId, workspaceId)))
+            .limit(1);
 
         return c.json({
             success: true,
             data: {
-                gsc: integrations.gsc ? {
+                gsc: gscConnection ? {
                     connected: true,
-                    lastSync: integrations.gsc.lastSyncedAt ?? integrations.gsc.createdAt,
-                    scopes: integrations.gsc.scope?.split(' ') || [],
-                    email: integrations.gsc.accountEmail,
+                    lastSync: gscConnection.lastSyncedAt ?? gscConnection.createdAt,
+                    scopes: [],
+                    email: gscConnection.accountEmail,
+                    syncStatus: gscConnection.syncStatus,
+                    syncError: gscConnection.syncError,
                 } : {
                     connected: false,
                 },
-                ga4: integrations.ga4 ? {
+                ga4: ga4Connection ? {
                     connected: true,
-                    lastSync: integrations.ga4.lastSyncedAt ?? integrations.ga4.createdAt,
-                    scopes: integrations.ga4.scope?.split(' ') || [],
-                    email: integrations.ga4.accountEmail,
+                    lastSync: ga4Connection.lastSyncedAt ?? ga4Connection.createdAt,
+                    scopes: [],
+                    email: ga4Connection.accountEmail,
+                    syncStatus: ga4Connection.syncStatus,
+                    syncError: ga4Connection.syncError,
                 } : {
                     connected: false,
                 },
@@ -60,10 +68,6 @@ app.get('/status', async (c) => {
     }
 });
 
-/**
- * DELETE /api/integrations/:provider/disconnect
- * Disconnect an integration by deleting its tokens
- */
 app.delete('/:provider/disconnect', async (c) => {
     try {
         const { provider } = c.req.param();
@@ -73,26 +77,23 @@ app.delete('/:provider/disconnect', async (c) => {
             return c.json({ success: false, error: 'Project ID is required' }, 400);
         }
 
-        // Map provider ID to database provider name
-        const providerMap: Record<string, string> = {
-            gsc: 'google_search_console',
-            ga4: 'google_analytics',
-        };
-
-        const dbProvider = providerMap[provider];
-        if (!dbProvider) {
-            return c.json({ success: false, error: 'Invalid provider' }, 400);
+        if (!isUuid(projectId)) {
+            return c.json({ success: false, error: 'Invalid project ID' }, 400);
         }
 
-        // Delete tokens for this provider
-        await db
-            .delete(oauthTokens)
-            .where(
-                and(
-                    eq(oauthTokens.projectId, parseInt(projectId)),
-                    eq(oauthTokens.provider, dbProvider)
-                )
-            );
+        const workspaceId = c.get('workspaceId');
+
+        if (provider === 'gsc') {
+            await db
+                .delete(gscConnections)
+                .where(and(eq(gscConnections.projectId, projectId), eq(gscConnections.workspaceId, workspaceId)));
+        } else if (provider === 'ga4') {
+            await db
+                .delete(ga4Connections)
+                .where(and(eq(ga4Connections.projectId, projectId), eq(ga4Connections.workspaceId, workspaceId)));
+        } else {
+            return c.json({ success: false, error: 'Invalid provider' }, 400);
+        }
 
         return c.json({
             success: true,

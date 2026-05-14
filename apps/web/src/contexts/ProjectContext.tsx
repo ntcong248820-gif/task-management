@@ -4,8 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, Suspe
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 interface ProjectContextType {
-    selectedProjectId: number | null;
-    setSelectedProjectId: (id: number) => void;
+    selectedProjectId: string | null;
+    setSelectedProjectId: (id: string) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
@@ -14,7 +14,7 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 function ProjectInitializer({
     setSelectedProjectIdState
 }: {
-    setSelectedProjectIdState: (id: number | null) => void
+    setSelectedProjectIdState: (id: string | null) => void
 }) {
     const router = useRouter();
     const pathname = usePathname();
@@ -26,15 +26,13 @@ function ProjectInitializer({
         const storedProjectId = localStorage.getItem('selectedProjectId');
 
         if (urlProjectId) {
-            const id = parseInt(urlProjectId);
-            setSelectedProjectIdState(id);
-            localStorage.setItem('selectedProjectId', id.toString());
+            setSelectedProjectIdState(urlProjectId);
+            localStorage.setItem('selectedProjectId', urlProjectId);
         } else if (storedProjectId) {
-            const id = parseInt(storedProjectId);
-            setSelectedProjectIdState(id);
+            setSelectedProjectIdState(storedProjectId);
             // Update URL with stored projectId
             const params = new URLSearchParams(searchParams.toString());
-            params.set('projectId', id.toString());
+            params.set('projectId', storedProjectId);
             router.replace(`${pathname}?${params.toString()}`);
         }
     }, [searchParams, pathname, router, setSelectedProjectIdState]);
@@ -45,16 +43,16 @@ function ProjectInitializer({
 export function ProjectProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
-    const [selectedProjectId, setSelectedProjectIdState] = useState<number | null>(null);
+    const [selectedProjectId, setSelectedProjectIdState] = useState<string | null>(null);
 
-    const setSelectedProjectId = (id: number) => {
+    const setSelectedProjectId = (id: string) => {
         setSelectedProjectIdState(id);
-        localStorage.setItem('selectedProjectId', id.toString());
+        localStorage.setItem('selectedProjectId', id);
 
         // Update URL - we need to get current search params
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
-            params.set('projectId', id.toString());
+            params.set('projectId', id);
             router.push(`${pathname}?${params.toString()}`);
         }
     };

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createTestProject, cleanupTestData } from '../../__tests__/helpers';
+import { createTestProject, cleanupTestData, TEST_WORKSPACE_ID } from '../../__tests__/helpers';
 
 describe('Projects API', () => {
     beforeEach(async () => {
@@ -20,7 +20,8 @@ describe('Projects API', () => {
             expect(project).toBeDefined();
             expect(project.name).toBe('Test Project 1');
             expect(project.description).toBe('Test Description 1');
-            expect(project.id).toBeTypeOf('number');
+            expect(project.id).toBeTypeOf('string');
+            expect(project.workspaceId).toBe(TEST_WORKSPACE_ID);
         });
 
         it('should create project with default values', async () => {
@@ -28,11 +29,12 @@ describe('Projects API', () => {
 
             expect(project.name).toBe('Test Project');
             expect(project.description).toBe('Test Description');
+            expect(project.domain).toBe('https://example.com');
         });
 
         it('should create multiple projects', async () => {
-            const project1 = await createTestProject({ name: 'Project 1' });
-            const project2 = await createTestProject({ name: 'Project 2' });
+            const project1 = await createTestProject({ name: 'Project 1', domain: 'https://one.example.com' });
+            const project2 = await createTestProject({ name: 'Project 2', domain: 'https://two.example.com' });
 
             expect(project1.id).not.toBe(project2.id);
             expect(project1.name).toBe('Project 1');

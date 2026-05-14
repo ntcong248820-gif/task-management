@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     DndContext,
     DragEndEvent,
@@ -19,7 +19,7 @@ import type { Task, TaskStatus } from '@/types/task.types';
 
 interface KanbanBoardProps {
     /** Optional project ID to filter tasks */
-    projectId?: number;
+    projectId?: string;
     /** Search query to filter tasks by title/description */
     searchQuery?: string;
     /** Selected project filter ('all' or project ID) */
@@ -48,12 +48,7 @@ export function KanbanBoard({
         })
     );
 
-    // Fetch tasks from API
-    useEffect(() => {
-        fetchTasks();
-    }, [projectId]);
-
-    const fetchTasks = async () => {
+    const fetchTasks = useCallback(async () => {
         try {
             setIsLoading(true);
             const url = projectId
@@ -71,7 +66,12 @@ export function KanbanBoard({
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [projectId]);
+
+    // Fetch tasks from API
+    useEffect(() => {
+        fetchTasks();
+    }, [fetchTasks]);
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
@@ -85,7 +85,7 @@ export function KanbanBoard({
 
         if (!over) return;
 
-        const taskId = active.id as number;
+        const taskId = String(active.id);
 
         // Determine the new status
         // If over.id is a string (column status), use it directly
@@ -149,7 +149,7 @@ export function KanbanBoard({
     };
 
 
-    const handleDeleteTask = async (taskId: number) => {
+    const handleDeleteTask = async (taskId: string) => {
         if (!confirm('Are you sure you want to delete this task?')) return;
 
         try {

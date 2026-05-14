@@ -1,18 +1,19 @@
-import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, varchar, boolean, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core';
 
 export const projects = pgTable('projects', {
-  id: serial('id').primaryKey(),
+  id: uuid('id').primaryKey().defaultRandom(),
+  workspaceId: text('workspace_id').notNull(),
   name: text('name').notNull(),
-  client: text('client'),
-  domain: text('domain'),
-  status: text('status').default('active').notNull(), // 'active' | 'archived'
+  domain: varchar('domain', { length: 500 }),
   description: text('description'),
-
-  // Metadata
+  color: varchar('color', { length: 7 }),
+  isActive: boolean('is_active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+}, (table) => ({
+  workspaceDomainUnique: uniqueIndex('projects_workspace_domain_unique').on(table.workspaceId, table.domain),
+  workspaceIdx: index('projects_workspace_idx').on(table.workspaceId),
+}));
 
-// Type exports for TypeScript
 export type Project = typeof projects.$inferSelect;
 export type NewProject = typeof projects.$inferInsert;

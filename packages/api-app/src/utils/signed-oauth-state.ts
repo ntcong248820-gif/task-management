@@ -4,7 +4,7 @@ type IntegrationId = 'gsc' | 'ga4';
 
 interface OAuthStatePayload {
     integration: IntegrationId;
-    projectId: number;
+    projectId: string;
     userId: string;
     workspaceId: string;
     nonce: string;

@@ -1,93 +1,111 @@
 import { google } from 'googleapis';
-import { db, oauthTokens, eq, and } from '@repo/db';
+import { db, gscConnections, ga4Connections, eq, and } from '@repo/db';
 import { decryptTokenValue, encryptToken } from './crypto-tokens';
+import { logger } from './logger';
 
-interface TokenRecord {
-    id: number;
-    projectId: number;
-    provider: string;
+const log = logger.child('TokenRefresh');
+
+export type IntegrationKind = 'gsc' | 'ga4';
+
+export interface TokenRecord {
+    id: string;
+    projectId: string;
     accessToken: string;
     refreshToken: string;
-    expiresAt: Date;
-    tokenType: string;
-    scope: string;
-    accountEmail: string | null;
+    tokenExpiresAt: Date;
 }
 
-/**
- * Check if token is expired (with 5 minute buffer)
- */
 export function isTokenExpired(expiresAt: Date): boolean {
-    const bufferMs = 5 * 60 * 1000; // 5 minutes
+    const bufferMs = 5 * 60 * 1000;
     return Date.now() >= expiresAt.getTime() - bufferMs;
 }
 
-/**
- * Refresh OAuth tokens using refresh token
- * Returns new access token and updates database
- */
-export async function refreshOAuthTokens(tokenRecord: TokenRecord): Promise<string> {
+export async function refreshOAuthTokens(tokenRecord: TokenRecord, kind: IntegrationKind): Promise<string> {
     const oauth2Client = new google.auth.OAuth2(
         process.env.GOOGLE_CLIENT_ID!,
         process.env.GOOGLE_CLIENT_SECRET!
-        // redirect URI not needed for token refresh
     );
 
     oauth2Client.setCredentials({
         refresh_token: decryptTokenValue(tokenRecord.refreshToken),
     });
 
-    console.log(`[Token Refresh] Refreshing token for ${tokenRecord.provider}...`);
+    log.info(`Refreshing ${kind.toUpperCase()} token for project ${tokenRecord.projectId}`);
 
     const { credentials } = await oauth2Client.refreshAccessToken();
+    const newAccessToken = credentials.access_token;
+    const expiryDate = credentials.expiry_date;
 
-    const newAccessToken = credentials.access_token!;
-    const newExpiresAt = new Date(credentials.expiry_date!);
+    if (!newAccessToken || !expiryDate) {
+        throw new Error('Google did not return a refreshed access token');
+    }
 
-    // Update database with new token (encrypt before storing)
-    await db
-        .update(oauthTokens)
-        .set({
-            accessToken: encryptToken(newAccessToken),
-            expiresAt: newExpiresAt,
-            updatedAt: new Date(),
-        })
-        .where(eq(oauthTokens.id, tokenRecord.id));
+    const updateData = {
+        accessToken: encryptToken(newAccessToken),
+        tokenExpiresAt: new Date(expiryDate),
+        updatedAt: new Date(),
+    };
 
-    console.log(`[Token Refresh] Token refreshed successfully. New expiry: ${newExpiresAt.toISOString()}`);
+    if (kind === 'gsc') {
+        await db
+            .update(gscConnections)
+            .set(updateData)
+            .where(eq(gscConnections.id, tokenRecord.id));
+    } else {
+        await db
+            .update(ga4Connections)
+            .set(updateData)
+            .where(eq(ga4Connections.id, tokenRecord.id));
+    }
 
     return newAccessToken;
 }
 
-/**
- * Get valid access token - refreshes if expired
- */
-export async function getValidAccessToken(tokenRecord: TokenRecord): Promise<string> {
-    if (isTokenExpired(tokenRecord.expiresAt)) {
-        console.log(`[Token Refresh] Token expired at ${tokenRecord.expiresAt.toISOString()}, refreshing...`);
-        return await refreshOAuthTokens(tokenRecord);
+export async function getValidAccessToken(tokenRecord: TokenRecord, kind: IntegrationKind): Promise<string> {
+    if (isTokenExpired(tokenRecord.tokenExpiresAt)) {
+        return refreshOAuthTokens(tokenRecord, kind);
     }
+
     return decryptTokenValue(tokenRecord.accessToken);
 }
 
-/**
- * Get OAuth tokens for a project and provider
- * Returns null if not found
- */
 export async function getTokensForProject(
-    projectId: number,
-    provider: 'google_analytics' | 'google_search_console'
+    projectId: string,
+    kind: IntegrationKind
 ): Promise<TokenRecord | null> {
+    const table = kind === 'gsc' ? gscConnections : ga4Connections;
     const [tokenRecord] = await db
-        .select()
-        .from(oauthTokens)
-        .where(
-            and(
-                eq(oauthTokens.projectId, projectId),
-                eq(oauthTokens.provider, provider)
-            )
-        )
+        .select({
+            id: table.id,
+            projectId: table.projectId,
+            accessToken: table.accessToken,
+            refreshToken: table.refreshToken,
+            tokenExpiresAt: table.tokenExpiresAt,
+        })
+        .from(table)
+        .where(eq(table.projectId, projectId))
         .limit(1);
 
-    return tokenRecord || null;
+    return tokenRecord ?? null;
+}
+
+export async function getTokensForProjectInWorkspace(
+    projectId: string,
+    workspaceId: string,
+    kind: IntegrationKind
+): Promise<TokenRecord | null> {
+    const table = kind === 'gsc' ? gscConnections : ga4Connections;
+    const [tokenRecord] = await db
+        .select({
+            id: table.id,
+            projectId: table.projectId,
+            accessToken: table.accessToken,
+            refreshToken: table.refreshToken,
+            tokenExpiresAt: table.tokenExpiresAt,
+        })
+        .from(table)
+        .where(and(eq(table.projectId, projectId), eq(table.workspaceId, workspaceId)))
+        .limit(1);
+
+    return tokenRecord ?? null;
 }

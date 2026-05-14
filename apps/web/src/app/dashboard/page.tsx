@@ -19,7 +19,7 @@ interface CorrelationData {
   impressions: number;
   position: number;
   completedTasks: {
-    id: number;
+    id: string;
     title: string;
     type: string;
     timeSpent: number;
@@ -35,7 +35,7 @@ interface Metrics {
 }
 
 interface RecentTask {
-  id: number;
+  id: string;
   title: string;
   type: string;
   date: string;
@@ -56,7 +56,7 @@ function formatNumber(num: number): string {
 }
 
 // Custom hook for fetching correlation data
-function useCorrelationData(dateRange: number, projectId: number | null) {
+function useCorrelationData(dateRange: number, projectId: string | null) {
   const [chartData, setChartData] = useState<CorrelationData[]>([]);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [recentTasks, setRecentTasks] = useState<RecentTask[]>([]);
