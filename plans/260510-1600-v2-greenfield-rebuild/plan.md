@@ -43,10 +43,10 @@ Không chỉ là Kanban — là hệ thống quản lý công việc có mục t
 
 ### 3. Multi-User / Team
 Hiện tại single-user, không có auth. V2 cần workspace + team.
-- Better Auth (email/password + Google OAuth)
+- Better Auth (email/password-only for internal MVP)
 - Workspace concept (team chia sẻ cùng data)
 - Roles: Owner, Admin, Member, Viewer
-- Invite system (email-based)
+- Invite system deferred until email provider is intentionally added
 - Team reporting: workload, progress, standup summaries
 
 ## What We Keep (from v1)
@@ -77,8 +77,8 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 
 | # | Phase | Key Deliverables | Effort | Status | Review |
 |---|-------|-----------------|--------|--------|--------|
-| 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth, workspace, roles, invite, middleware.ts | ~8h | ✅ Complete (implemented 2026-05-13) | ✅ Reviewed — `reports/better-auth-260510-1952-phase-01-review.md`; validation passed 2026-05-13 |
-| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete (implemented 2026-05-14) | ✅ Reviewed — `reports/databases-260510-2117-phase-02-schema-review.md`; validation passed 2026-05-14 |
+| 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth email/password, workspace, roles, dashboard guard | ~8h | ⚠️ Code complete; simplified live auth smoke pending | ✅ Review corrections applied; simplified on 2026-05-18 to remove Resend/Google-login dependency |
+| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete (implemented 2026-05-14) | ✅ Review corrections applied — `reports/databases-260510-2117-phase-02-schema-review.md`; implemented in `ab4745e`; validation passed 2026-05-14 |
 | 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | pending | ✅ Reviewed — `reports/ui-ux-review-260510-2154-phase-03-ui-shell.md` (effort ~6h→~7-8h) |
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
 | 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (project-scoped goals, standalone sprints OK, batch progress query) |
@@ -87,6 +87,13 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 
 > **Final Feasibility Review: 2026-05-11** — `/ck:predict` (CAUTION→GO) + `/ck:scenario` (34 edge cases, 5 Critical fixed).
 > Estimated effort revised: ~83h → ~89-92h. All Critical items applied. Plan READY TO IMPLEMENT.
+
+## Current State — 2026-05-18
+
+- Phase 01: implementation complete and local code validation passed; internal MVP auth now email/password-only. Live signup/login/workspace smoke tests still open; email verification, invite email, password reset, and Better Auth Google login are deferred.
+- Phase 02: complete; local DB push, type-check, tests, lint, and build passed.
+- Phase 03: next implementation phase; one auth-layout checklist item is already delivered by Phase 01 and should be reused.
+- Phase 04: still pending; recurring-template unique constraint already delivered by Phase 02, `targetUrl` and task API/UI work remain open.
 
 ## Feature Proposals with Reasoning
 
@@ -104,8 +111,9 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 ### NEW features in v2
 | Feature | Pillar | Priority |
 |---------|--------|----------|
-| Multi-user auth + workspace | Multi-user | P0 |
-| Invite system + roles | Multi-user | P0 |
+| Email/password auth + workspace | Multi-user | P0 |
+| Roles | Multi-user | P0 |
+| Invite system | Multi-user | Later |
 | Board + Timeline + Table + Calendar views | Task Mgmt | P1 |
 | Goal hierarchy (Goal → Sprint → Task) | Task Mgmt | P1 |
 | Recurring task templates | Task Mgmt | P1 |
@@ -121,7 +129,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 
 ## Dependencies
 
-- Phase 01 → All others (auth + middleware.ts required)
+- Phase 01 → All others (auth + dashboard guard required)
 - Phase 02 → All others (schema + shared types required)
 - Phase 03 → 04, 05, 06, 07 (UI shell required; consumes Phase 01 auth-client + Phase 02 types)
 - Phase 04 → 05 (task system before goal linking)
@@ -129,7 +137,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 - Phase 06 → 07 (intelligence feeds dashboards)
 
 **Key cross-phase contracts:**
-- Phase 01 delivers: `auth-client.ts` (`useSession()`), `middleware.ts`, auth schema types
+- Phase 01 delivers: `auth-client.ts` (`useSession()`), dashboard server layout guard, auth schema types
 - Phase 02 delivers: `packages/types/` exports (`Project`, `Task`, `Alert`, etc.) used by Phase 03 stores
 - Phase 03 delivers: `use-alert-store` shape (stub) — Phase 06 implements `fetchAlerts()` real logic
 - Phase 03 delivers: tasks route `?view=` pattern — Phase 04 builds view components (not pages)

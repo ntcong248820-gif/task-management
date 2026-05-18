@@ -10,7 +10,6 @@ const REQUIRED_PROD = [
     'FRONTEND_URL',
     'BETTER_AUTH_SECRET',
     'BETTER_AUTH_URL',
-    'RESEND_API_KEY',
 ] as const;
 
 const REQUIRED_OAUTH = [

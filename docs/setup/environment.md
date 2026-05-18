@@ -21,6 +21,8 @@ Set in **Vercel Dashboard** → **Settings** → **Environment Variables**:
 | `GOOGLE_CLIENT_SECRET` | *(set in Vercel — see Google Cloud Console)* | Production |
 | `GOOGLE_GSC_REDIRECT_URI` | `https://task-management-web-zeta.vercel.app/api/integrations/gsc/callback` | Production |
 | `GOOGLE_GA4_REDIRECT_URI` | `https://task-management-web-zeta.vercel.app/api/integrations/ga4/callback` | Production |
+| `BETTER_AUTH_SECRET` | `openssl rand -hex 32` | Production |
+| `BETTER_AUTH_URL` | `https://task-management-web-zeta.vercel.app` | Production |
 | `CRON_SECRET` | `openssl rand -hex 32` (generate new) | Production |
 | `FRONTEND_URL` | `https://task-management-web-zeta.vercel.app` | Production |
 | `FRONTEND_URL_PREVIEW` | *(comma-separated preview URLs, optional)* | Production |
@@ -59,6 +61,8 @@ GOOGLE_CLIENT_ID=<from-google-cloud-console>
 GOOGLE_CLIENT_SECRET=<from-google-cloud-console>
 GOOGLE_GSC_REDIRECT_URI=http://localhost:3002/api/integrations/gsc/callback
 GOOGLE_GA4_REDIRECT_URI=http://localhost:3002/api/integrations/ga4/callback
+BETTER_AUTH_SECRET=<generate-with-openssl-rand-hex-32>
+BETTER_AUTH_URL=http://localhost:3002
 FRONTEND_URL=http://localhost:3002
 CRON_SECRET=<generate-with-openssl-rand-hex-32>
 API_PORT=3001
@@ -73,5 +77,6 @@ NODE_ENV=development
 - `GOOGLE_REDIRECT_URI` (singular) replaced with:
   - `GOOGLE_GSC_REDIRECT_URI`
   - `GOOGLE_GA4_REDIRECT_URI`
+- Better Auth uses email/password-only for internal MVP; no Resend, email verification, password reset, or Google login env is required.
 - `NEXT_PUBLIC_API_URL` leave empty in production (same-origin)
 - `ENCRYPTION_KEY` and `CRON_SECRET` are new — generate fresh

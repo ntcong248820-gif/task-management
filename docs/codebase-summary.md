@@ -36,8 +36,7 @@ Shared Better Auth config used by web + API.
 
 | File/Dir | Purpose |
 |----------|---------|
-| `src/index.ts` | Better Auth instance, email/password, Google provider, organization plugin, workspace ACL |
-| `src/email.ts` | Resend email helper for verification/reset/invites |
+| `src/index.ts` | Better Auth instance, email/password-only auth, organization plugin, workspace ACL |
 | `src/permissions.ts` | Workspace roles (`owner`, `admin`, `member`, `viewer`) and ACL rules |
 
 ## apps/api
@@ -57,8 +56,6 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/(auth)/login/page.tsx` | Login page |
 | `src/app/(auth)/signup/page.tsx` | Signup page with pending workspace name |
 | `src/app/(auth)/workspace/page.tsx` | Workspace create/select page |
-| `src/app/(auth)/reset-password/page.tsx` | Password reset page |
-| `src/app/(auth)/forgot-password/page.tsx` | Password reset request page |
 | `src/app/dashboard/page.tsx` | Correlation dashboard (main page) |
 | `src/app/dashboard/analytics/` | GSC + GA4 analytics dashboard |
 | `src/app/dashboard/rankings/` | Keyword rankings page |
@@ -74,7 +71,7 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/stores/` | Zustand stores (timer-store, use-project-store) |
 | `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
 | `src/lib/auth-client.ts` | Better Auth client with `organizationClient` plugin |
-| `apps/web/middleware.ts` | Dashboard session + workspace redirect guard |
+| `src/app/dashboard/layout.tsx` | Dashboard session + workspace redirect guard |
 | `src/types/` | Frontend-only TypeScript types |
 
 ## packages/db

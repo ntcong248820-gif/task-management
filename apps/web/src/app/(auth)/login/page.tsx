@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
-import { Chrome } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -41,11 +40,6 @@ export default function LoginPage() {
     router.push(redirectTo);
   }
 
-  async function onGoogleSignIn() {
-    setError('');
-    await signIn.social({ provider: 'google', callbackURL: redirectTo });
-  }
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -67,13 +61,8 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </Button>
         </form>
-        <Button className="mt-3 w-full" variant="outline" type="button" onClick={onGoogleSignIn}>
-          <Chrome className="h-4 w-4" />
-          Google
-        </Button>
-        <div className="mt-4 flex justify-between text-sm">
+        <div className="mt-4 text-center text-sm">
           <Link className="text-primary hover:underline" href="/signup">Create account</Link>
-          <Link className="text-muted-foreground hover:text-primary" href="/forgot-password">Forgot password</Link>
         </div>
       </CardContent>
     </Card>

@@ -147,7 +147,7 @@ BoardView
 TaskDetailPanel (right side slide-over)
   ├── Title (editable inline)
   ├── Status select, Priority select, Type select
-  ├── Assignee select (workspace members)
+  ├── Assignee select (workspace members; internal MVP may only have current user until invite email returns)
   ├── Sprint select, Goal select
   ├── Start date / Due date
   ├── affectsWebsite toggle
@@ -274,7 +274,7 @@ useTaskTemplates()        → { templates, loading }
 ## Todo
 
 - [ ] Add Phase 04 migration: `ALTER TABLE tasks ADD COLUMN target_url TEXT` (for Phase 07 page→task linking)
-- [ ] Add UNIQUE constraint on tasks `(recurring_template_id, start_date)` for idempotent spawn
+- [x] Add UNIQUE constraint on tasks `(recurring_template_id, start_date)` for idempotent spawn (delivered in Phase 02 schema)
 - [ ] Add `targetUrl` to Zod create/update schemas + TypeScript task type
 - [ ] Add `targetUrl` field to TaskDetailPanel UI (optional URL input — sanitize: only allow `https?://`)
 - [ ] Rewrite `tasks.ts` API route (all endpoints) — workspaceId from session, not query param

@@ -1,5 +1,37 @@
 # Project Changelog
 
+## 2026-05-18
+
+### Changed
+- Simplified Phase 01 auth for internal MVP to email/password-only.
+- Removed Better Auth Google login, signup email verification, password reset UI, invite email callback, and Resend dependency.
+- Signup now auto-signs in and sends the user to workspace create/select.
+- Updated v2 plan docs to defer email provider-dependent flows and keep Phase 03 unblocked.
+
+### Fixed
+- Fixed Phase 01 dashboard auth guard not running on local app routes.
+- Replaced unregistered Next middleware placement with a server-side dashboard layout guard.
+- Kept existing dashboard UI shell in a client `DashboardShell` component.
+
+### Validation
+- `HEAD /dashboard` -> `307 /login?redirect=/dashboard`
+- `HEAD /dashboard/tasks` -> `307 /login?redirect=/dashboard`
+- `GET /api/projects` without session -> `401 Unauthorized`
+- `npm --workspace @seo-impact-os/web run type-check`
+- `npm --workspace @seo-impact-os/web run test` -> `16/16`
+- `npm --workspace @seo-impact-os/web run build`
+
+## 2026-05-16
+
+### Changed
+- Synced v2 greenfield rebuild plan status with current evidence.
+- Reclassified Phase 01 as code complete with live auth smoke pending.
+- Normalized Phase 02 status to completed and clarified its review report was pre-implementation corrections, not a final pass report.
+- Backfilled stale checklist items delivered by earlier phases: Phase 03 auth layout reuse and Phase 04 recurring-template unique constraint.
+
+### Unresolved Questions
+- Need decide whether future plan statuses should separate code complete from live-flow verified.
+
 ## 2026-05-14
 
 ### Changed

@@ -62,9 +62,9 @@ Hono standalone (port 3001, optional)
 **Key Change (Infra):** Web + API are collocated on same Vercel deployment. The Hono app is exported from `packages/api-app` and mounted via Next.js route handler at `/api`. Separate backend at port 3001 is for local development only.
 
 **Key Change (Phase 01 v2):** Authentication and workspace context are centralized in Better Auth.
-- `packages/auth-config` owns the Better Auth instance, email helpers, and workspace ACL.
+- `packages/auth-config` owns the Better Auth instance and workspace ACL.
 - `apps/web/src/app/api/auth/[...all]/route.ts` exposes Better Auth to Next.js App Router.
-- `apps/web/middleware.ts` redirects unauthenticated users to `/login` and users without an active workspace to `/workspace`.
+- `apps/web/src/app/dashboard/layout.tsx` redirects unauthenticated users to `/login` and users without an active workspace to `/workspace`.
 - `packages/api-app/src/app.ts` injects `user`, `session`, `userId`, and `workspaceId` into protected API handlers, and treats auth-related requests as public when they reach the Hono app.
 - `apps/web/src/lib/auth-client.ts` enables `organizationClient`, so workspace create/invite/select methods exist on the client.
 
@@ -90,12 +90,7 @@ Better Auth adds its own managed tables for user, session, account, verification
 
 ## Google OAuth Flows
 
-Separate Google callback paths are used for Better Auth login, GSC, and GA4:
-
-```
-Better Auth login:
-  /api/auth/callback/google
-```
+Separate Google callback paths are used for GSC and GA4 integrations. Better Auth Google login is disabled for the internal MVP; app auth is email/password only.
 
 ```
 GSC OAuth:
@@ -105,7 +100,7 @@ GA4 OAuth:
   /api/integrations/ga4/auth  →  Google  →  /api/integrations/ga4/callback
 ```
 
-In production (Vercel), Better Auth login is handled by `apps/web/src/app/api/auth/[...all]/route.ts`, while GSC/GA4 callbacks are served by the Hono app mounted at `/api`. The old Next.js Google callback routes are gone.
+In production (Vercel), Better Auth email/password is handled by `apps/web/src/app/api/auth/[...all]/route.ts`, while GSC/GA4 callbacks are served by the Hono app mounted at `/api`. The old Next.js Google callback routes are gone.
 
 **Token Storage & Encryption:**
 - Tokens encrypted with AES-256-GCM before DB storage in `gsc_connections` / `ga4_connections`
@@ -160,8 +155,6 @@ Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/
 | `DATABASE_URL` | root `.env`, deployed | PostgreSQL connection |
 | `BETTER_AUTH_SECRET` | `packages/auth-config` + prod | Better Auth signing secret and OAuth state HMAC seed |
 | `BETTER_AUTH_URL` | `packages/auth-config` + prod | Better Auth base URL |
-| `RESEND_API_KEY` | `packages/auth-config` + prod | Email verification, password reset, invite delivery |
-| `RESEND_FROM_EMAIL` | `packages/auth-config` | Optional sender override |
 | `NEXT_PUBLIC_APP_URL` | `apps/web/.env.local` | Explicit Better Auth client base URL; optional fallback to localhost |
 | `GOOGLE_CLIENT_ID` | Hono (api-app) | OAuth client |
 | `GOOGLE_CLIENT_SECRET` | Hono (api-app) | OAuth client |

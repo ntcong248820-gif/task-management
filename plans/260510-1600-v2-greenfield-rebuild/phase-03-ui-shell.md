@@ -15,7 +15,8 @@ Redesign toàn bộ layout, navigation, và shell của app. Tạo nền tảng 
 các phase sau sẽ build vào. Giữ shadcn/ui + Tailwind CSS, redesign composition.
 
 > **Reviewed:** Applied fixes từ UI/UX review — see `plans/reports/ui-ux-review-260510-2154-phase-03-ui-shell.md`
-> Effort tăng từ ~6h → ~7-8h (middleware debugging + mobile testing).
+> Effort tăng từ ~6h → ~7-8h (dashboard guard reuse + mobile testing).
+> Phase 01 auth was simplified on 2026-05-18: email/password-only, no Google login, no email verification/reset/invite email.
 
 ## Design Principles
 
@@ -71,7 +72,7 @@ apps/web/src/app/
 ├── (app)/
 │   ├── layout.tsx           ← With sidebar + header
 │   ├── workspace/
-│   │   └── select/page.tsx  ← Workspace selector
+│   │   └── page.tsx         ← Workspace selector/create (reuse or move current Phase 01 page)
 │   └── dashboard/
 │       ├── page.tsx         ← Overview/Home
 │       ├── tasks/
@@ -88,7 +89,7 @@ apps/web/src/app/
 │           ├── team/page.tsx
 │           └── integrations/page.tsx
 
-apps/web/src/middleware.ts   ← Auth redirect (consumed from Phase 01 output)
+apps/web/src/app/dashboard/layout.tsx   ← Auth redirect guard (consumed from Phase 01 output)
 ```
 
 **Tasks view routing:** `?view=board` (default) | `?view=timeline` | `?view=table` | `?view=calendar`
@@ -97,15 +98,15 @@ apps/web/src/middleware.ts   ← Auth redirect (consumed from Phase 01 output)
 const view = searchParams.get('view') ?? 'board'
 ```
 
-## Auth Middleware (Phase 01 Output)
+## Auth Guard (Phase 01 Output)
 
-> `middleware.ts` là **Phase 01 deliverable** — Phase 01 already includes it in scope.
+> Dashboard server layout guard là **Phase 01 deliverable** — Phase 01 already includes it in scope.
 > Phase 03 consumes `useSession()` from `apps/web/src/lib/auth-client.ts`.
 
 Redirect logic (defined in Phase 01):
 ```ts
 // No session → /login
-// Session + no active workspace → /workspace/select
+// Session + no active workspace → /workspace
 // Session + workspace → allow through
 // On /login with session → /dashboard
 ```
@@ -228,7 +229,7 @@ Phase 03 renders **placeholder content** only — real data populated in Phases 
 
 - [ ] Install shadcn chart component: `npx shadcn@latest add chart` — adds `recharts` as shared dep for Phase 05 WorkloadChart and Phase 07 analytics dashboards
 - [ ] Delete old dashboard routes + components (as listed above)
-- [ ] Create `(auth)` route group + layout (auth layout from Phase 01)
+- [x] Reuse `(auth)` route group + layout delivered by Phase 01; adapt only if new shell needs it
 - [ ] Create `(app)` route group + layout.tsx with sidebar + header
 - [ ] Build `nav-item.tsx` — individual nav link with active state
 - [ ] Build `nav-group.tsx` — collapsible section (shadcn Collapsible, active child = stays open)
@@ -240,7 +241,7 @@ Phase 03 renders **placeholder content** only — real data populated in Phases 
 - [ ] Build `project-selector.tsx` — dropdown, reads `projects[]` from use-workspace-store
 - [ ] Build `notification-bell.tsx` — unread badge (hidden when count=0)
 - [ ] Build `user-menu.tsx` — reads from useSession(), avatar + logout
-- [ ] Create `workspace/select/page.tsx`
+- [ ] Reuse or move current `workspace/page.tsx` as the workspace selector/create route
 - [ ] Create `dashboard/page.tsx` — overview (placeholder content, Lucide icons only)
 - [ ] Create `dashboard/tasks/page.tsx` — stub with `?view=` search param scaffold
 - [ ] Create remaining route stubs (goals, sprints, analytics/*, settings/*)
@@ -252,8 +253,8 @@ Phase 03 renders **placeholder content** only — real data populated in Phases 
 
 ## Success Criteria
 
-- [ ] Unauthenticated → middleware (Phase 01) redirects to /login (not 200 on /dashboard)
-- [ ] Authenticated + no active workspace → redirects to /workspace/select
+- [ ] Unauthenticated → dashboard layout guard (Phase 01) redirects to /login (not 200 on /dashboard)
+- [ ] Authenticated + no active workspace → redirects to /workspace
 - [ ] Login → workspace select → dashboard shell loads without sidebar flicker
 - [ ] Sidebar shows grouped nav items with collapsible sections, active state works
 - [ ] Tasks nav item is a SINGLE item (no Board/Timeline/etc sub-items in sidebar)
@@ -270,12 +271,12 @@ Phase 03 renders **placeholder content** only — real data populated in Phases 
 
 ## Risk Assessment
 
-- **middleware.ts dependency**: Phase 03 shell is fully functional only after Phase 01 delivers `auth-client.ts` + middleware. Phase 03 can scaffold routes/layout first, wire auth last.
-- **Workspace auto-select**: If user has exactly 1 workspace, `/workspace/select` should auto-redirect. Implement this edge case in workspace selector page.
+- **Auth guard dependency**: Phase 03 shell is fully functional only after Phase 01 delivers `auth-client.ts` + dashboard layout guard. Phase 03 can scaffold routes/layout first, wire auth last.
+- **Workspace auto-select**: If user has exactly 1 workspace, `/workspace` should auto-redirect. Implement this edge case in workspace selector page.
 - **Store type alignment**: `use-workspace-store.ts` uses `Project` type from Phase 02 schema — implement store after Phase 02 exports types from `packages/types/`.
 
 ## Unresolved Questions
 
 1. **Sidebar collapsed/icon-only variant**: Is an icon-only collapsed sidebar in scope for Phase 03 or deferred to later? Recommendation: defer — YAGNI until user requests.
 2. **Dark mode toggle**: v1 uses dark bg. v2 "clean density" implies light default. Toggle in Phase 03 or Phase 07 polish?
-3. **Workspace auto-select on single workspace**: Confirm: if 1 workspace → skip select page, go directly to dashboard?
+3. **Workspace auto-select on single workspace**: Confirm: if 1 workspace → skip workspace page, go directly to dashboard?

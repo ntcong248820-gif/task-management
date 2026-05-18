@@ -24,8 +24,6 @@ Set in **Vercel Dashboard** → **Settings** → **Environment Variables**:
 | `ENCRYPTION_KEY` | 64-char hex from `openssl rand -hex 32` | Production |
 | `BETTER_AUTH_SECRET` | 32-byte secret from `openssl rand -hex 32` | Production |
 | `BETTER_AUTH_URL` | `https://task-management-web-zeta.vercel.app` | Production |
-| `RESEND_API_KEY` | Resend API key | Production |
-| `RESEND_FROM_EMAIL` | `SEO Impact OS <onboarding@resend.dev>` or verified sender | Optional |
 | `GOOGLE_CLIENT_ID` | `xxx.apps.googleusercontent.com` | Production |
 | `GOOGLE_CLIENT_SECRET` | `xxx` | Production |
 | `NEXT_PUBLIC_APP_URL` | `https://task-management-web-zeta.vercel.app` or leave unset | Optional client base URL |
@@ -36,17 +34,16 @@ Set in **Vercel Dashboard** → **Settings** → **Environment Variables**:
 | `FRONTEND_URL_PREVIEW` | Comma-separated preview URLs (optional) | Production |
 | `NEXT_PUBLIC_API_URL` | Leave empty (same-origin in production) | Production + Preview |
 
-## Google OAuth — CRITICAL
+## Google Integration OAuth
 
 In **Google Cloud Console** → OAuth credentials → **Authorized redirect URIs**, add:
 
 ```
-https://task-management-web-zeta.vercel.app/api/auth/callback/google
 https://task-management-web-zeta.vercel.app/api/integrations/gsc/callback
 https://task-management-web-zeta.vercel.app/api/integrations/ga4/callback
 ```
 
-Auth, GSC, and GA4 use **separate** redirect URIs. Missing any of them breaks that flow.
+GSC and GA4 use **separate** redirect URIs. Better Auth Google login is disabled for the internal MVP.
 
 ## Deploy Steps
 
@@ -54,7 +51,6 @@ Auth, GSC, and GA4 use **separate** redirect URIs. Missing any of them breaks th
 
 - Supabase project created (project ID required for DB URL)
 - New project? `last_synced_at` column in `oauth_tokens` table may need manual creation — see Troubleshooting
-- Resend sender configured if `RESEND_FROM_EMAIL` is not using the default dev sender
 
 ### 1. Database
 

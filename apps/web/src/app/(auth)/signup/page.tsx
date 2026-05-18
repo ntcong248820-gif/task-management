@@ -1,6 +1,7 @@
 "use client"
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +11,12 @@ import { signUp } from '@/lib/auth-client';
 import { getAuthErrorMessage } from '@/lib/auth-errors';
 
 export default function SignupPage() {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -31,8 +32,8 @@ export default function SignupPage() {
     }
 
     localStorage.setItem('pendingWorkspaceName', workspaceName);
-    setMessage('Account created. Check your email to verify before signing in.');
     setLoading(false);
+    router.push('/workspace');
   }
 
   return (
@@ -59,7 +60,6 @@ export default function SignupPage() {
             <Label htmlFor="workspace">Workspace</Label>
             <Input id="workspace" value={workspaceName} onChange={(event) => setWorkspaceName(event.target.value)} required />
           </div>
-          {message ? <p className="text-sm text-emerald-600">{message}</p> : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <Button className="w-full" type="submit" disabled={loading}>
             {loading ? 'Creating...' : 'Create account'}

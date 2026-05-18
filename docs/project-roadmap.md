@@ -1,22 +1,23 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-14
+> **Last Updated:** 2026-05-18
 > **Overall Progress:** ~97% (MVP deployed, Phase 7 continued, Database migration to new Supabase project complete, GitHub Actions cron verified working)
 
 ## v2 Greenfield Rebuild
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Auth + Workspace Foundation | Done | Better Auth package, email/password + Google OAuth, workspace/org roles, auth pages, Next auth handler, Hono workspace guard |
+| 1 | Auth + Workspace Foundation | Code complete; email/password smoke pending | Better Auth package, email/password-only auth, workspace/org roles, auth pages, Next auth handler, dashboard layout guard, Hono workspace guard. Google login, email verification, password reset, and invite email deferred |
 | 2 | Data Schema Redesign | Done | UUID business schema, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
-- Better Auth email verification required on signup
-- Workspace name is stored client-side until verified sign-in
-- `/api/auth/callback/google` must be registered in Google Cloud Console
+- Better Auth email/password only; signup auto-signs in and continues to workspace create/select
+- Workspace name is stored client-side until workspace create/select
+- Better Auth Google login, email verification, password reset, and invite email are deferred for internal MVP
 - OAuth tokens are encrypted; GSC/GA4 OAuth state is HMAC signed and bound to the active session/workspace
 - Validation passed: root type-check, web tests `16/16`, lint pass, web build pass
+- Local DB push completed during Phase 02; simplified live auth smoke still pending
 
 ### Phase 02 Delivery Notes
 - Business tables reset to UUID primary keys and Better Auth workspace IDs (`organization.id` text)

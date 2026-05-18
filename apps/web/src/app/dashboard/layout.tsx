@@ -1,38 +1,24 @@
-"use client"
+import { auth } from "@repo/auth-config"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { DashboardShell } from "./dashboard-shell"
 
-import { Sidebar } from "@/components/Sidebar"
-import { Header } from "@/components/Header"
-import { ErrorBoundary } from "@/components/error-boundary"
+export const runtime = "nodejs"
 
-import { DateProvider } from "@/contexts/DateContext"
-import { ProjectProvider } from "@/contexts/ProjectContext"
-
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <ErrorBoundary>
-      <ProjectProvider>
-        <DateProvider>
-          <div className="flex h-screen overflow-hidden">
-            {/* Sidebar */}
-            <Sidebar />
+  const session = await auth.api.getSession({ headers: await headers() })
 
-            {/* Main Content */}
-            <div className="flex flex-1 flex-col overflow-hidden">
-              {/* Header */}
-              <Header />
+  if (!session) {
+    redirect("/login?redirect=/dashboard")
+  }
 
-              {/* Page Content */}
-              <main className="flex-1 overflow-y-auto bg-background p-6">
-                {children}
-              </main>
-            </div>
-          </div>
-        </DateProvider>
-      </ProjectProvider>
-    </ErrorBoundary>
-  )
+  if (!session.session.activeOrganizationId) {
+    redirect("/workspace")
+  }
+
+  return <DashboardShell>{children}</DashboardShell>
 }
