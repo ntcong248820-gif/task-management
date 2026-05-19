@@ -65,7 +65,13 @@ export default function WorkspacePage() {
       return;
     }
 
-    await authClient.organization.setActive({ organizationId: result.data.id });
+    const activeResult = await authClient.organization.setActive({ organizationId: result.data.id });
+    if (activeResult.error) {
+      setError(getAuthErrorMessage(activeResult.error, 'Unable to activate workspace'));
+      setLoading(false);
+      return;
+    }
+
     localStorage.removeItem('pendingWorkspaceName');
     router.push('/dashboard');
   }

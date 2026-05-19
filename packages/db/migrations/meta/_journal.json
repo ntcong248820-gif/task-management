@@ -43,6 +43,13 @@
       "when": 1766576975771,
       "tag": "0005_lovely_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779204806755,
+      "tag": "0006_phase02_v2_schema_reconcile",
+      "breakpoints": true
     }
   ]
 }
