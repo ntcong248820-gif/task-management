@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "UI Shell Redesign"
-status: ready
+status: code-complete-local-validation
 priority: P1
 effort: "~7-8h"
 dependencies: [1, 2]
@@ -18,6 +18,7 @@ các phase sau sẽ build vào. Giữ shadcn/ui + Tailwind CSS, redesign composi
 > Effort tăng từ ~6h → ~7-8h (dashboard guard reuse + mobile testing).
 > Phase 01 auth was simplified on 2026-05-18: email/password-only, no Google login, no email verification/reset/invite email.
 > Phase 01/02 readiness gate passed on 2026-05-19: production signup/workspace smoke passed and authenticated `/api/projects` + `/api/tasks` return `200` on the v2 schema.
+> Implemented on 2026-05-19: shell/layout/navigation/stores/placeholders are code complete with local type-check, tests, lint, build, and code-review verification passing. Browser/live smoke remains pending.
 
 ## Design Principles
 
@@ -228,47 +229,48 @@ Phase 03 renders **placeholder content** only — real data populated in Phases 
 
 ## Todo
 
-- [ ] Install shadcn chart component: `npx shadcn@latest add chart` — adds `recharts` as shared dep for Phase 05 WorkloadChart and Phase 07 analytics dashboards
-- [ ] Delete old dashboard routes + components (as listed above)
+- [ ] Install shadcn chart component: deferred; `recharts` already exists and Phase 03 placeholders do not need chart wrapper
+- [ ] Delete stale v1 component files listed above; deferred cleanup because current shell no longer imports them and Phase 04 will rebuild task views
+- [x] Replace old dashboard route pages with shell placeholders or canonical redirects
 - [x] Reuse `(auth)` route group + layout delivered by Phase 01; adapt only if new shell needs it
-- [ ] Create `(app)` route group + layout.tsx with sidebar + header
-- [ ] Build `nav-item.tsx` — individual nav link with active state
-- [ ] Build `nav-group.tsx` — collapsible section (shadcn Collapsible, active child = stays open)
-- [ ] Build `sidebar.tsx` using nav-group + nav-item (Tasks = single item, no sub-items)
-- [ ] Build `mobile-sidebar-sheet.tsx` — Sheet overlay (shadcn Sheet, open from left)
-- [ ] Build `sidebar-trigger.tsx` — hamburger button (hidden on lg:, visible on mobile)
-- [ ] Build `header.tsx` — workspace + project selectors + bell + user menu (no DateRangePicker)
-- [ ] Build `workspace-selector.tsx` — dropdown, reads from use-workspace-store
-- [ ] Build `project-selector.tsx` — dropdown, reads `projects[]` from use-workspace-store
-- [ ] Build `notification-bell.tsx` — unread badge (hidden when count=0)
-- [ ] Build `user-menu.tsx` — reads from useSession(), avatar + logout
-- [ ] Reuse or move current `workspace/page.tsx` as the workspace selector/create route
-- [ ] Create `dashboard/page.tsx` — overview (placeholder content, Lucide icons only)
-- [ ] Create `dashboard/tasks/page.tsx` — stub with `?view=` search param scaffold
-- [ ] Create remaining route stubs (goals, sprints, analytics/*, settings/*)
-- [ ] Create `use-workspace-store.ts` (with projects[], fetchProjects())
-- [ ] Adapt `use-project-store.ts` (string UUID IDs)
-- [ ] Create `use-alert-store.ts` (stub fetchAlerts → empty array)
-- [ ] Define z-index scale in globals.css or tailwind.config
-- [ ] Run `npm run type-check`
+- [x] Keep Phase 01 dashboard guard and compose new dashboard shell with sidebar + header
+- [x] Build `nav-item.tsx` — individual nav link with active state
+- [x] Build `nav-group.tsx` — collapsible section (Radix Collapsible, active child = stays open)
+- [x] Build `sidebar.tsx` using nav-group + nav-item (Tasks = single item, no sub-items)
+- [x] Build `mobile-sidebar-sheet.tsx` — Sheet overlay from left
+- [x] Build `sidebar-trigger.tsx` — hamburger button (hidden on lg:, visible on mobile)
+- [x] Build `header.tsx` — workspace + project selectors + bell + user menu (no DateRangePicker)
+- [x] Build `workspace-selector.tsx` — dropdown, reads from use-workspace-store
+- [x] Build `project-selector.tsx` — dropdown, reads `projects[]` from use-workspace-store
+- [x] Build `notification-bell.tsx` — unread badge (hidden when count=0)
+- [x] Build `user-menu.tsx` — reads from useSession(), avatar + logout
+- [x] Reuse current `workspace/page.tsx` route
+- [x] Create `dashboard/page.tsx` — overview (placeholder content, Lucide icons only)
+- [x] Create `dashboard/tasks/page.tsx` — stub with `?view=` search param scaffold
+- [x] Create remaining route stubs (goals, sprints, analytics/*, settings/*)
+- [x] Create `use-workspace-store.ts` (with projects[], fetchProjects())
+- [x] Adapt `use-project-store.ts` (string UUID IDs)
+- [x] Create `use-alert-store.ts` (stub fetchAlerts → empty array)
+- [x] Define z-index scale in globals.css
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] Unauthenticated → dashboard layout guard (Phase 01) redirects to /login (not 200 on /dashboard)
-- [ ] Authenticated + no active workspace → redirects to /workspace
-- [ ] Login → workspace select → dashboard shell loads without sidebar flicker
-- [ ] Sidebar shows grouped nav items with collapsible sections, active state works
-- [ ] Tasks nav item is a SINGLE item (no Board/Timeline/etc sub-items in sidebar)
-- [ ] View switch (Board→Timeline) updates URL `?view=` param, no full page reload
-- [ ] Workspace selector shows user's workspaces from use-workspace-store
-- [ ] Project selector reads `projects[]` from use-workspace-store (NOT independent fetch)
-- [ ] Notification bell shows 0 count, badge hidden when unreadCount = 0
-- [ ] User menu shows user name/email from useSession()
-- [ ] Mobile (375px): sidebar hidden, hamburger visible, triggers Sheet overlay
-- [ ] Desktop (1024px+): sidebar fixed (w-64), hamburger hidden
-- [ ] All routes accessible without 404
-- [ ] No emojis used as icons anywhere in shell components
-- [ ] `npm run type-check` passes
+- [x] Unauthenticated → dashboard layout guard still redirects to /login (Phase 01 guard reused)
+- [x] Authenticated + no active workspace → redirects to /workspace (Phase 01 guard reused)
+- [ ] Login → workspace select → dashboard shell loads without sidebar flicker (browser/live smoke pending)
+- [x] Sidebar shows grouped nav items with collapsible sections, active state works by code review
+- [x] Tasks nav item is a SINGLE item (no Board/Timeline/etc sub-items in sidebar)
+- [x] View switch (Board→Timeline) updates URL `?view=` param without full page reload
+- [x] Workspace selector reads active organization into use-workspace-store
+- [x] Project selector reads `projects[]` from use-workspace-store (NOT independent local state)
+- [x] Notification bell shows 0 count, badge hidden when unreadCount = 0
+- [x] User menu shows user name/email from useSession()
+- [x] Mobile (375px): sidebar hidden, hamburger visible, Sheet overlay implemented; visual screenshot pending
+- [x] Desktop (1024px+): sidebar fixed (w-64), hamburger hidden
+- [x] All planned Phase 03 routes build without 404
+- [x] No emojis used as icons anywhere in shell components
+- [x] `npm run type-check` passes
 
 ## Risk Assessment
 

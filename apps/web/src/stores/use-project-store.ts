@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware';
 
 interface ProjectStore {
     selectedProjectId: string | null;
-    setSelectedProjectId: (id: string) => void;
+    setSelectedProjectId: (id: string | null) => void;
+    clearSelectedProjectId: () => void;
 }
 
 export const useProjectStore = create<ProjectStore>()(
@@ -11,6 +12,7 @@ export const useProjectStore = create<ProjectStore>()(
         (set) => ({
             selectedProjectId: null,
             setSelectedProjectId: (id) => set({ selectedProjectId: id }),
+            clearSelectedProjectId: () => set({ selectedProjectId: null }),
         }),
         { name: 'selected-project' }
     )

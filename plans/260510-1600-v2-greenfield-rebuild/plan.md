@@ -79,7 +79,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 |---|-------|-----------------|--------|--------|--------|
 | 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth email/password, workspace, roles, dashboard guard | ~8h | ✅ Complete | ✅ Live signup/workspace/dashboard smoke passed 2026-05-19; simplified on 2026-05-18 to remove Resend/Google-login dependency |
 | 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete | ✅ Production schema reconciled 2026-05-19; authenticated projects/tasks smoke passed |
-| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | ready to start | ✅ Reviewed — `reports/ui-ux-review-260510-2154-phase-03-ui-shell.md` (effort ~6h→~7-8h) |
+| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | code complete; local validation passed; browser/live smoke pending | ✅ Code review passed 2026-05-19 after mobile header, Sheet, and Collapsible fixes |
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
 | 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (project-scoped goals, standalone sprints OK, batch progress query) |
 | 06 | [Analytics Intelligence](./phase-06-analytics-intelligence.md) | Anomaly alerts, content decay, scheduled digests, recommendations | ~16h | pending | ✅ Reviewed — 2026-05-11 (stddev guard, set-based SQL decay, alert polling) |
@@ -92,7 +92,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 
 - Phase 01: complete. Internal MVP auth is email/password-only; live signup -> workspace -> dashboard smoke passed. Email verification, invite email, password reset, and Better Auth Google login are deferred.
 - Phase 02: complete. Production DB now has the v2 workspace-scoped business schema; old v1 business tables are preserved as `*_legacy_v1_20260519`.
-- Phase 03: ready to start; one auth-layout checklist item is already delivered by Phase 01 and should be reused.
+- Phase 03: code complete and locally validated. New shell, grouped sidebar, mobile sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs are in place. Browser/live smoke is still pending after push.
 - Phase 04: still pending; recurring-template unique constraint already delivered by Phase 02, `targetUrl` and task API/UI work remain open.
 
 ## Feature Proposals with Reasoning

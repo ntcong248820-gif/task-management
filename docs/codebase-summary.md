@@ -56,19 +56,18 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/(auth)/login/page.tsx` | Login page |
 | `src/app/(auth)/signup/page.tsx` | Signup page with pending workspace name |
 | `src/app/(auth)/workspace/page.tsx` | Workspace create/select page |
-| `src/app/dashboard/page.tsx` | Correlation dashboard (main page) |
-| `src/app/dashboard/analytics/` | GSC + GA4 analytics dashboard |
-| `src/app/dashboard/rankings/` | Keyword rankings page |
-| `src/app/dashboard/urls/` | URL performance page |
-| `src/app/dashboard/keywords/` | Keyword details page |
-| `src/app/dashboard/tasks/` | Kanban board |
-| `src/app/dashboard/integrations/` | OAuth connect page |
-| `src/app/dashboard/projects/` | Project management |
+| `src/app/dashboard/page.tsx` | Phase 03 proactive overview shell |
+| `src/app/dashboard/tasks/` | Phase 03 task view shell with `?view=board|timeline|table|calendar` |
+| `src/app/dashboard/goals/` | Phase 03 goals placeholder |
+| `src/app/dashboard/sprints/` | Phase 03 sprints placeholder |
+| `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`, `alerts`) |
+| `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
 | `src/components/ui/` | shadcn/ui primitives |
+| `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
 | `src/components/features/` | Feature components (tasks, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
-| `src/stores/` | Zustand stores (timer-store, use-project-store) |
+| `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`; legacy timer store unused by Phase 03 shell) |
 | `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
 | `src/lib/auth-client.ts` | Better Auth client with `organizationClient` plugin |
 | `src/app/dashboard/layout.tsx` | Dashboard session + workspace redirect guard |

@@ -2,6 +2,19 @@
 
 ## 2026-05-19
 
+### Changed
+- Implemented v2 Phase 03 UI shell scaffold.
+- Replaced active dashboard pages with shell placeholders or canonical redirects.
+- Added grouped sidebar navigation, responsive mobile Sheet nav, workspace/project selectors, alert bell, user menu, and task `?view=` tabs.
+- Added workspace and alert Zustand stores for Phase 03 shell state.
+
+### Validation
+- `npm --workspace @seo-impact-os/web run type-check`
+- `npm --workspace @seo-impact-os/web run test` -> `16/16`
+- `npm --workspace @seo-impact-os/web run lint`
+- `npm --workspace @seo-impact-os/web run build` with local placeholder required env
+- Code-reviewer re-review passed after mobile header, Sheet, and Collapsible fixes.
+
 ### Fixed
 - Reconciled production Phase 02 schema drift with `0006_phase02_v2_schema_reconcile.sql`.
 - Preserved old v1 business tables as `*_legacy_v1_20260519` instead of dropping data.

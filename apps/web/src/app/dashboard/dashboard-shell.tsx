@@ -1,11 +1,8 @@
 "use client"
 
-import { Sidebar } from "@/components/Sidebar"
-import { Header } from "@/components/Header"
 import { ErrorBoundary } from "@/components/error-boundary"
-
-import { DateProvider } from "@/contexts/DateContext"
-import { ProjectProvider } from "@/contexts/ProjectContext"
+import { Header } from "@/components/layout/header"
+import { Sidebar } from "@/components/layout/sidebar"
 
 export function DashboardShell({
   children,
@@ -14,21 +11,15 @@ export function DashboardShell({
 }) {
   return (
     <ErrorBoundary>
-      <ProjectProvider>
-        <DateProvider>
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-
-            <div className="flex flex-1 flex-col overflow-hidden">
-              <Header />
-
-              <main className="flex-1 overflow-y-auto bg-background p-6">
-                {children}
-              </main>
-            </div>
-          </div>
-        </DateProvider>
-      </ProjectProvider>
+      <div className="flex h-screen overflow-hidden bg-background">
+        <div className="z-sidebar hidden lg:block">
+          <Sidebar />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto bg-muted/30">{children}</main>
+        </div>
+      </div>
     </ErrorBoundary>
   )
 }

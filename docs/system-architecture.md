@@ -144,9 +144,10 @@ Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/
 
 | State | Store |
 |-------|-------|
-| Active timer | Zustand (`timer-store`) |
-| Selected project | Zustand (`project-store`) |
-| Kanban tasks | Server state via fetch + local optimistic updates |
+| Selected workspace + projects | Zustand (`use-workspace-store`) |
+| Selected project | Zustand (`use-project-store`) |
+| Alert shell state | Zustand (`use-alert-store`; stub fetch until Phase 06) |
+| Task views | Phase 03 placeholders; Phase 04 owns real task state |
 
 ## Environment Variables
 

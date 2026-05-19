@@ -1,84 +1,82 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import { KanbanBoard } from "@/components/KanbanBoard"
-import { TaskDialog } from "@/components/TaskDialog"
-import { TaskFilters } from "@/components/TaskFilters"
-import { getApiUrl } from "@/lib/config"
-import type { Project } from "@/types/task.types"
+import { Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { CalendarDays, KanbanSquare, ListTodo, Table2 } from "lucide-react"
+
+import { EmptyState } from "@/components/ui/empty-state"
+import { PageHeader } from "@/components/ui/page-header"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
+const taskViews = [
+  { value: "board", label: "Board", icon: KanbanSquare },
+  { value: "timeline", label: "Timeline", icon: ListTodo },
+  { value: "table", label: "Table", icon: Table2 },
+  { value: "calendar", label: "Calendar", icon: CalendarDays },
+] as const
+
+type TaskView = (typeof taskViews)[number]["value"]
 
 export default function TasksPage() {
-  const [isNewTaskOpen, setIsNewTaskOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
+  return (
+    <Suspense fallback={<TasksFallback />}>
+      <TasksContent />
+    </Suspense>
+  )
+}
 
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedProject, setSelectedProject] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [projects, setProjects] = useState<Project[]>([])
+function TasksContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const requestedView = searchParams.get("view")
+  const currentView = isTaskView(requestedView) ? requestedView : "board"
 
-  // Fetch projects for filter
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch(getApiUrl("/api/projects"), { credentials: "include" })
-      const data = await response.json()
-      if (data.success) {
-        setProjects(data.data)
-      }
-    } catch {
-      // Silent fail - SWR will handle retry/error state
-    }
-  }
-
-  const handleTaskSuccess = () => {
-    setRefreshKey(prev => prev + 1) // Trigger refresh
+  function changeView(value: string) {
+    router.replace(`/dashboard/tasks?view=${value}`, { scroll: false })
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">
-            Manage your SEO tasks with Kanban board and time tracking
-          </p>
-        </div>
-        <Button onClick={() => setIsNewTaskOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Task
-        </Button>
+    <div>
+      <PageHeader
+        title="Tasks"
+        description="Board, timeline, table, and calendar shells."
+      />
+      <div className="space-y-4 p-4 sm:p-6">
+        <Tabs value={currentView} onValueChange={changeView}>
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:w-auto">
+            {taskViews.map((view) => (
+              <TabsTrigger key={view.value} value={view.value} className="gap-2">
+                <view.icon className="h-4 w-4" />
+                {view.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {taskViews.map((view) => (
+            <TabsContent key={view.value} value={view.value} className="mt-4">
+              <EmptyState
+                icon={view.icon}
+                title={`${view.label} view`}
+                description="Task data will render here once task management views are connected."
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
-
-      {/* Filters */}
-      <TaskFilters
-        searchQuery={searchQuery}
-        selectedProject={selectedProject}
-        selectedStatus={selectedStatus}
-        projects={projects}
-        onSearchChange={setSearchQuery}
-        onProjectChange={setSelectedProject}
-        onStatusChange={setSelectedStatus}
-      />
-
-      <KanbanBoard
-        key={refreshKey}
-        searchQuery={searchQuery}
-        selectedProject={selectedProject}
-        selectedStatus={selectedStatus}
-      />
-
-      <TaskDialog
-        mode="create"
-        open={isNewTaskOpen}
-        onOpenChange={setIsNewTaskOpen}
-        onSuccess={handleTaskSuccess}
-      />
     </div>
   )
+}
+
+function TasksFallback() {
+  return (
+    <div>
+      <PageHeader title="Tasks" />
+      <div className="p-4 sm:p-6">
+        <EmptyState icon={KanbanSquare} title="Loading task view" />
+      </div>
+    </div>
+  )
+}
+
+function isTaskView(value: string | null): value is TaskView {
+  return taskViews.some((view) => view.value === value)
 }

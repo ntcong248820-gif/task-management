@@ -9,6 +9,7 @@
 |-------|------|--------|-------|
 | 1 | Auth + Workspace Foundation | Done | Better Auth email/password, workspace/org roles, auth pages, Next auth handler, dashboard layout guard, Hono workspace guard. Live signup -> workspace -> dashboard smoke passed. Google login, email verification, password reset, and invite email deferred |
 | 2 | Data Schema Redesign | Done | UUID business schema applied to production, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
+| 3 | UI Shell Redesign | Code complete; local validation passed | New dashboard shell, grouped sidebar, mobile Sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs. Browser/live smoke pending |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
