@@ -1,7 +1,7 @@
 ---
 phase: 1
 title: "Auth + Workspace Foundation"
-status: in-progress
+status: completed
 priority: P0
 effort: "~8h"
 dependencies: []
@@ -27,9 +27,10 @@ Mọi phase sau đều phụ thuộc vào phase này.
 Reviewed against Better Auth best practices — see `plans/reports/better-auth-260510-1952-phase-01-review.md`.
 Corrections applied: middleware pattern, organizationClient plugin, viewer role, null workspace guard, session expiry, schema generation step.
 Code complete and locally validated on 2026-05-13: `npm run type-check`, `npm run test --workspace apps/web`, `npm run lint --workspace apps/web`, `npm run build --workspace apps/web`.
-Local DB push completed during Phase 02 on 2026-05-14. Live auth smoke flows still pending.
+Local DB push completed during Phase 02 on 2026-05-14.
 Auth guard debug on 2026-05-18 fixed dashboard page protection: `/dashboard` and `/dashboard/tasks` now redirect unauthenticated users to `/login`.
 MVP simplification on 2026-05-18 removed Resend-dependent email verification, password reset, invite email, and Better Auth Google login. GSC/GA4 Google OAuth integrations remain separate.
+Live auth smoke passed on 2026-05-19: signup, workspace creation, active workspace session, dashboard API access.
 
 ## Deferred
 
@@ -246,15 +247,16 @@ Better Auth với organization plugin auto-creates:
 - [x] Add `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` to env
 - [x] Remove Better Auth Google login requirement and Resend requirement from internal MVP auth
 - [x] Run local `npm run db:push` to create auth tables (completed during Phase 02 local schema push)
-- [ ] Test: signup → workspace create → dashboard
+- [x] Test: signup → workspace create → dashboard (live smoke passed 2026-05-19)
 - [ ] Test: email/password login → dashboard
 
 ## Success Criteria
 
-- [ ] User can sign up with email/password
+- [x] User can sign up with email/password
 - [x] Unauthenticated access to `/dashboard/*` redirects to `/login`
-- [ ] Workspace created on first signup
+- [x] Workspace created on first signup
 - [ ] All API endpoints return 401 without valid session
+- [x] Core protected API unauthenticated smoke returns 401 (`GET /api/projects`)
 
 ## Risk Assessment
 

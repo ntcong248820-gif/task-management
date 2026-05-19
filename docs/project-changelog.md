@@ -1,5 +1,22 @@
 # Project Changelog
 
+## 2026-05-19
+
+### Fixed
+- Reconciled production Phase 02 schema drift with `0006_phase02_v2_schema_reconcile.sql`.
+- Preserved old v1 business tables as `*_legacy_v1_20260519` instead of dropping data.
+- Fixed workspace creation flow to stop redirecting when `organization.setActive` fails.
+
+### Validation
+- Local disposable DB: full migration chain applied successfully.
+- Production DB: v2 `projects`, `tasks`, `goals`, `sprints`, and `task_templates` tables verified.
+- Live auth smoke: signup `200`, organization create `200`, authenticated `GET /api/projects` `200`, authenticated `GET /api/tasks` `200`.
+- `npm --workspace @repo/db run type-check`
+- `npm --workspace @seo-impact-os/web run type-check`
+- `npm --workspace @seo-impact-os/web run test` -> `16/16`
+- `npm --workspace @seo-impact-os/web run lint`
+- `npm --workspace @seo-impact-os/web run build`
+
 ## 2026-05-18
 
 ### Changed

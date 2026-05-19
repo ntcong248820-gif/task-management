@@ -77,9 +77,9 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 
 | # | Phase | Key Deliverables | Effort | Status | Review |
 |---|-------|-----------------|--------|--------|--------|
-| 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth email/password, workspace, roles, dashboard guard | ~8h | ⚠️ Code complete; simplified live auth smoke pending | ✅ Review corrections applied; simplified on 2026-05-18 to remove Resend/Google-login dependency |
-| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete (implemented 2026-05-14) | ✅ Review corrections applied — `reports/databases-260510-2117-phase-02-schema-review.md`; implemented in `ab4745e`; validation passed 2026-05-14 |
-| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | pending | ✅ Reviewed — `reports/ui-ux-review-260510-2154-phase-03-ui-shell.md` (effort ~6h→~7-8h) |
+| 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth email/password, workspace, roles, dashboard guard | ~8h | ✅ Complete | ✅ Live signup/workspace/dashboard smoke passed 2026-05-19; simplified on 2026-05-18 to remove Resend/Google-login dependency |
+| 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete | ✅ Production schema reconciled 2026-05-19; authenticated projects/tasks smoke passed |
+| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | ready to start | ✅ Reviewed — `reports/ui-ux-review-260510-2154-phase-03-ui-shell.md` (effort ~6h→~7-8h) |
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
 | 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (project-scoped goals, standalone sprints OK, batch progress query) |
 | 06 | [Analytics Intelligence](./phase-06-analytics-intelligence.md) | Anomaly alerts, content decay, scheduled digests, recommendations | ~16h | pending | ✅ Reviewed — 2026-05-11 (stddev guard, set-based SQL decay, alert polling) |
@@ -88,11 +88,11 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 > **Final Feasibility Review: 2026-05-11** — `/ck:predict` (CAUTION→GO) + `/ck:scenario` (34 edge cases, 5 Critical fixed).
 > Estimated effort revised: ~83h → ~89-92h. All Critical items applied. Plan READY TO IMPLEMENT.
 
-## Current State — 2026-05-18
+## Current State — 2026-05-19
 
-- Phase 01: implementation complete and local code validation passed; internal MVP auth now email/password-only. Live signup/login/workspace smoke tests still open; email verification, invite email, password reset, and Better Auth Google login are deferred.
-- Phase 02: complete; local DB push, type-check, tests, lint, and build passed.
-- Phase 03: next implementation phase; one auth-layout checklist item is already delivered by Phase 01 and should be reused.
+- Phase 01: complete. Internal MVP auth is email/password-only; live signup -> workspace -> dashboard smoke passed. Email verification, invite email, password reset, and Better Auth Google login are deferred.
+- Phase 02: complete. Production DB now has the v2 workspace-scoped business schema; old v1 business tables are preserved as `*_legacy_v1_20260519`.
+- Phase 03: ready to start; one auth-layout checklist item is already delivered by Phase 01 and should be reused.
 - Phase 04: still pending; recurring-template unique constraint already delivered by Phase 02, `targetUrl` and task API/UI work remain open.
 
 ## Feature Proposals with Reasoning

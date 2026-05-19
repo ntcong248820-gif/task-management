@@ -1,7 +1,7 @@
 ---
 phase: 2
 title: "Data Schema Redesign"
-status: complete
+status: completed
 priority: P0
 effort: "~8h"
 dependencies: [1]
@@ -16,6 +16,7 @@ Giữ lại GSC/GA4 sync implementation knowledge nhưng adapt schema cho multi-
 
 > **Updated:** Applied fixes từ database review (report: `plans/reports/databases-260510-2117-phase-02-schema-review.md`)
 > Effort tăng từ ~6h → ~8h do 6 critical fixes cần thêm.
+> **Production reconcile:** 2026-05-19 added `packages/db/migrations/0006_phase02_v2_schema_reconcile.sql`, applied v2 schema to production, preserved v1 business tables as `*_legacy_v1_20260519`, and verified authenticated `/api/projects` + `/api/tasks` return `200`.
 
 ## Strategy: Fresh Schema, Keep Sync Logic
 

@@ -1,14 +1,14 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-18
+> **Last Updated:** 2026-05-19
 > **Overall Progress:** ~97% (MVP deployed, Phase 7 continued, Database migration to new Supabase project complete, GitHub Actions cron verified working)
 
 ## v2 Greenfield Rebuild
 
 | Phase | Name | Status | Notes |
 |-------|------|--------|-------|
-| 1 | Auth + Workspace Foundation | Code complete; email/password smoke pending | Better Auth package, email/password-only auth, workspace/org roles, auth pages, Next auth handler, dashboard layout guard, Hono workspace guard. Google login, email verification, password reset, and invite email deferred |
-| 2 | Data Schema Redesign | Done | UUID business schema, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
+| 1 | Auth + Workspace Foundation | Done | Better Auth email/password, workspace/org roles, auth pages, Next auth handler, dashboard layout guard, Hono workspace guard. Live signup -> workspace -> dashboard smoke passed. Google login, email verification, password reset, and invite email deferred |
+| 2 | Data Schema Redesign | Done | UUID business schema applied to production, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
@@ -17,7 +17,7 @@
 - Better Auth Google login, email verification, password reset, and invite email are deferred for internal MVP
 - OAuth tokens are encrypted; GSC/GA4 OAuth state is HMAC signed and bound to the active session/workspace
 - Validation passed: root type-check, web tests `16/16`, lint pass, web build pass
-- Local DB push completed during Phase 02; simplified live auth smoke still pending
+- Production smoke passed on 2026-05-19: signup, workspace creation, dashboard API auth context
 
 ### Phase 02 Delivery Notes
 - Business tables reset to UUID primary keys and Better Auth workspace IDs (`organization.id` text)
@@ -26,6 +26,8 @@
 - `tasks` now supports goals, sprints, assignees/reporters, recurring templates, and second-based estimates
 - Local DB backup before reset: `/tmp/seo-impact-os-phase02-20260514-084302/seo_impact_os_before_phase02.sql`
 - Validation passed: root type-check, forced tests `44/44`, lint pass with no warnings, production build pass with local placeholder env
+- Production schema reconcile completed on 2026-05-19 via `packages/db/migrations/0006_phase02_v2_schema_reconcile.sql`; v1 business tables preserved as `*_legacy_v1_20260519`
+- Production authenticated smoke passed: `GET /api/projects` -> `200`, `GET /api/tasks` -> `200`
 
 ## Phase Status
 

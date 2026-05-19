@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "UI Shell Redesign"
-status: pending
+status: ready
 priority: P1
 effort: "~7-8h"
 dependencies: [1, 2]
@@ -17,6 +17,7 @@ các phase sau sẽ build vào. Giữ shadcn/ui + Tailwind CSS, redesign composi
 > **Reviewed:** Applied fixes từ UI/UX review — see `plans/reports/ui-ux-review-260510-2154-phase-03-ui-shell.md`
 > Effort tăng từ ~6h → ~7-8h (dashboard guard reuse + mobile testing).
 > Phase 01 auth was simplified on 2026-05-18: email/password-only, no Google login, no email verification/reset/invite email.
+> Phase 01/02 readiness gate passed on 2026-05-19: production signup/workspace smoke passed and authenticated `/api/projects` + `/api/tasks` return `200` on the v2 schema.
 
 ## Design Principles
 
