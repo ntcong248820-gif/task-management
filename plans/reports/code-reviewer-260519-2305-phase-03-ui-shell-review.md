@@ -41,6 +41,8 @@ Confirmed:
 - `npm --workspace @seo-impact-os/web run test` passed, `16/16`
 - `npm --workspace @seo-impact-os/web run lint` passed
 - `npm --workspace @seo-impact-os/web run build` passed with local placeholder required env
+- Local dev smoke initially found `500 localStorage.getItem` in this Node runtime; fixed with guarded project-store persistence, client-only auth header controls, and a server localStorage shim.
+- Fresh local `HEAD /dashboard` and `HEAD /dashboard/tasks?view=timeline` now return `307 /login?redirect=/dashboard`.
 
 ## Unresolved Questions
 

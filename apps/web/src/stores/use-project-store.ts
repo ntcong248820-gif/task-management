@@ -1,11 +1,17 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { createJSONStorage, persist, type StateStorage } from 'zustand/middleware';
 
 interface ProjectStore {
     selectedProjectId: string | null;
     setSelectedProjectId: (id: string | null) => void;
     clearSelectedProjectId: () => void;
 }
+
+const noopStorage: StateStorage = {
+    getItem: () => null,
+    setItem: () => undefined,
+    removeItem: () => undefined,
+};
 
 export const useProjectStore = create<ProjectStore>()(
     persist(
@@ -14,6 +20,11 @@ export const useProjectStore = create<ProjectStore>()(
             setSelectedProjectId: (id) => set({ selectedProjectId: id }),
             clearSelectedProjectId: () => set({ selectedProjectId: null }),
         }),
-        { name: 'selected-project' }
+        {
+            name: 'selected-project',
+            storage: createJSONStorage(() =>
+                typeof window === 'undefined' ? noopStorage : window.localStorage
+            ),
+        }
     )
 );

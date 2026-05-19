@@ -7,6 +7,7 @@
 - Replaced active dashboard pages with shell placeholders or canonical redirects.
 - Added grouped sidebar navigation, responsive mobile Sheet nav, workspace/project selectors, alert bell, user menu, and task `?view=` tabs.
 - Added workspace and alert Zustand stores for Phase 03 shell state.
+- Guarded persisted project selection and added a server localStorage shim for this Node runtime.
 
 ### Validation
 - `npm --workspace @seo-impact-os/web run type-check`

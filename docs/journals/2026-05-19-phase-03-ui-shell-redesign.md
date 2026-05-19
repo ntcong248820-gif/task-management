@@ -16,6 +16,7 @@
 - Code reviewer found mobile header overflow plus Sheet/Collapsible implementation gaps.
 - Fixed mobile header by hiding project selector under `sm` and shrinking selector widths.
 - Added local Sheet and Collapsible wrappers and switched shell components to use them.
+- Local dev smoke caught server-render issues from malformed Node `localStorage`; fixed with a server shim, guarded Zustand storage, and client-only auth header controls.
 - Stale v1 component files are left unimported for now; cleanup deferred to Phase 04 task-view rebuild.
 
 ## Validation
@@ -25,6 +26,7 @@
 - `npm --workspace @seo-impact-os/web run lint`
 - `npm --workspace @seo-impact-os/web run build` with local placeholder required env
 - Code-reviewer re-review: no blocking findings.
+- Local `HEAD /dashboard` smoke: fixed from `500 localStorage.getItem` to Phase 01 redirect behavior.
 
 ## Next Steps
 

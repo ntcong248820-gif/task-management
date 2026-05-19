@@ -1,3 +1,4 @@
+import '@/lib/server-local-storage-shim';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import '../styles/globals.css';
