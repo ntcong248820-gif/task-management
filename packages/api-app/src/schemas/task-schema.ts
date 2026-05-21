@@ -27,6 +27,25 @@ export const createTaskSchema = z.object({
   recurringConfig: z.record(z.string(), z.unknown()).nullable().optional(),
   tags: z.array(z.string()).nullable().optional(),
   notes: z.string().nullable().optional(),
-});
+  targetUrl: z.string().url().nullable().optional(),
+}).refine(
+  (d) => !d.dueDate || !d.startDate || d.dueDate >= d.startDate,
+  { message: 'dueDate must be >= startDate', path: ['dueDate'] }
+);
 
 export const updateTaskSchema = createTaskSchema.partial();
+
+export const moveTaskSchema = z.object({
+  status: z.enum(['backlog', 'todo', 'in_progress', 'blocked', 'in_review', 'done']),
+});
+
+export const createTaskTemplateSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().nullable().optional(),
+  taskType: z.enum(['technical', 'content', 'links', 'planning', 'meeting', 'audit']).nullable().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  affectsWebsite: z.boolean().default(true),
+  estimatedTime: z.number().int().positive().nullable().optional(),
+  recurringConfig: z.record(z.string(), z.unknown()),
+  tags: z.array(z.string()).nullable().optional(),
+});

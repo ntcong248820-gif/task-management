@@ -51,6 +51,7 @@ export interface Task {
   recurringConfig?: Record<string, unknown> | null;
   tags?: string[] | null;
   notes?: string | null;
+  targetUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -17,6 +17,7 @@ import rankingsRoutes from './routes/rankings';
 import urlsRoutes from './routes/urls';
 import diagnosisRoutes from './routes/diagnosis';
 import keywordsRoutes from './routes/keywords';
+import taskTemplatesRoutes from './routes/task-templates';
 import cronRoutes from './routes/cron/index';
 
 validateEnv();
@@ -114,6 +115,7 @@ app.use('*', async (c, next) => {
     await next();
 });
 
+app.route('/task-templates', taskTemplatesRoutes);
 app.route('/projects', projectsRoutes);
 app.route('/tasks', tasksRoutes);
 app.route('/time-logs', timeLogsRoutes);
