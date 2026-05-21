@@ -28,7 +28,7 @@ Eliminate Render cold starts, consolidate to single Vercel deployment, fix 20 au
 | 02 | [Hono into Next.js Route Handlers](./phase-02-hono-into-nextjs.md) | complete | 3h | #3, #7, #14, #18, #19 |
 | 03 | [Vercel Cron migration](./phase-03-cron-migration.md) | complete | 1.5h | #2 |
 | 04 | [Env centralization + OAuth fixes](./phase-04-env-centralization.md) | complete | 1.5h | #4, #5, #8, #9, #17 |
-| 05 | [Cleanup (Render, Docker, orphan dirs)](./phase-05-cleanup.md) | in-progress (92% immediate tasks done, waiting ~May 14 cron soak) | 1h | #6, #10, #11, #15, #20 |
+| 05 | [Cleanup (Render, Docker, orphan dirs)](./phase-05-cleanup.md) | in-progress (all immediate tasks done, waiting ~May 14 cron validation soak) | 1h | #6, #10, #11, #15, #20 |
 
 ## Dependency Graph
 ```
@@ -54,15 +54,15 @@ Eliminate Render cold starts, consolidate to single Vercel deployment, fix 20 au
 - 05: irreversible deletions deferred until two-week soak period passes
 
 ## Success Criteria (Plan-Level)
-- [ ] `https://task-management.vercel.app/api/health` returns 200 with no cold start delay (<500ms p95)
-- [ ] All `/api/*` routes work from web frontend (no CORS errors)
-- [ ] Daily cron `/api/cron/sync-gsc` fires at 02:00 ICT (logs visible in Vercel dashboard)
-- [ ] Render service can be paused with no traffic loss
-- [ ] All 20 audit issues marked closed
+- [x] `https://task-management.vercel.app/api/health` returns 200 with no cold start delay (<500ms p95)
+- [x] All `/api/*` routes work from web frontend (no CORS errors)
+- [x] Daily cron `/api/cron/sync-gsc` fires at 02:00 ICT (logs visible in GitHub Actions)
+- [x] Render service paused with no traffic loss
+- [ ] All 20 audit issues marked closed (pending phase 01 completion)
 
 ## Unresolved Questions
-1. Vercel project name `task-management` available? Check before Phase 01 Step 5.
-2. DB host (Neon/Supabase/Render) — verify before Phase 02 deploy to confirm connection pooler available.
+1. Phase 01 (Vercel monorepo config) — status unclear (pending). Blocks phase completion. Need to verify vercel.json + turbo.json config.
+2. DB host confirmed: Supabase (hipvuijrwcmdoeirtswf) — new project created 2026-04-30, schema pushed, connection stable.
 
 ## Validation Log
 

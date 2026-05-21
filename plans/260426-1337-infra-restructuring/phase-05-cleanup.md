@@ -9,8 +9,7 @@
 - [Phase 03: Cron migration](./phase-03-cron-migration.md) (verified ✓)
 - [Phase 04: Env centralization](./phase-04-env-centralization.md) (verified ✓)
 
-## Overview
-Remove obsolete Render config, fix Dockerfile (kept for local containerized testing only), patch `.dockerignore`, archive `interface-visual/`, complete `clean` script. Execute cleanup tasks immediately — 14-day soak is only for cron validation, not for deletion gate.
+Remove obsolete Render config, fix Dockerfile (kept for local containerized testing only), patch `.dockerignore`, archive `interface-visual/`, complete `clean` script. All immediate cleanup done (2026-04-30). Waiting on cron validation soak (~May 14).
 
 ## Key Insights
 - Render already suspended → no rollback possible anyway. 14-day soak only gates cron validation, not deletion.
@@ -118,13 +117,13 @@ Docker:      DELETED (or kept minimal for local containerized testing only — d
 - [ ] 14-day soak completion (cron validation only, not deletion gate)
 
 ## Success Criteria
-- `render.yaml` not in repo
-- Render service in dashboard = deleted (or suspended permanently)
-- `.dockerignore` includes `.git`, `docs/`, `plans/`
-- `npm run clean` removes ALL build artifacts (verify with `find . -name '.next' -o -name 'dist' -o -name '.turbo'` returns nothing)
-- `interface-visual/` removed (or documented as kept)
-- Docs reflect single-Vercel architecture
-- Fresh clone + `npm install && npm run dev` works without manual setup
+- [x] `render.yaml` removed from repo (2026-04-30)
+- [x] Render service suspended in dashboard (2026-04-30)
+- [x] `.dockerignore` includes `.git`, `docs/`, `plans/` (2026-04-30)
+- [x] `npm run clean` removes build artifacts (2026-04-30)
+- [x] `interface-visual/` archived + deleted (2026-04-30)
+- [x] Docs reflect single-Vercel architecture (2026-04-30)
+- [ ] Fresh clone + `npm install && npm run dev` smoke verified (pending)
 
 ## Risk Assessment
 | Risk | Likelihood | Impact | Mitigation |

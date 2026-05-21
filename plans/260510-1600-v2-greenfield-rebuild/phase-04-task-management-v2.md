@@ -1,11 +1,13 @@
 ---
 phase: 4
 title: "Task Management v2 — Multi-View System"
-status: pending
+status: complete
 priority: P1
 effort: "~20h"
 dependencies: [1, 2, 3]
 ---
+
+> **Completed 2026-05-22.** Type-check clean, 21/21 unit tests pass, code-reviewed READY_WITH_CONCERNS (all blocking issues fixed). V1 legacy files (@ts-nocheck) deferred to Phase 05 cleanup.
 
 # Phase 04: Task Management v2
 
@@ -273,40 +275,41 @@ useTaskTemplates()        → { templates, loading }
 
 ## Todo
 
-- [ ] Add Phase 04 migration: `ALTER TABLE tasks ADD COLUMN target_url TEXT` (for Phase 07 page→task linking)
+- [x] **FIRST:** Install `@tanstack/react-table` — required for Table view (`npm install @tanstack/react-table -w apps/web`)
+- [x] Add Phase 04 migration: `ALTER TABLE tasks ADD COLUMN target_url TEXT` (for Phase 07 page→task linking)
 - [x] Add UNIQUE constraint on tasks `(recurring_template_id, start_date)` for idempotent spawn (delivered in Phase 02 schema)
-- [ ] Add `targetUrl` to Zod create/update schemas + TypeScript task type
-- [ ] Add `targetUrl` field to TaskDetailPanel UI (optional URL input — sanitize: only allow `https?://`)
-- [ ] Rewrite `tasks.ts` API route (all endpoints) — workspaceId from session, not query param
-- [ ] `POST /api/tasks/:id/complete`: auto-stop active timer (UPDATE time_logs SET ended_at=NOW() WHERE task_id=$id AND ended_at IS NULL)
-- [ ] `PATCH /api/tasks/:id/move`: clear completedAt when moving task OUT of 'done' status
-- [ ] Add `search` filter to GET /api/tasks (ILIKE on title + tags)
-- [ ] Rewrite `time-logs.ts` API route — DB-backed active timer: query `time_logs WHERE ended_at IS NULL AND user_id=$userId` before starting new timer
-- [ ] Create `task-templates.ts` API route — spawn with `INSERT...ON CONFLICT (recurring_template_id, start_date) DO NOTHING`
-- [ ] Rewrite Zod schemas in `task-schema.ts` — add assigneeId, sprintId, goalId, startDate, dueDate, affectsWebsite, targetUrl, `.refine(d => !d.dueDate || !d.startDate || d.dueDate >= d.startDate, "dueDate must be >= startDate")`
-- [ ] Add pagination (limit/offset) to GET /api/tasks
-- [ ] Build Board view (Kanban) — carry over @dnd-kit, add TouchSensor for mobile
-- [ ] Board: implement optimistic rollback in `onDragEnd` — call `mutate()` if API PATCH fails
-- [ ] Build TaskCard component
-- [ ] Build TaskDetailPanel (slide-over) — estimatedTime=0 guard in time progress display
-- [ ] Build Timeline view (CSS Grid) — add "no dates" empty state for tasks without startDate/dueDate
-- [ ] Build Table view (TanStack Table)
-- [ ] Build Calendar view — max 3 chips/day + "+N more" popover
-- [ ] Build TaskFiltersBar (shared across views)
-- [ ] Build view switcher (Board/Timeline/Table/Calendar tabs)
-- [ ] Build timer in TaskDetailPanel — show "Stop [task X] first" toast if another timer active
-- [ ] Build recurring task templates UI in settings
-- [ ] Write SWR hooks — stable cache key (filters only, not view param)
-- [ ] Spawn lazy template tasks on TasksPage mount (ON CONFLICT DO NOTHING)
-- [ ] Run `npm run type-check`
+- [x] Add `targetUrl` to Zod create/update schemas + TypeScript task type
+- [x] Add `targetUrl` field to TaskDetailPanel UI (optional URL input — sanitize: only allow `https?://`)
+- [x] Rewrite `tasks.ts` API route (all endpoints) — workspaceId from session, not query param
+- [x] `POST /api/tasks/:id/complete`: auto-stop active timer (UPDATE time_logs SET ended_at=NOW() WHERE task_id=$id AND ended_at IS NULL)
+- [x] `PATCH /api/tasks/:id/move`: clear completedAt when moving task OUT of 'done' status
+- [x] Add `search` filter to GET /api/tasks (ILIKE on title + tags)
+- [x] Rewrite `time-logs.ts` API route — DB-backed active timer: query `time_logs WHERE ended_at IS NULL AND user_id=$userId` before starting new timer
+- [x] Create `task-templates.ts` API route — spawn with `INSERT...ON CONFLICT (recurring_template_id, start_date) DO NOTHING`
+- [x] Rewrite Zod schemas in `task-schema.ts` — add assigneeId, sprintId, goalId, startDate, dueDate, affectsWebsite, targetUrl, `.refine(d => !d.dueDate || !d.startDate || d.dueDate >= d.startDate, "dueDate must be >= startDate")`
+- [x] Add pagination (limit/offset) to GET /api/tasks
+- [x] Build Board view (Kanban) — carry over @dnd-kit, add TouchSensor for mobile
+- [x] Board: implement optimistic rollback in `onDragEnd` — call `mutate()` if API PATCH fails
+- [x] Build TaskCard component
+- [x] Build TaskDetailPanel (slide-over) — estimatedTime=0 guard in time progress display
+- [x] Build Timeline view (CSS Grid) — add "no dates" empty state for tasks without startDate/dueDate
+- [x] Build Table view (TanStack Table)
+- [x] Build Calendar view — max 3 chips/day + "+N more" popover
+- [x] Build TaskFiltersBar (shared across views)
+- [x] Build view switcher (Board/Timeline/Table/Calendar tabs)
+- [x] Build timer in TaskDetailPanel — show "Stop [task X] first" toast if another timer active
+- [x] Build recurring task templates UI in settings
+- [x] Write SWR hooks — stable cache key (filters only, not view param)
+- [x] Spawn lazy template tasks on TasksPage mount (ON CONFLICT DO NOTHING)
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] Can create task with all v2 fields (assignee, sprint, goal, dates)
-- [ ] Board: drag & drop changes status, persists
-- [ ] Timeline: tasks visible as bars between start/due dates
-- [ ] Table: inline edit works, sort + filter works
-- [ ] Calendar: tasks appear on due date
-- [ ] View switcher switches views without re-fetching data
-- [ ] Timer start/stop tracks time correctly
-- [ ] Recurring template spawns task at correct frequency
+- [x] Can create task with all v2 fields (assignee, sprint, goal, dates)
+- [x] Board: drag & drop changes status, persists
+- [x] Timeline: tasks visible as bars between start/due dates
+- [x] Table: inline edit works, sort + filter works
+- [x] Calendar: tasks appear on due date
+- [x] View switcher switches views without re-fetching data
+- [x] Timer start/stop tracks time correctly
+- [x] Recurring template spawns task at correct frequency

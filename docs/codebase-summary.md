@@ -10,8 +10,9 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 |----------|---------|
 | `src/app.ts` | Hono app factory — CORS, rate limiting, route registration, validateEnv() |
 | `src/routes/projects.ts` | Workspace-scoped CRUD `/api/projects` with UUID project IDs |
-| `src/routes/tasks.ts` | Workspace-scoped CRUD `/api/tasks` with goal/sprint/template fields |
-| `src/routes/time-logs.ts` | Workspace/user-scoped time tracking entries |
+| `src/routes/tasks.ts` | Workspace-scoped task CRUD + multi-view filters (status, search, sprintId, assigneeId, limit/offset); `/complete` auto-stops timer; `/move` clears completedAt; `/stats` workload counters |
+| `src/routes/time-logs.ts` | User-scoped timer `/start` (DB-backed, enforces single active), `/stop` (increments task.timeSpent), and manual entry POST with Zod validation |
+| `src/routes/task-templates.ts` | Template CRUD + `/spawn` (idempotent `ON CONFLICT DO NOTHING` on recurringTemplateId+startDate) |
 | `src/routes/analytics.ts` | Combined GSC + GA4 metrics |
 | `src/routes/correlation.ts` | Task-traffic correlation data |
 | `src/routes/rankings.ts` | Keyword position tracking |
@@ -57,17 +58,20 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/(auth)/signup/page.tsx` | Signup page with pending workspace name |
 | `src/app/(auth)/workspace/page.tsx` | Workspace create/select page |
 | `src/app/dashboard/page.tsx` | Phase 03 proactive overview shell |
-| `src/app/dashboard/tasks/` | Phase 03 task view shell with `?view=board|timeline|table|calendar` |
+| `src/app/dashboard/tasks/` | Phase 04 multi-view task hub with `?view=board|timeline|table|calendar` (default: board) |
 | `src/app/dashboard/goals/` | Phase 03 goals placeholder |
 | `src/app/dashboard/sprints/` | Phase 03 sprints placeholder |
 | `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`, `alerts`) |
 | `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
 | `src/components/ui/` | shadcn/ui primitives |
 | `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
+| `src/components/features/tasks/` | Phase 04 task components: `view-switcher-tabs.tsx`, `task-filters-bar.tsx`, `task-card.tsx`, `kanban-board.tsx`, `kanban-column.tsx`, `task-detail-panel.tsx` (Sheet slide-over), `task-timer-section.tsx`, `timeline-view.tsx` (CSS Grid Gantt-lite), `table-view.tsx` (TanStack Table), `calendar-view.tsx` (month with popover overflow) |
 | `src/components/features/` | Feature components (tasks, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
+| `src/hooks/use-tasks.ts` | Phase 04 SWR hooks: `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
-| `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`; legacy timer store unused by Phase 03 shell) |
+| `src/stores/useTimerStore.ts` | Phase 04 rewrite: DB-backed timer state via `/start` `/stop` endpoints, localStorage persist, syncFromDb() |
+| `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`) |
 | `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
 | `src/lib/auth-client.ts` | Better Auth client with `organizationClient` plugin |
 | `src/app/dashboard/layout.tsx` | Dashboard session + workspace redirect guard |
@@ -78,8 +82,8 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | File/Dir | Purpose |
 |----------|---------|
 | `src/schema/projects.ts` | Workspace-scoped projects with UUID IDs |
-| `src/schema/tasks.ts` | Task v2 table with UUID IDs, workspace, goal/sprint/template links, recurring fields |
-| `src/schema/time-logs.ts` | Time logs with UUID task IDs, workspace ID, user ID, started/ended timestamps |
+| `src/schema/tasks.ts` | Task v2 table with UUID IDs, workspace, goal/sprint/template links, `target_url TEXT` (Phase 04), recurring fields |
+| `src/schema/time-logs.ts` | Time logs with UUID task IDs, workspace ID, user ID, started/ended timestamps, duration |
 | `src/schema/auth-schema.ts` | Better Auth generated schema tables |
 | `src/schema/gsc-connections.ts` | GSC OAuth connection + sync status per project |
 | `src/schema/ga4-connections.ts` | GA4 OAuth connection + sync status per project |
