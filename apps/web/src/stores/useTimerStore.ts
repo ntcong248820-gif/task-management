@@ -3,165 +3,106 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getApiUrl } from '@/lib/config';
-import type { Task } from '@/types/task.types';
 
 interface TimerState {
-    // Current state
-    activeTask: Task | null;
-    isRunning: boolean;
-    startTime: number | null; // Timestamp when timer started
-    elapsedTime: number; // Total elapsed seconds
-    pausedTime: number | null; // Timestamp when paused
+  activeTaskId: string | null;
+  activeTaskTitle: string | null;
+  isRunning: boolean;
+  startTime: number | null;
+  elapsedSeconds: number;
 
-    // Actions
-    startTimer: (task: Task) => void;
-    pauseTimer: () => void;
-    resumeTimer: () => void;
-    stopTimer: () => Promise<void>;
-    tick: () => void;
-    reset: () => void;
+  startTimer: (taskId: string, taskTitle: string) => Promise<{ error?: string; activeTaskId?: string }>;
+  stopTimer: (note?: string) => Promise<void>;
+  syncFromDb: () => Promise<void>;
+  tick: () => void;
+  reset: () => void;
 }
 
 export const useTimerStore = create<TimerState>()(
-    persist(
-        (set, get) => ({
-            // Initial state
-            activeTask: null,
-            isRunning: false,
-            startTime: null,
-            elapsedTime: 0,
-            pausedTime: null,
+  persist(
+    (set, get) => ({
+      activeTaskId: null,
+      activeTaskTitle: null,
+      isRunning: false,
+      startTime: null,
+      elapsedSeconds: 0,
 
-            // Start timer for a task
-            startTimer: (task: Task) => {
-                const state = get();
+      startTimer: async (taskId, taskTitle) => {
+        const state = get();
+        if (state.activeTaskId === taskId && state.isRunning) return {};
 
-                // If there's already an active task, stop it first
-                if (state.activeTask && state.activeTask.id !== task.id) {
-                    state.stopTimer();
-                }
-
-                set({
-                    activeTask: task,
-                    isRunning: true,
-                    startTime: Date.now(),
-                    elapsedTime: 0,
-                    pausedTime: null,
-                });
-            },
-
-            // Pause the timer
-            pauseTimer: () => {
-                const state = get();
-                if (!state.isRunning) return;
-
-                set({
-                    isRunning: false,
-                    pausedTime: Date.now(),
-                });
-            },
-
-            // Resume the timer
-            resumeTimer: () => {
-                const state = get();
-                if (state.isRunning || !state.activeTask) return;
-
-                // Calculate time spent while paused
-                const pauseDuration = state.pausedTime
-                    ? Date.now() - state.pausedTime
-                    : 0;
-
-                set({
-                    isRunning: true,
-                    startTime: state.startTime ? state.startTime + pauseDuration : Date.now(),
-                    pausedTime: null,
-                });
-            },
-
-            // Stop timer and save time log
-            stopTimer: async () => {
-                const state = get();
-                if (!state.activeTask) return;
-
-                const finalElapsedTime = state.elapsedTime;
-                const taskId = state.activeTask.id;
-
-                // Save time log to API
-                try {
-                    const response = await fetch(getApiUrl('/api/time-logs'), {
-                        method: 'POST',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            taskId,
-                            duration: finalElapsedTime,
-                            startTime: new Date(state.startTime!).toISOString(),
-                            endTime: new Date().toISOString(),
-                        }),
-                    });
-
-                    if (!response.ok) {
-                        console.error('Failed to save time log');
-                    }
-
-                    // Update task's timeSpent
-                    await fetch(getApiUrl(`/api/tasks/${taskId}`), {
-                        method: 'PUT',
-                        credentials: 'include',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            timeSpent: (state.activeTask.timeSpent || 0) + finalElapsedTime,
-                        }),
-                    });
-                } catch (error) {
-                    console.error('Error saving time log:', error);
-                }
-
-                // Reset timer state
-                set({
-                    activeTask: null,
-                    isRunning: false,
-                    startTime: null,
-                    elapsedTime: 0,
-                    pausedTime: null,
-                });
-            },
-
-            // Update elapsed time (called every second)
-            tick: () => {
-                const state = get();
-                if (!state.isRunning || !state.startTime) return;
-
-                const now = Date.now();
-                const elapsed = Math.floor((now - state.startTime) / 1000);
-
-                set({ elapsedTime: elapsed });
-            },
-
-            // Reset timer without saving
-            reset: () => {
-                set({
-                    activeTask: null,
-                    isRunning: false,
-                    startTime: null,
-                    elapsedTime: 0,
-                    pausedTime: null,
-                });
-            },
-        }),
-        {
-            name: 'timer-storage',
-            partialize: (state) => ({
-                activeTask: state.activeTask,
-                isRunning: state.isRunning,
-                startTime: state.startTime,
-                elapsedTime: state.elapsedTime,
-                pausedTime: state.pausedTime,
-            }),
+        try {
+          const res = await fetch(getApiUrl('/api/time-logs/start'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ taskId }),
+          });
+          const json = await res.json();
+          if (!res.ok || !json.success) {
+            // 409 = another timer active
+            return { error: json.error, activeTaskId: json.data?.activeTaskId };
+          }
+          set({ activeTaskId: taskId, activeTaskTitle: taskTitle, isRunning: true, startTime: Date.now(), elapsedSeconds: 0 });
+          return {};
+        } catch {
+          return { error: 'Failed to start timer' };
         }
-    )
+      },
+
+      stopTimer: async (note?: string) => {
+        const state = get();
+        if (!state.activeTaskId) return;
+        try {
+          await fetch(getApiUrl('/api/time-logs/stop'), {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ note: note ?? null }),
+          });
+        } catch {
+          // best-effort — reset local state regardless
+        }
+        set({ activeTaskId: null, activeTaskTitle: null, isRunning: false, startTime: null, elapsedSeconds: 0 });
+      },
+
+      syncFromDb: async () => {
+        try {
+          const res = await fetch(getApiUrl('/api/time-logs?limit=1'), { credentials: 'include' });
+          if (!res.ok) return;
+          const json = await res.json();
+          // Find active log (no endedAt) for this user — API returns all logs sorted by startedAt desc
+          // If the first log has no endedAt, we have an active timer
+          const active = (json.data ?? []).find((l: any) => l.endedAt == null);
+          if (active) {
+            const elapsed = Math.floor((Date.now() - new Date(active.startedAt).getTime()) / 1000);
+            set({ activeTaskId: active.taskId, isRunning: true, startTime: Date.now() - elapsed * 1000, elapsedSeconds: elapsed });
+          } else {
+            set({ activeTaskId: null, isRunning: false, startTime: null, elapsedSeconds: 0 });
+          }
+        } catch {
+          // ignore sync errors
+        }
+      },
+
+      tick: () => {
+        const state = get();
+        if (!state.isRunning || !state.startTime) return;
+        set({ elapsedSeconds: Math.floor((Date.now() - state.startTime) / 1000) });
+      },
+
+      reset: () => {
+        set({ activeTaskId: null, activeTaskTitle: null, isRunning: false, startTime: null, elapsedSeconds: 0 });
+      },
+    }),
+    {
+      name: 'timer-storage',
+      partialize: (s) => ({
+        activeTaskId: s.activeTaskId,
+        activeTaskTitle: s.activeTaskTitle,
+        isRunning: s.isRunning,
+        startTime: s.startTime,
+      }),
+    }
+  )
 );

@@ -1,3 +1,4 @@
+// @ts-nocheck — v1 legacy component, superseded by features/tasks/task-card.tsx (Phase 05 cleanup)
 "use client"
 
 import { useSortable } from '@dnd-kit/sortable';

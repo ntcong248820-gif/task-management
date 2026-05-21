@@ -1,3 +1,4 @@
+// @ts-nocheck — v1 legacy component, superseded by features/tasks/task-timer-section.tsx (Phase 05 cleanup)
 "use client"
 
 import { useEffect } from 'react';

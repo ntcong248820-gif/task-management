@@ -29,6 +29,23 @@ export interface Task {
   recurringConfig?: Record<string, unknown> | null;
   tags?: string[] | null;
   notes?: string | null;
+  targetUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskTemplate {
+  id: string;
+  workspaceId: string;
+  title: string;
+  description?: string | null;
+  taskType?: TaskType | null;
+  priority: TaskPriority;
+  affectsWebsite: boolean;
+  estimatedTime?: number | null;
+  recurringConfig: Record<string, unknown>;
+  tags?: string[] | null;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }

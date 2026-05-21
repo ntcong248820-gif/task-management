@@ -1,82 +1,150 @@
 "use client"
 
-import { Suspense } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { CalendarDays, KanbanSquare, ListTodo, Table2 } from "lucide-react"
-
+import { Suspense, useEffect, useMemo, useState } from "react"
+import { format } from "date-fns"
+import { Plus } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PageHeader } from "@/components/ui/page-header"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-const taskViews = [
-  { value: "board", label: "Board", icon: KanbanSquare },
-  { value: "timeline", label: "Timeline", icon: ListTodo },
-  { value: "table", label: "Table", icon: Table2 },
-  { value: "calendar", label: "Calendar", icon: CalendarDays },
-] as const
-
-type TaskView = (typeof taskViews)[number]["value"]
+import { KanbanBoard } from "@/components/features/tasks/kanban-board"
+import { TimelineView } from "@/components/features/tasks/timeline-view"
+import { TableView } from "@/components/features/tasks/table-view"
+import { CalendarView } from "@/components/features/tasks/calendar-view"
+import { TaskDetailPanel } from "@/components/features/tasks/task-detail-panel"
+import { CreateTaskDialog } from "@/components/features/tasks/create-task-dialog"
+import { TaskFiltersBar, DEFAULT_FILTERS, type TaskFilters } from "@/components/features/tasks/task-filters-bar"
+import { ViewSwitcherTabs, isTaskView, type TaskView } from "@/components/features/tasks/view-switcher-tabs"
+import { useTasks, useTaskTemplates } from "@/hooks/use-tasks"
+import { useProjectStore } from "@/stores/use-project-store"
+import { useTimerStore } from "@/stores/useTimerStore"
+import { getApiUrl } from "@/lib/config"
+import type { Task } from "@/types/task.types"
 
 export default function TasksPage() {
   return (
-    <Suspense fallback={<TasksFallback />}>
+    <Suspense fallback={<PageHeader title="Tasks" />}>
       <TasksContent />
     </Suspense>
   )
 }
 
 function TasksContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const requestedView = searchParams.get("view")
-  const currentView = isTaskView(requestedView) ? requestedView : "board"
+  const rawView = searchParams.get("view")
+  const view: TaskView = isTaskView(rawView) ? rawView : "board"
 
-  function changeView(value: string) {
-    router.replace(`/dashboard/tasks?view=${value}`, { scroll: false })
+  const { selectedProjectId } = useProjectStore()
+  const [filters, setFilters] = useState<TaskFilters>(DEFAULT_FILTERS)
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [createStatus, setCreateStatus] = useState<string | null>(null)
+
+  const apiFilters = useMemo(
+    () => ({
+      projectId: selectedProjectId,
+      ...(filters.status !== "all" ? { status: filters.status } : {}),
+      ...(filters.search ? { search: filters.search } : {}),
+    }),
+    [selectedProjectId, filters.status, filters.search]
+  )
+
+  const { tasks, loading, mutate } = useTasks(apiFilters)
+  const { templates } = useTaskTemplates()
+  const { syncFromDb } = useTimerStore()
+
+  // Reconcile timer state with DB on mount (handles cross-device / server-stopped timers)
+  useEffect(() => { syncFromDb() }, [syncFromDb])
+
+  // Client-side priority filter (server handles status + search)
+  const filtered = useMemo(
+    () => (filters.priority !== "all" ? tasks.filter((t) => t.priority === filters.priority) : tasks),
+    [tasks, filters.priority]
+  )
+
+  // Lazy template spawn on mount — idempotent via ON CONFLICT DO NOTHING
+  useEffect(() => {
+    if (!selectedProjectId || !templates.length || !tasks.length) return
+    const today = format(new Date(), "yyyy-MM-dd")
+    for (const template of templates.filter((t) => t.isActive)) {
+      const alreadySpawned = tasks.some(
+        (t) => t.recurringTemplateId === template.id && t.startDate === today
+      )
+      if (!alreadySpawned) {
+        fetch(getApiUrl(`/api/task-templates/${template.id}/spawn`), {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId: selectedProjectId, startDate: today }),
+        }).then(() => mutate())
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templates.length, selectedProjectId])
+
+  function openDetail(task: Task) {
+    setSelectedTask(task)
+  }
+
+  if (!selectedProjectId) {
+    return (
+      <div className="p-6">
+        <EmptyState icon={Plus} title="No project selected" description="Select a project from the header to view tasks." />
+      </div>
+    )
   }
 
   return (
-    <div>
+    <>
       <PageHeader
         title="Tasks"
-        description="Board, timeline, table, and calendar shells."
+        description="Board, timeline, table, and calendar views."
+        actions={
+          <Button size="sm" onClick={() => setCreateStatus("backlog")} className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            New task
+          </Button>
+        }
       />
+
       <div className="space-y-4 p-4 sm:p-6">
-        <Tabs value={currentView} onValueChange={changeView}>
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 sm:inline-flex sm:w-auto">
-            {taskViews.map((view) => (
-              <TabsTrigger key={view.value} value={view.value} className="gap-2">
-                <view.icon className="h-4 w-4" />
-                {view.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {taskViews.map((view) => (
-            <TabsContent key={view.value} value={view.value} className="mt-4">
-              <EmptyState
-                icon={view.icon}
-                title={`${view.label} view`}
-                description="Task data will render here once task management views are connected."
+        <div className="flex flex-wrap items-center gap-3">
+          <ViewSwitcherTabs active={view} />
+          <TaskFiltersBar filters={filters} onChange={setFilters} />
+        </div>
+
+        {loading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground">Loading tasks…</div>
+        ) : (
+          <>
+            {view === "board" && (
+              <KanbanBoard
+                tasks={filtered}
+                mutate={mutate}
+                onTaskClick={openDetail}
+                onCreateTask={(status) => setCreateStatus(status)}
               />
-            </TabsContent>
-          ))}
-        </Tabs>
+            )}
+            {view === "timeline" && <TimelineView tasks={filtered} onTaskClick={openDetail} />}
+            {view === "table" && <TableView tasks={filtered} onTaskClick={openDetail} />}
+            {view === "calendar" && <CalendarView tasks={filtered} onTaskClick={openDetail} />}
+          </>
+        )}
       </div>
-    </div>
-  )
-}
 
-function TasksFallback() {
-  return (
-    <div>
-      <PageHeader title="Tasks" />
-      <div className="p-4 sm:p-6">
-        <EmptyState icon={KanbanSquare} title="Loading task view" />
-      </div>
-    </div>
-  )
-}
+      <TaskDetailPanel
+        task={selectedTask}
+        open={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
+        mutate={mutate}
+      />
 
-function isTaskView(value: string | null): value is TaskView {
-  return taskViews.some((view) => view.value === value)
+      <CreateTaskDialog
+        open={createStatus !== null}
+        projectId={selectedProjectId}
+        defaultStatus={createStatus ?? "backlog"}
+        onClose={() => setCreateStatus(null)}
+        mutate={mutate}
+      />
+    </>
+  )
 }
