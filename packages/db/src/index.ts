@@ -75,7 +75,7 @@ export * from './schema/ga4_data';
 export * from './schema/auth-schema';
 
 // Export drizzle-orm utilities for use in other packages
-export { eq, and, or, not, sql, desc, asc, gte, lte } from 'drizzle-orm';
+export { eq, and, or, not, sql, desc, asc, gte, lte, isNull } from 'drizzle-orm';
 
 // Export types
 export type Database = typeof db;

@@ -34,6 +34,7 @@ export const tasks = pgTable('tasks', {
   recurringConfig: jsonb('recurring_config'),
   tags: text('tags').array(),
   notes: text('notes'),
+  targetUrl: text('target_url'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
