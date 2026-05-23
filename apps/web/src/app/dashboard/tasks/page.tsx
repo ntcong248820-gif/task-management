@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from "react"
 import { format } from "date-fns"
 import { Plus } from "lucide-react"
 import { useSearchParams } from "next/navigation"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
 import { PageHeader } from "@/components/ui/page-header"
@@ -17,6 +18,7 @@ import { TaskFiltersBar, DEFAULT_FILTERS, type TaskFilters } from "@/components/
 import { ViewSwitcherTabs, isTaskView, type TaskView } from "@/components/features/tasks/view-switcher-tabs"
 import { useTasks, useTaskTemplates } from "@/hooks/use-tasks"
 import { useProjectStore } from "@/stores/use-project-store"
+import { useWorkspaceStore } from "@/stores/use-workspace-store"
 import { useTimerStore } from "@/stores/useTimerStore"
 import { getApiUrl } from "@/lib/config"
 import type { Task } from "@/types/task.types"
@@ -35,6 +37,7 @@ function TasksContent() {
   const view: TaskView = isTaskView(rawView) ? rawView : "board"
 
   const { selectedProjectId } = useProjectStore()
+  const projects = useWorkspaceStore((state) => state.projects)
   const [filters, setFilters] = useState<TaskFilters>(DEFAULT_FILTERS)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [createStatus, setCreateStatus] = useState<string | null>(null)
@@ -86,9 +89,25 @@ function TasksContent() {
   }
 
   if (!selectedProjectId) {
+    const noProjects = projects.length === 0
     return (
-      <div className="p-6">
-        <EmptyState icon={Plus} title="No project selected" description="Select a project from the header to view tasks." />
+      <div className="p-6 space-y-4">
+        <EmptyState
+          icon={Plus}
+          title={noProjects ? "No projects yet" : "No project selected"}
+          description={
+            noProjects
+              ? "Create your first project to start managing tasks."
+              : "Select a project from the header to view tasks."
+          }
+        />
+        {noProjects && (
+          <div className="flex justify-center">
+            <Button asChild size="sm">
+              <Link href="/dashboard/settings/projects">Create project</Link>
+            </Button>
+          </div>
+        )}
       </div>
     )
   }

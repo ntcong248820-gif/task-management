@@ -29,7 +29,8 @@ function buildTaskKey(filters: TaskFilters): string {
 }
 
 export function useTasks(filters: TaskFilters = {}) {
-  const key = buildTaskKey(filters);
+  // null key when no projectId → SWR skips fetch (consistent with other hooks)
+  const key = filters.projectId ? buildTaskKey(filters) : null;
   const { data, error, isLoading, mutate } = useSWR<Task[]>(key, fetcher);
   return { tasks: data ?? [], loading: isLoading, error, mutate };
 }

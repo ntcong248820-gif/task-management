@@ -54,9 +54,9 @@ packages/types/ → Shared TypeScript types
 
 | File | Purpose |
 |------|---------|
-| `.env` | Root DB URL |
+| `.env` | Root DB URL (Supabase pooler, port 6543) |
 | `apps/api/.env` | API secrets, Google OAuth, encryption key |
-| `apps/web/.env.local` | `NEXT_PUBLIC_API_URL` |
+| `apps/web/.env.local` | `NEXT_PUBLIC_API_URL` (empty in production) |
 
 ## Google OAuth
 

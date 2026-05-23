@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
 import { FolderKanban } from "lucide-react"
 
 import { useProjectStore } from "@/stores/use-project-store"
@@ -18,12 +17,6 @@ export function ProjectSelector() {
   const setSelectedProjectId = useProjectStore((state) => state.setSelectedProjectId)
   const projects = useWorkspaceStore((state) => state.projects)
   const projectsLoading = useWorkspaceStore((state) => state.projectsLoading)
-  const fetchProjects = useWorkspaceStore((state) => state.fetchProjects)
-  const workspaceId = useWorkspaceStore((state) => state.workspaceId)
-
-  useEffect(() => {
-    if (workspaceId) void fetchProjects()
-  }, [fetchProjects, workspaceId])
 
   return (
     <Select

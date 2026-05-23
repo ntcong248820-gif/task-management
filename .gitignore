@@ -49,3 +49,4 @@ bun.lockb
 # Build artifacts
 packages/db/src/**/*.js
 packages/db/src/**/*.d.ts
+.vercel
