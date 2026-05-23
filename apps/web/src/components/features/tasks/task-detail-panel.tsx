@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { getApiUrl } from "@/lib/config"
 import { TaskTimerSection } from "./task-timer-section"
+import { useGoals } from "@/hooks/use-goals"
+import { useSprints } from "@/hooks/use-sprints"
 import type { Task } from "@/types/task.types"
 import type { KeyedMutator } from "swr"
 
@@ -38,6 +40,11 @@ async function patchTask(id: string, patch: Partial<Task>): Promise<Task | null>
 export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanelProps) {
   const [title, setTitle] = useState(task?.title ?? "")
   const [urlError, setUrlError] = useState<string | null>(null)
+  const { goals } = useGoals({ projectId: task?.projectId })
+  // Only show actionable sprints (planning or active) in the selector
+  const { sprints: planningSprints } = useSprints({ status: 'planning' })
+  const { sprints: activeSprints } = useSprints({ status: 'active' })
+  const sprints = [...activeSprints, ...planningSprints]
 
   // Reset title field whenever the selected task changes
   useEffect(() => {
@@ -123,6 +130,44 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
                 />
               </div>
             ))}
+          </div>
+
+          {/* Goal / Sprint */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-muted-foreground">Goal</Label>
+              <Select
+                value={task.goalId ?? ""}
+                onValueChange={(v) => save({ goalId: v || null })}
+              >
+                <SelectTrigger className="mt-1 h-8 text-xs">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">—</SelectItem>
+                  {goals.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Sprint</Label>
+              <Select
+                value={task.sprintId ?? ""}
+                onValueChange={(v) => save({ sprintId: v || null })}
+              >
+                <SelectTrigger className="mt-1 h-8 text-xs">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">—</SelectItem>
+                  {sprints.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Target URL */}
