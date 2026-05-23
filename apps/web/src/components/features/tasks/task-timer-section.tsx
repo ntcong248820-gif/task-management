@@ -19,9 +19,10 @@ interface TaskTimerSectionProps {
   taskTitle: string;
   timeSpent: number;
   estimatedTime?: number | null;
+  onStop?: () => void;
 }
 
-export function TaskTimerSection({ taskId, taskTitle, timeSpent, estimatedTime }: TaskTimerSectionProps) {
+export function TaskTimerSection({ taskId, taskTitle, timeSpent, estimatedTime, onStop }: TaskTimerSectionProps) {
   const { activeTaskId, activeTaskTitle, isRunning, elapsedSeconds, startTimer, stopTimer, tick } = useTimerStore()
 
   const isMyTimer = activeTaskId === taskId
@@ -58,7 +59,12 @@ export function TaskTimerSection({ taskId, taskTitle, timeSpent, estimatedTime }
         </div>
 
         {isMyTimer ? (
-          <Button variant="destructive" size="sm" onClick={() => stopTimer()} className="gap-1.5">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={async () => { await stopTimer(); onStop?.() }}
+            className="gap-1.5"
+          >
             <Square className="h-3.5 w-3.5" />
             Stop
           </Button>

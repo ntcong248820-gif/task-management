@@ -165,6 +165,7 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
             taskTitle={task.title}
             timeSpent={task.timeSpent}
             estimatedTime={task.estimatedTime}
+            onStop={mutate}
           />
         </div>
 
