@@ -19,7 +19,7 @@ interface TaskTimerSectionProps {
   taskTitle: string;
   timeSpent: number;
   estimatedTime?: number | null;
-  onStop?: () => void;
+  onStop?: (elapsed: number) => void;
 }
 
 export function TaskTimerSection({ taskId, taskTitle, timeSpent, estimatedTime, onStop }: TaskTimerSectionProps) {
@@ -62,7 +62,11 @@ export function TaskTimerSection({ taskId, taskTitle, timeSpent, estimatedTime, 
           <Button
             variant="destructive"
             size="sm"
-            onClick={async () => { await stopTimer(); onStop?.() }}
+            onClick={async () => {
+              const elapsed = elapsedSeconds  // capture before stopTimer() resets to 0
+              await stopTimer()
+              onStop?.(elapsed)
+            }}
             className="gap-1.5"
           >
             <Square className="h-3.5 w-3.5" />

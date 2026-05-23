@@ -165,7 +165,16 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
             taskTitle={task.title}
             timeSpent={task.timeSpent}
             estimatedTime={task.estimatedTime}
-            onStop={mutate}
+            onStop={(elapsed) => {
+              // Optimistically update timeSpent in SWR cache so UI reflects new total
+              // immediately, without waiting for the refetch round-trip
+              mutate(
+                (current) => current?.map((t) =>
+                  t.id === task.id ? { ...t, timeSpent: (t.timeSpent ?? 0) + elapsed } : t
+                ),
+                { revalidate: true }
+              )
+            }}
           />
         </div>
 
