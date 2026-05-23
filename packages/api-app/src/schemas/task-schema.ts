@@ -3,7 +3,11 @@ import { z } from 'zod';
 const uuidString = z.string().uuid();
 const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
-export const createTaskSchema = z.object({
+const dueDateRefinement = (d: { dueDate?: string | null; startDate?: string | null }) =>
+  !d.dueDate || !d.startDate || d.dueDate >= d.startDate;
+const dueDateRefinementOpts = { message: 'dueDate must be >= startDate', path: ['dueDate'] };
+
+const baseTaskSchema = z.object({
   title: z.string().trim().min(1),
   projectId: uuidString,
   goalId: uuidString.nullable().optional(),
@@ -28,12 +32,11 @@ export const createTaskSchema = z.object({
   tags: z.array(z.string()).nullable().optional(),
   notes: z.string().nullable().optional(),
   targetUrl: z.string().url().nullable().optional(),
-}).refine(
-  (d) => !d.dueDate || !d.startDate || d.dueDate >= d.startDate,
-  { message: 'dueDate must be >= startDate', path: ['dueDate'] }
-);
+});
 
-export const updateTaskSchema = createTaskSchema.partial();
+export const createTaskSchema = baseTaskSchema.refine(dueDateRefinement, dueDateRefinementOpts);
+
+export const updateTaskSchema = baseTaskSchema.partial().refine(dueDateRefinement, dueDateRefinementOpts);
 
 export const moveTaskSchema = z.object({
   status: z.enum(['backlog', 'todo', 'in_progress', 'blocked', 'in_review', 'done']),
