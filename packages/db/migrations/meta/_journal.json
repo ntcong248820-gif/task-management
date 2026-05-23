@@ -50,6 +50,13 @@
       "when": 1779204806755,
       "tag": "0006_phase02_v2_schema_reconcile",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779521000000,
+      "tag": "0007_phase04_target_url",
+      "breakpoints": true
     }
   ]
 }

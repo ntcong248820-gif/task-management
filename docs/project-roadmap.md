@@ -1,7 +1,7 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-22
-> **Overall Progress:** ~99% (MVP deployed, Phase 04 Task Management v2 complete, Phase 7 continued, Database migration to new Supabase project complete, GitHub Actions cron verified working)
+> **Last Updated:** 2026-05-23
+> **Overall Progress:** 100% Phase 04 complete & production-verified. Phase 5 ready to start.
 
 ## v2 Greenfield Rebuild
 
@@ -10,7 +10,7 @@
 | 1 | Auth + Workspace Foundation | Done | Better Auth email/password, workspace/org roles, auth pages, Next auth handler, dashboard layout guard, Hono workspace guard. Live signup -> workspace -> dashboard smoke passed. Google login, email verification, password reset, and invite email deferred |
 | 2 | Data Schema Redesign | Done | UUID business schema applied to production, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
 | 3 | UI Shell Redesign | Done | New dashboard shell, grouped sidebar, mobile Sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs |
-| 4 | Task Management v2 (Multi-View) | Done (2026-05-22) | Board/Timeline/Table/Calendar views; DB-backed timer; task filters; Kanban drag & drop; TanStack Table; CSS Grid Gantt-lite; template spawn with idempotent constraints |
+| 4 | Task Management v2 (Multi-View) | Done (2026-05-23) | Board/Timeline/Table/Calendar views; DB-backed timer; task filters; Kanban drag & drop; TanStack Table; CSS Grid Gantt-lite; template spawn with idempotent constraints. Post-release: fixed UUID regex, target_url migration, DB tracking table — production verified 2026-05-23 |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
