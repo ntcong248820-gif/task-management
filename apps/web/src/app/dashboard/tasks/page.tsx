@@ -39,7 +39,7 @@ function TasksContent() {
   const { selectedProjectId } = useProjectStore()
   const projects = useWorkspaceStore((state) => state.projects)
   const [filters, setFilters] = useState<TaskFilters>(DEFAULT_FILTERS)
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [createStatus, setCreateStatus] = useState<string | null>(null)
 
   const apiFilters = useMemo(
@@ -52,6 +52,8 @@ function TasksContent() {
   )
 
   const { tasks, loading, mutate } = useTasks(apiFilters)
+  // Derive from SWR cache so it stays fresh when mutate() revalidates
+  const selectedTask = useMemo(() => tasks.find((t) => t.id === selectedTaskId) ?? null, [tasks, selectedTaskId])
   const { templates } = useTaskTemplates()
   const { syncFromDb } = useTimerStore()
 
@@ -85,7 +87,7 @@ function TasksContent() {
   }, [templates.length, selectedProjectId])
 
   function openDetail(task: Task) {
-    setSelectedTask(task)
+    setSelectedTaskId(task.id)
   }
 
   if (!selectedProjectId) {
@@ -152,8 +154,8 @@ function TasksContent() {
 
       <TaskDetailPanel
         task={selectedTask}
-        open={!!selectedTask}
-        onClose={() => setSelectedTask(null)}
+        open={!!selectedTaskId}
+        onClose={() => setSelectedTaskId(null)}
         mutate={mutate}
       />
 
