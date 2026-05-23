@@ -37,6 +37,7 @@ async function patchTask(id: string, patch: Partial<Task>): Promise<Task | null>
 
 export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanelProps) {
   const [title, setTitle] = useState(task?.title ?? "")
+  const [urlError, setUrlError] = useState<string | null>(null)
 
   // Reset title field whenever the selected task changes
   useEffect(() => {
@@ -67,7 +68,8 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg">
+      {/* key forces re-mount when task changes, resetting all uncontrolled inputs */}
+      <SheetContent key={task.id} side="right" className="flex w-full flex-col gap-0 overflow-y-auto sm:max-w-lg">
         <SheetHeader className="border-b pb-4">
           <SheetTitle className="sr-only">Task detail</SheetTitle>
           <Input
@@ -133,11 +135,18 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
               placeholder="https://..."
               onBlur={(e) => {
                 const val = e.target.value.trim()
-                if (!val || val.startsWith("https://") || val.startsWith("http://")) {
-                  save({ targetUrl: val || null })
+                if (!val) {
+                  setUrlError(null)
+                  save({ targetUrl: null })
+                } else if (val.startsWith("https://") || val.startsWith("http://")) {
+                  setUrlError(null)
+                  save({ targetUrl: val })
+                } else {
+                  setUrlError("URL must start with https:// or http://")
                 }
               }}
             />
+            {urlError && <p className="mt-1 text-xs text-destructive">{urlError}</p>}
           </div>
 
           {/* Description */}

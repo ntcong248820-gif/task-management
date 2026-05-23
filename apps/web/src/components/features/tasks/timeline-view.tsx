@@ -36,7 +36,10 @@ export function TimelineView({ tasks, onTaskClick }: TimelineViewProps) {
     () => tasks.filter((t) => t.startDate || t.dueDate),
     [tasks]
   )
-  const undatedTasks = tasks.filter((t) => !t.startDate && !t.dueDate)
+  const undatedTasks = useMemo(
+    () => tasks.filter((t) => !t.startDate && !t.dueDate),
+    [tasks]
+  )
 
   function barStyle(task: Task) {
     const start = task.startDate ? parseISO(task.startDate) : (task.dueDate ? parseISO(task.dueDate) : null)

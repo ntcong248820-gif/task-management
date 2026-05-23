@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getApiUrl } from "@/lib/config"
+import { useWorkspaceStore } from "@/stores/use-workspace-store"
 import type { KeyedMutator } from "swr"
 import type { Task } from "@/types/task.types"
 
@@ -19,6 +20,13 @@ interface CreateTaskDialogProps {
 }
 
 export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", onClose, mutate }: CreateTaskDialogProps) {
+  const projects = useWorkspaceStore((state) => state.projects)
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(projectId ?? "")
+
+  // Sync project selection when dialog opens or prop changes
+  useEffect(() => {
+    if (open) setSelectedProjectId(projectId ?? projects[0]?.id ?? "")
+  }, [open, projectId, projects])
   const [title, setTitle] = useState("")
   const [status, setStatus] = useState(defaultStatus)
   const [priority, setPriority] = useState("medium")
@@ -31,12 +39,13 @@ export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", o
     setStatus(defaultStatus)
     setPriority("medium")
     setDueDate("")
+    setSelectedProjectId(projectId ?? "")
     setError(null)
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim() || !projectId) return
+    if (!title.trim() || !selectedProjectId) return
     setLoading(true)
     setError(null)
     try {
@@ -46,7 +55,7 @@ export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", o
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim(),
-          projectId,
+          projectId: selectedProjectId,
           status,
           priority,
           dueDate: dueDate || null,
@@ -83,6 +92,23 @@ export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", o
               placeholder="Task title..."
               className="mt-1"
             />
+          </div>
+
+          <div>
+            <Label>Project</Label>
+            <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select project…" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {projects.length === 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">No projects found. Create a project first.</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -129,7 +155,7 @@ export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", o
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" onClick={() => { reset(); onClose() }}>Cancel</Button>
-            <Button type="submit" disabled={!title.trim() || !projectId || loading}>
+            <Button type="submit" disabled={!title.trim() || !selectedProjectId || loading}>
               {loading ? "Creating…" : "Create task"}
             </Button>
           </div>

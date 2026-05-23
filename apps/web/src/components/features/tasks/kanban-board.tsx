@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { DndContext, DragOverlay, closestCorners, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core"
+import { DndContext, DragOverlay, MouseSensor, TouchSensor, closestCorners, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core"
+import { toast } from "sonner"
 import { getApiUrl } from "@/lib/config"
 import { useTimerStore } from "@/stores/useTimerStore"
 import { TaskCard } from "./task-card"
@@ -20,7 +21,13 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ tasks, mutate, onTaskClick, onCreateTask }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
-  const { activeTaskId, startTimer } = useTimerStore()
+  const { activeTaskId, activeTaskTitle, startTimer } = useTimerStore()
+
+  // Require 8px movement before drag starts — prevents accidental drags on click
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
+  )
 
   function handleDragStart({ active }: DragStartEvent) {
     setActiveTask(tasks.find((t) => t.id === active.id) ?? null)
@@ -55,13 +62,14 @@ export function KanbanBoard({ tasks, mutate, onTaskClick, onCreateTask }: Kanban
       useTimerStore.getState().stopTimer()
       return
     }
-    // If another timer is active, startTimer returns an error.
-    // The task detail panel's timer section shows the inline warning to the user.
-    await startTimer(taskId, taskTitle)
+    const result = await startTimer(taskId, taskTitle)
+    if (result.error) {
+      toast.warning(`Stop timer for "${activeTaskTitle}" first`)
+    }
   }
 
   return (
-    <DndContext collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
       <div className="flex gap-4 overflow-x-auto pb-4">
         {KANBAN_COLUMNS.map((status) => (
           <KanbanColumn
