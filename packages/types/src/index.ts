@@ -9,7 +9,7 @@ export type GoalType = 'traffic' | 'ranking' | 'conversion' | 'custom';
 export type GoalStatus = 'active' | 'completed' | 'cancelled';
 export type SprintStatus = 'planning' | 'active' | 'completed';
 export type SyncStatus = 'idle' | 'syncing' | 'error';
-export type AlertType = 'traffic_drop' | 'ranking_drop' | 'content_decay' | 'anomaly' | 'recommendation';
+export type AlertType = 'traffic_drop' | 'ranking_drop' | 'content_decay' | 'anomaly' | 'recommendation' | 'correlated_drop' | 'source_discrepancy';
 export type AlertSeverity = 'info' | 'warning' | 'critical';
 
 export interface Project {
@@ -133,6 +133,24 @@ export interface Alert {
   body: string;
   metadata?: Record<string, unknown> | null;
   createdAt: Date;
+  isRead?: boolean; // injected by API via alert_reads join
+}
+
+export interface DigestData {
+  weeklyClicks: { current: number; previous: number; pct: number };
+  weeklyImpressions: { current: number; previous: number; pct: number };
+  alertsTriggered: number;
+  tasksCompleted: number;
+  topImprovements: Array<{ keyword: string; positionDelta: number }>;
+  topDeclines: Array<{ keyword: string; positionDelta: number }>;
+}
+
+export interface WorkspaceDigest {
+  id: EntityId;
+  workspaceId: string;
+  weekStart: string;
+  data: DigestData;
+  createdAt: Date | null;
 }
 
 export interface AlertRead {

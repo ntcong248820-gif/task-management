@@ -16,7 +16,10 @@ export const alerts = pgTable('alerts', {
   workspaceCreatedIdx: index('alerts_workspace_created_idx').on(table.workspaceId, table.createdAt),
   workspaceTypeIdx: index('alerts_workspace_type_idx').on(table.workspaceId, table.type),
   workspaceSeverityIdx: index('alerts_workspace_severity_idx').on(table.workspaceId, table.severity),
-  typeCheck: check('alerts_type_check', sql`${table.type} IN ('traffic_drop','ranking_drop','content_decay','anomaly','recommendation')`),
+  // Note: expression-based UNIQUE INDEX on (project_id, type, DATE(created_at)) must be applied
+  // via a raw SQL migration — Drizzle does not support expression indexes in schema builder.
+  // Dedup is enforced in insertAlert() via a pre-check query.
+  typeCheck: check('alerts_type_check', sql`${table.type} IN ('traffic_drop','ranking_drop','content_decay','anomaly','recommendation','correlated_drop','source_discrepancy')`),
   severityCheck: check('alerts_severity_check', sql`${table.severity} IN ('info','warning','critical')`),
 }));
 

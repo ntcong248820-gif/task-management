@@ -69,13 +69,14 @@ export * from './schema/tasks';
 export * from './schema/time-logs';
 export * from './schema/alerts';
 export * from './schema/alert-reads';
+export * from './schema/workspace-digests';
 export * from './schema/gsc_data';
 export * from './schema/gsc_data_aggregated';
 export * from './schema/ga4_data';
 export * from './schema/auth-schema';
 
 // Export drizzle-orm utilities for use in other packages
-export { eq, and, or, not, sql, desc, asc, gte, lte, isNull, count, inArray } from 'drizzle-orm';
+export { eq, and, or, not, sql, desc, asc, gte, lte, isNull, count, inArray, ne, gt, lt } from 'drizzle-orm';
 
 // Export types
 export type Database = typeof db;

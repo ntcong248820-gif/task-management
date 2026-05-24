@@ -9,6 +9,7 @@ export * from './tasks';
 export * from './time-logs';
 export * from './alerts';
 export * from './alert-reads';
+export * from './workspace-digests';
 export * from './gsc_data';
 export * from './gsc_data_aggregated';
 export * from './ga4_data';

@@ -4,3 +4,4 @@ export { useRankingsData, type KeywordMover, type Summary, type Keyword, type Pa
 export { useURLsData, type DecliningURL, type URLData, type DetailData } from './useURLsData';
 export { useDiagnosisData, type DiagnosisData, type DiagnosisIssue } from './useDiagnosisData';
 export { useKeywordDetailData, type KeywordDetail } from './useKeywordDetailData';
+export { useAlerts, useAlertCount, useLatestDigest, markAlertRead, markAllAlertsRead, dismissAlert, type AlertFilters } from './use-alerts';

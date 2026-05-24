@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import { verifyCronSecret } from '../../utils/verify-cron-secret';
 import syncGscRoute from './sync-gsc';
 import syncGa4Route from './sync-ga4';
+import runAlertsRoute from './run-alerts';
+import weeklyDigestRoute from './weekly-digest';
 
 const app = new Hono();
 
@@ -10,5 +12,7 @@ app.use('*', verifyCronSecret);
 
 app.route('/sync-gsc', syncGscRoute);
 app.route('/sync-ga4', syncGa4Route);
+app.route('/run-alerts', runAlertsRoute);
+app.route('/weekly-digest', weeklyDigestRoute);
 
 export default app;

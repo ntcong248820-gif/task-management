@@ -20,6 +20,8 @@ import keywordsRoutes from './routes/keywords';
 import taskTemplatesRoutes from './routes/task-templates';
 import goalsRoutes from './routes/goals';
 import sprintsRoutes from './routes/sprints';
+import alertsRoutes from './routes/alerts';
+import digestRoutes from './routes/digest';
 import cronRoutes from './routes/cron/index';
 
 validateEnv();
@@ -120,6 +122,8 @@ app.use('*', async (c, next) => {
 app.route('/task-templates', taskTemplatesRoutes);
 app.route('/goals', goalsRoutes);
 app.route('/sprints', sprintsRoutes);
+app.route('/alerts', alertsRoutes);
+app.route('/digest', digestRoutes);
 app.route('/projects', projectsRoutes);
 app.route('/tasks', tasksRoutes);
 app.route('/time-logs', timeLogsRoutes);
