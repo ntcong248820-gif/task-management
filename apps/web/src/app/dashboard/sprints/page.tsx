@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SprintCard } from '@/components/features/goals/sprint-card';
 import { SprintCreateDialog } from '@/components/features/goals/sprint-create-dialog';
 import { useSprints, useSprintTasks } from '@/hooks/use-sprints';
+import { SELECT_ALL_VALUE, optionalFilterValue } from '@/lib/select-values';
+import { useProjectStore } from '@/stores/use-project-store';
 import type { Sprint } from '@/types/goal.types';
 
 function SprintCardWithTasks({ sprint, onMutate }: { sprint: Sprint; onMutate: () => void }) {
@@ -24,11 +26,13 @@ function SprintCardWithTasks({ sprint, onMutate }: { sprint: Sprint; onMutate: (
 }
 
 export default function SprintsPage() {
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(SELECT_ALL_VALUE);
   const [createOpen, setCreateOpen] = useState(false);
+  const selectedProjectId = useProjectStore((s) => s.selectedProjectId);
 
   const { sprints, loading, mutate } = useSprints({
-    status: statusFilter || undefined,
+    projectId: selectedProjectId,
+    status: optionalFilterValue(statusFilter),
   });
 
   return (
@@ -52,7 +56,7 @@ export default function SprintsPage() {
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value={SELECT_ALL_VALUE}>All statuses</SelectItem>
               <SelectItem value="planning">Planning</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>

@@ -15,11 +15,12 @@ interface CreateTaskDialogProps {
   open: boolean;
   projectId: string | null;
   defaultStatus?: string;
+  defaultSprintId?: string | null;
   onClose: () => void;
   mutate: KeyedMutator<Task[]>;
 }
 
-export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", onClose, mutate }: CreateTaskDialogProps) {
+export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", defaultSprintId = null, onClose, mutate }: CreateTaskDialogProps) {
   const projects = useWorkspaceStore((state) => state.projects)
   const [selectedProjectId, setSelectedProjectId] = useState<string>(projectId ?? "")
 
@@ -56,6 +57,7 @@ export function CreateTaskDialog({ open, projectId, defaultStatus = "backlog", o
         body: JSON.stringify({
           title: title.trim(),
           projectId: selectedProjectId,
+          sprintId: defaultSprintId,
           status,
           priority,
           dueDate: dueDate || null,

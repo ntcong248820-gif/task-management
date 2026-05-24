@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { CalendarDays, KanbanSquare, ListTodo, Table2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
@@ -19,9 +19,12 @@ interface ViewSwitcherTabsProps {
 
 export function ViewSwitcherTabs({ active }: ViewSwitcherTabsProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   function changeView(value: string) {
-    router.replace(`/dashboard/tasks?view=${value}`, { scroll: false })
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("view", value)
+    router.replace(`/dashboard/tasks?${params.toString()}`, { scroll: false })
   }
 
   return (

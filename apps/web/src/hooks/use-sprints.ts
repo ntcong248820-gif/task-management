@@ -8,12 +8,14 @@ import type { Task } from '@/types/task.types';
 
 export interface SprintFilters {
   goalId?: string | null;
+  projectId?: string | null;
   status?: string;
 }
 
-function buildSprintKey(filters: SprintFilters): string {
+export function buildSprintKey(filters: SprintFilters): string {
   const params = new URLSearchParams();
   if (filters.goalId) params.set('goalId', filters.goalId);
+  if (filters.projectId) params.set('projectId', filters.projectId);
   if (filters.status) params.set('status', filters.status);
   const qs = params.toString();
   return getApiUrl(`/api/sprints${qs ? `?${qs}` : ''}`);

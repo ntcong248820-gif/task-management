@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { getApiUrl } from "@/lib/config"
+import { SELECT_NONE_VALUE, nullableSelectResult, nullableSelectValue } from "@/lib/select-values"
 import { TaskTimerSection } from "./task-timer-section"
 import { useGoals } from "@/hooks/use-goals"
 import { useSprints } from "@/hooks/use-sprints"
@@ -42,8 +43,8 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
   const [urlError, setUrlError] = useState<string | null>(null)
   const { goals } = useGoals({ projectId: task?.projectId })
   // Only show actionable sprints (planning or active) in the selector
-  const { sprints: planningSprints } = useSprints({ status: 'planning' })
-  const { sprints: activeSprints } = useSprints({ status: 'active' })
+  const { sprints: planningSprints } = useSprints({ projectId: task?.projectId, status: 'planning' })
+  const { sprints: activeSprints } = useSprints({ projectId: task?.projectId, status: 'active' })
   const sprints = [...activeSprints, ...planningSprints]
 
   // Reset title field whenever the selected task changes
@@ -137,14 +138,14 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
             <div>
               <Label className="text-xs text-muted-foreground">Goal</Label>
               <Select
-                value={task.goalId ?? ""}
-                onValueChange={(v) => save({ goalId: v || null })}
+                value={nullableSelectValue(task.goalId)}
+                onValueChange={(v) => save({ goalId: nullableSelectResult(v) })}
               >
                 <SelectTrigger className="mt-1 h-8 text-xs">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">—</SelectItem>
+                  <SelectItem value={SELECT_NONE_VALUE}>—</SelectItem>
                   {goals.map((g) => (
                     <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
                   ))}
@@ -154,14 +155,14 @@ export function TaskDetailPanel({ task, open, onClose, mutate }: TaskDetailPanel
             <div>
               <Label className="text-xs text-muted-foreground">Sprint</Label>
               <Select
-                value={task.sprintId ?? ""}
-                onValueChange={(v) => save({ sprintId: v || null })}
+                value={nullableSelectValue(task.sprintId)}
+                onValueChange={(v) => save({ sprintId: nullableSelectResult(v) })}
               >
                 <SelectTrigger className="mt-1 h-8 text-xs">
                   <SelectValue placeholder="—" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">—</SelectItem>
+                  <SelectItem value={SELECT_NONE_VALUE}>—</SelectItem>
                   {sprints.map((s) => (
                     <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                   ))}

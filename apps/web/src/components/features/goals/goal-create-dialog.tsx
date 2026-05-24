@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useWorkspaceStore } from '@/stores/use-workspace-store';
+import { useProjectStore } from '@/stores/use-project-store';
 import { createGoal } from '@/hooks/use-goals';
 import type { Goal } from '@/types/goal.types';
 
@@ -22,6 +23,7 @@ const TARGET_METRICS = ['clicks', 'impressions', 'position', 'sessions', 'conver
 
 export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogProps) {
   const projects = useWorkspaceStore((s) => s.projects);
+  const selectedProjectId = useProjectStore((s) => s.selectedProjectId);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +41,15 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
   function set<K extends keyof typeof form>(key: K, value: typeof form[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
+
+  useEffect(() => {
+    if (!open) return;
+    setForm((prev) => ({
+      ...prev,
+      projectId: selectedProjectId ?? projects[0]?.id ?? '',
+    }));
+    setError(null);
+  }, [open, selectedProjectId, projects]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -61,7 +72,7 @@ export function GoalCreateDialog({ open, onClose, onCreated }: GoalCreateDialogP
       });
       onCreated(goal);
       onClose();
-      setForm({ projectId: '', title: '', type: 'traffic', targetMetric: '', targetValue: '', startDate: '', endDate: '', description: '' });
+      setForm({ projectId: selectedProjectId ?? projects[0]?.id ?? '', title: '', type: 'traffic', targetMetric: '', targetValue: '', startDate: '', endDate: '', description: '' });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create goal');
     } finally {

@@ -1,6 +1,7 @@
 'use client';
 
-import { CalendarDays, CheckCircle2, Play, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { CalendarDays, CheckCircle2, ListTodo, Play, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -76,6 +77,12 @@ export function SprintCard({ sprint, tasksTotal = 0, tasksDone = 0, onMutate }: 
 
         <div className="flex items-center justify-between pt-1">
           <div className="flex gap-1.5">
+            <Button asChild variant="outline" size="sm" className="h-7 gap-1 text-xs">
+              <Link href={`/dashboard/tasks?view=board&sprintId=${sprint.id}`}>
+                <ListTodo className="h-3.5 w-3.5" />
+                Tasks
+              </Link>
+            </Button>
             {sprint.status === 'planning' && (
               <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={handleStart}>
                 <Play className="h-3.5 w-3.5" />

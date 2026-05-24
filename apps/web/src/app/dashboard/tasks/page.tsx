@@ -34,6 +34,7 @@ export default function TasksPage() {
 function TasksContent() {
   const searchParams = useSearchParams()
   const rawView = searchParams.get("view")
+  const sprintId = searchParams.get("sprintId")
   const view: TaskView = isTaskView(rawView) ? rawView : "board"
 
   const { selectedProjectId } = useProjectStore()
@@ -45,10 +46,11 @@ function TasksContent() {
   const apiFilters = useMemo(
     () => ({
       projectId: selectedProjectId,
+      ...(sprintId ? { sprintId } : {}),
       ...(filters.status !== "all" ? { status: filters.status } : {}),
       ...(filters.search ? { search: filters.search } : {}),
     }),
-    [selectedProjectId, filters.status, filters.search]
+    [selectedProjectId, sprintId, filters.status, filters.search]
   )
 
   const { tasks, loading, mutate } = useTasks(apiFilters)
@@ -118,7 +120,7 @@ function TasksContent() {
     <>
       <PageHeader
         title="Tasks"
-        description="Board, timeline, table, and calendar views."
+        description={sprintId ? "Sprint-filtered board, timeline, table, and calendar views." : "Board, timeline, table, and calendar views."}
         actions={
           <Button size="sm" onClick={() => setCreateStatus("backlog")} className="gap-1.5">
             <Plus className="h-4 w-4" />
@@ -163,6 +165,7 @@ function TasksContent() {
         open={createStatus !== null}
         projectId={selectedProjectId}
         defaultStatus={createStatus ?? "backlog"}
+        defaultSprintId={sprintId}
         onClose={() => setCreateStatus(null)}
         mutate={mutate}
       />

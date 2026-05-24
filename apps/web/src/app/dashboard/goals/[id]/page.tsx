@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { SprintCard } from '@/components/features/goals/sprint-card';
 import { SprintCreateDialog } from '@/components/features/goals/sprint-create-dialog';
@@ -41,7 +42,21 @@ export default function GoalDetailPage({ params }: Props) {
 
   if (loading) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">Loading goal…</div>
+      <div>
+        <PageHeader
+          title="Loading goal..."
+          description="Preparing goal details and linked sprints."
+        />
+        <div className="p-4 sm:p-6 space-y-6">
+          <LoadingSkeleton className="h-4 w-20" />
+          <LoadingSkeleton className="h-32 w-full" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <LoadingSkeleton className="h-36 w-full" />
+            <LoadingSkeleton className="h-36 w-full" />
+            <LoadingSkeleton className="h-36 w-full" />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -132,6 +147,7 @@ export default function GoalDetailPage({ params }: Props) {
       <SprintCreateDialog
         open={createSprintOpen}
         goalId={id}
+        projectId={goal.projectId}
         onClose={() => setCreateSprintOpen(false)}
         onCreated={() => mutate()}
       />

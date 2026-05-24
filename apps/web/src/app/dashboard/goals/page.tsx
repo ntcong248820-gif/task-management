@@ -3,23 +3,25 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LoadingSkeleton } from '@/components/ui/loading-skeleton';
 import { PageHeader } from '@/components/ui/page-header';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { GoalCard } from '@/components/features/goals/goal-card';
 import { GoalCreateDialog } from '@/components/features/goals/goal-create-dialog';
 import { useGoals, deleteGoal } from '@/hooks/use-goals';
+import { SELECT_ALL_VALUE, optionalFilterValue } from '@/lib/select-values';
 import { useWorkspaceStore } from '@/stores/use-workspace-store';
 import type { Goal } from '@/types/goal.types';
 
 export default function GoalsPage() {
   const projects = useWorkspaceStore((s) => s.projects);
-  const [projectFilter, setProjectFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [projectFilter, setProjectFilter] = useState(SELECT_ALL_VALUE);
+  const [statusFilter, setStatusFilter] = useState(SELECT_ALL_VALUE);
   const [createOpen, setCreateOpen] = useState(false);
 
   const { goals, loading, mutate } = useGoals({
-    projectId: projectFilter || undefined,
-    status: statusFilter || undefined,
+    projectId: optionalFilterValue(projectFilter),
+    status: optionalFilterValue(statusFilter),
   });
 
   async function handleDelete(id: string) {
@@ -57,7 +59,7 @@ export default function GoalsPage() {
               <SelectValue placeholder="All projects" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All projects</SelectItem>
+              <SelectItem value={SELECT_ALL_VALUE}>All projects</SelectItem>
               {projects.map((p) => (
                 <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
               ))}
@@ -69,7 +71,7 @@ export default function GoalsPage() {
               <SelectValue placeholder="All statuses" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value={SELECT_ALL_VALUE}>All statuses</SelectItem>
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -79,7 +81,11 @@ export default function GoalsPage() {
 
         {/* Goal list */}
         {loading ? (
-          <div className="text-sm text-muted-foreground">Loading goals…</div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <LoadingSkeleton className="h-40 w-full" />
+            <LoadingSkeleton className="h-40 w-full" />
+            <LoadingSkeleton className="h-40 w-full" />
+          </div>
         ) : goals.length === 0 ? (
           <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
             No goals found. Create one to get started.
