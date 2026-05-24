@@ -13,6 +13,8 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/routes/tasks.ts` | Workspace-scoped task CRUD + multi-view filters (status, search, sprintId, assigneeId, limit/offset); `/complete` auto-stops timer; `/move` clears completedAt; `/stats` workload counters |
 | `src/routes/time-logs.ts` | User-scoped timer `/start` (DB-backed, enforces single active), `/stop` (increments task.timeSpent), and manual entry POST with Zod validation |
 | `src/routes/task-templates.ts` | Template CRUD + `/spawn` (idempotent `ON CONFLICT DO NOTHING` on recurringTemplateId+startDate) |
+| `src/routes/goals.ts` | Phase 05 workspace/project-scoped goals CRUD + batch task progress |
+| `src/routes/sprints.ts` | Phase 05 sprint CRUD + start/complete actions + sprint task listing |
 | `src/routes/analytics.ts` | Combined GSC + GA4 metrics |
 | `src/routes/correlation.ts` | Task-traffic correlation data |
 | `src/routes/rankings.ts` | Keyword position tracking |
@@ -24,7 +26,7 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/utils/signed-oauth-state.ts` | HMAC signed OAuth state bound to project/user/workspace |
 | `src/jobs/sync-gsc.ts` | GSC sync logic using `gsc_connections` and UUID project IDs |
 | `src/jobs/sync-ga4.ts` | GA4 sync logic using `ga4_connections` and `engagementRate` |
-| `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts) |
+| `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts, goal-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
 | `src/utils/validate-env.ts` | Startup env validation (ENCRYPTION_KEY hex check, Better Auth + prod vars, OAuth warnings) |
@@ -59,21 +61,25 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/(auth)/workspace/page.tsx` | Workspace create/select page |
 | `src/app/dashboard/page.tsx` | Phase 03 proactive overview shell |
 | `src/app/dashboard/tasks/` | Phase 04 multi-view task hub with `?view=board|timeline|table|calendar` (default: board) |
-| `src/app/dashboard/goals/` | Phase 03 goals placeholder |
-| `src/app/dashboard/sprints/` | Phase 03 sprints placeholder |
+| `src/app/dashboard/goals/` | Phase 05 goals list/detail UI with progress and linked sprints |
+| `src/app/dashboard/sprints/` | Phase 05 sprint planning UI with status actions, workload, and task-board links |
 | `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`, `alerts`) |
 | `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
 | `src/components/ui/` | shadcn/ui primitives |
 | `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
-| `src/components/features/tasks/` | Phase 04 task components: `view-switcher-tabs.tsx`, `task-filters-bar.tsx`, `task-card.tsx`, `kanban-board.tsx`, `kanban-column.tsx`, `task-detail-panel.tsx` (Sheet slide-over), `task-timer-section.tsx`, `timeline-view.tsx` (CSS Grid Gantt-lite), `table-view.tsx` (TanStack Table), `calendar-view.tsx` (month with popover overflow) |
-| `src/components/features/` | Feature components (tasks, analytics, rankings, urls, dashboard) |
+| `src/components/features/tasks/` | Phase 04/05 task components: multi-view task UI, query-preserving tabs, goal/sprint assignment in detail panel, create dialog with sprint defaults |
+| `src/components/features/goals/` | Phase 05 goal cards/dialogs, sprint cards, and workload chart |
+| `src/components/features/` | Feature components (tasks, goals, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
 | `src/hooks/use-tasks.ts` | Phase 04 SWR hooks: `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` |
+| `src/hooks/use-goals.ts` | Phase 05 SWR hooks and mutations for goals |
+| `src/hooks/use-sprints.ts` | Phase 05 SWR hooks and mutations for sprints |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
 | `src/stores/useTimerStore.ts` | Phase 04 rewrite: DB-backed timer state via `/start` `/stop` endpoints, localStorage persist, syncFromDb() |
 | `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`) |
 | `src/lib/api-client.ts` | Shared SWR fetcher + apiPost for all data hooks |
 | `src/lib/auth-client.ts` | Better Auth client with `organizationClient` plugin |
+| `src/lib/select-values.ts` | Select sentinel helpers for Radix Select values that represent all/none states |
 | `src/app/dashboard/layout.tsx` | Dashboard session + workspace redirect guard |
 | `src/types/` | Frontend-only TypeScript types |
 

@@ -1,7 +1,7 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-23
-> **Overall Progress:** 100% Phase 04 complete & production-verified. Phase 5 ready to start.
+> **Last Updated:** 2026-05-24
+> **Overall Progress:** v2 Phases 01-05 complete. Phase 06 Analytics Intelligence is next; full root test requires local Postgres for API integration tests.
 
 ## v2 Greenfield Rebuild
 
@@ -11,6 +11,7 @@
 | 2 | Data Schema Redesign | Done | UUID business schema applied to production, workspace-scoped projects/tasks/connections, goals/sprints/templates/alerts, adapted GSC/GA4 sync contracts |
 | 3 | UI Shell Redesign | Done | New dashboard shell, grouped sidebar, mobile Sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs |
 | 4 | Task Management v2 (Multi-View) | Done (2026-05-23) | Board/Timeline/Table/Calendar views; DB-backed timer; task filters; Kanban drag & drop; TanStack Table; CSS Grid Gantt-lite; template spawn with idempotent constraints. Post-release: fixed UUID regex, target_url migration, DB tracking table — production verified 2026-05-23 |
+| 5 | Goals & Sprint Management | Done (2026-05-24) | Goals/sprints CRUD, project-scoped goal progress, sprint state actions, goal/sprint selectors in task detail, sprint-filtered task board links, workload chart. Review fixes: Select sentinels, query-preserving view tabs, Zod schema build compatibility |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
@@ -37,7 +38,7 @@
 - Placeholder routes for all sections (goals, sprints, analytics subsections, settings subsections)
 - Task view shell with view switcher tabs (Board, Timeline, Table, Calendar)
 - Alert controls + user menu in header
-- Phase 3 readiness: all components coded, local validation passed, browser/live smoke pending
+- Phase 3 complete: all shell components coded, local validation passed, browser/live smoke pending
 
 ### Phase 04 Delivery Notes (2026-05-22)
 - **API Routes:** Rewritten `tasks.ts` with multi-view filters (status, search ILIKE, sprintId, assigneeId, limit/offset); `/complete` auto-stops timers; `/move` clears completedAt when leaving 'done'
@@ -48,6 +49,13 @@
 - **SWR Hooks:** New `use-tasks.ts` with `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` with stable cache keys
 - **Legacy:** TaskCard.tsx, TimerWidget.tsx marked @ts-nocheck (cleanup deferred to Phase 07)
 
+### Phase 05 Delivery Notes (2026-05-24)
+- **API Routes:** Added `goals.ts` and `sprints.ts` with workspace/project ownership checks, batch goal progress, sprint start/complete actions, and task listing by sprint.
+- **Frontend:** Added goals list/detail, sprints list/planning, goal create dialog, sprint cards, workload chart, and SWR hooks for goals/sprints.
+- **Task Linking:** Task detail panel can assign goal and sprint. Sprint cards link to `/dashboard/tasks?view=board&sprintId=...`; create task dialog preserves the active sprint filter.
+- **Review Fixes:** Replaced empty Radix Select values with explicit sentinels, preserved query params while switching task views, and split refined Zod schemas so update schemas compile/build.
+- **Validation:** `npm run lint`, `npm run type-check`, web tests `20/20`, and placeholder-env `npm run build` pass. Root `npm run test` currently needs local Postgres on `localhost:5432` for API integration tests.
+
 ## Phase Status
 
 | Phase | Name | Status | Progress |
@@ -56,11 +64,13 @@
 | 2 | Data Schema Redesign | Done | 100% |
 | 3 | UI Shell Redesign | Done | 100% |
 | 4 | Task Management v2 | Done | 100% |
-| 5 | (Future: Rankings + Analytics Dashboards) | Planned | 0% |
-| 6 | (Future: Keyword/Page Deep Dives) | Planned | 0% |
-| 7 | Testing, Security & Production Hardening | In Progress | ~20% |
+| 5 | Goals & Sprint Management | Done | 100% |
+| 6 | Analytics Intelligence | Planned | 0% |
+| 7 | Analytics Dashboards v2 | Planned | 0% |
 
-## Phase 7 — Current Work
+## Legacy Phase 7 Hardening Backlog
+
+This section predates the v2 greenfield phase numbering. Keep it as production-hardening backlog, not as the current v2 Phase 07 Analytics Dashboards status.
 
 **Goal:** Production-ready with test coverage, security, and stable deployment.
 

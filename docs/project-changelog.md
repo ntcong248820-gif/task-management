@@ -1,5 +1,25 @@
 # Project Changelog
 
+## 2026-05-24
+
+### Added
+- Completed v2 Phase 05 Goals & Sprint Management.
+- Added project-scoped goals UI/API, sprint planning UI/API, workload chart, and SWR hooks for goals/sprints.
+- Added sprint-filtered task board flow via `/dashboard/tasks?view=board&sprintId=...`.
+
+### Fixed
+- Replaced empty Radix Select item values with explicit all/none sentinels to avoid runtime crashes.
+- Preserved query params when switching task views, so sprint filters survive Board/Timeline/Table/Calendar navigation.
+- Split refined Zod goal/sprint schemas from base schemas so update schemas can use `.partial()` and production build can complete.
+
+### Validation
+- `npm --workspace @seo-impact-os/web run type-check`
+- `npm --workspace @seo-impact-os/web run test` -> `20/20`
+- `npm run lint`
+- `npm run type-check`
+- `npm run build` with local placeholder required env
+- `npm run test` currently blocked by local Postgres `ECONNREFUSED` for API integration tests; web tests pass.
+
 ## 2026-05-19
 
 ### Changed

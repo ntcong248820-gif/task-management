@@ -37,6 +37,7 @@ Next.js + Hono (Vercel, same origin)
   │  └─ Hono API mounted at /api (via [[...route]]/route.ts)
   │     ├─ /api/projects
   │     ├─ /api/tasks, /api/time-logs
+  │     ├─ /api/goals, /api/sprints
   │     ├─ /api/analytics, /api/correlation
   │     ├─ /api/integrations/gsc/*, /api/integrations/ga4/*
   │     └─ /api/cron/sync-gsc, /api/cron/sync-ga4 (triggered by GitHub Actions)
@@ -67,6 +68,12 @@ Hono standalone (port 3001, optional)
 - `apps/web/src/app/dashboard/layout.tsx` redirects unauthenticated users to `/login` and users without an active workspace to `/workspace`.
 - `packages/api-app/src/app.ts` injects `user`, `session`, `userId`, and `workspaceId` into protected API handlers, and treats auth-related requests as public when they reach the Hono app.
 - `apps/web/src/lib/auth-client.ts` enables `organizationClient`, so workspace create/invite/select methods exist on the client.
+
+**Key Change (Phase 05):** Goals and sprints now connect task execution to measurable objectives.
+- `packages/api-app/src/routes/goals.ts` serves project-scoped goal CRUD and batch task progress.
+- `packages/api-app/src/routes/sprints.ts` serves sprint CRUD, start/complete actions, and sprint task listings.
+- Task detail UI can assign goal and sprint; sprint cards deep-link into `/dashboard/tasks?view=board&sprintId=...`.
+- Metric progress remains deferred to analytics phases; current Phase 05 progress is task-count based.
 
 ## Database Schema (Key Tables)
 
@@ -147,7 +154,8 @@ Available via `POST /api/integrations/gsc/sync` and `POST /api/integrations/ga4/
 | Selected workspace + projects | Zustand (`use-workspace-store`) |
 | Selected project | Zustand (`use-project-store`) |
 | Alert shell state | Zustand (`use-alert-store`; stub fetch until Phase 06) |
-| Task views | Phase 03 placeholders; Phase 04 owns real task state |
+| Task views | Phase 04 multi-view task hooks/components, with Phase 05 sprint filtering via URL query |
+| Goals and sprints | Phase 05 SWR hooks (`use-goals`, `use-sprints`) |
 
 ## Environment Variables
 

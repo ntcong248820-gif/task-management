@@ -5,6 +5,24 @@
 **Component**: Goals & Sprints system
 **Status**: Resolved
 
+## 2026-05-24 Follow-up Verification
+
+Phase 05 status has been re-verified against current repo evidence and synced into the v2 plan, roadmap, changelog, architecture, and codebase summary.
+
+Follow-up fixes landed:
+- Radix Select all/none states now use explicit sentinel values instead of empty `SelectItem value=""`.
+- Sprint-filtered task board is wired through `sprintId` query params and view switching preserves existing query params.
+- Creating a task from a sprint-filtered board preserves the active sprint.
+- Goal/sprint Zod schemas now build correctly by applying `.partial()` before refinements.
+
+Validation:
+- `npm --workspace @seo-impact-os/web run type-check` — pass
+- `npm --workspace @seo-impact-os/web run test` — pass, 20/20
+- `npm run lint` — pass
+- `npm run type-check` — pass
+- `npm run build` with placeholder required env — pass
+- `npm run test` — blocked by local Postgres `ECONNREFUSED` for API integration tests
+
 ## What Happened
 
 Completed Phase 05 greenfield rebuild: full Goals & Sprint Management system. 3 new backend routes (`goals.ts`, `sprints.ts`), 5 frontend components, DB helper exports. All code reviewed, bugs fixed, tests passing.
