@@ -7,7 +7,7 @@ effort: "~20h"
 dependencies: [1, 2, 3]
 ---
 
-> **Completed 2026-05-22.** Type-check clean, 21/21 unit tests pass, code-reviewed READY_WITH_CONCERNS (all blocking issues fixed). V1 legacy files (@ts-nocheck) deferred to Phase 05 cleanup.
+> **Completed 2026-05-22.** Type-check clean, 21/21 unit tests pass, code-reviewed READY_WITH_CONCERNS (all blocking issues fixed). Later Phase 05 follow-up connected tasks to goals/sprints and added sprint-filtered task board links.
 
 # Phase 04: Task Management v2
 

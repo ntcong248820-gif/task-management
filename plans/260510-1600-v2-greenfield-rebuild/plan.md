@@ -79,21 +79,22 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 |---|-------|-----------------|--------|--------|--------|
 | 01 | [Auth + Workspace Foundation](./phase-01-auth-workspace.md) | Better Auth email/password, workspace, roles, dashboard guard | ~8h | ✅ Complete | ✅ Live signup/workspace/dashboard smoke passed 2026-05-19; simplified on 2026-05-18 to remove Resend/Google-login dependency |
 | 02 | [Data Schema Redesign](./phase-02-schema-redesign.md) | New DB schema: workspace, users, goals, tasks v2, GSC/GA4 adapted | ~8h | ✅ Complete | ✅ Production schema reconciled 2026-05-19; authenticated projects/tasks smoke passed |
-| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | ✅ Ready for Phase 04 | ✅ Code review 2026-05-21: READY_WITH_CONCERNS (no blockers). Fixed: ProjectSelector double-fetch race. Deferred: @tanstack/react-table (Phase 04), v1 file cleanup. Browser smoke pending. |
+| 03 | [UI Shell Redesign](./phase-03-ui-shell.md) | New nav, layout, workspace selector, sidebar, mobile responsive | ~7-8h | ✅ Complete | ✅ Code review 2026-05-21: READY_WITH_CONCERNS (no blockers). Fixed: ProjectSelector double-fetch race. Phase 04 consumed the task view shell. Browser smoke pending. |
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | ✅ Complete | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
-| 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | pending | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (project-scoped goals, standalone sprints OK, batch progress query) |
+| 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | ✅ Complete | ✅ Implemented and status-synced 2026-05-24; review findings fixed |
 | 06 | [Analytics Intelligence](./phase-06-analytics-intelligence.md) | Anomaly alerts, content decay, scheduled digests, recommendations | ~16h | pending | ✅ Reviewed — 2026-05-11 (stddev guard, set-based SQL decay, alert polling) |
 | 07 | [Analytics Dashboards v2](./phase-07-analytics-dashboards-v2.md) | Deep-dive per URL/keyword, correlation v2, cross-source insights | ~14h | pending | ✅ Reviewed — `reports/brainstorm-260511-2029-phase-06-07-review.md` |
 
 > **Final Feasibility Review: 2026-05-11** — `/ck:predict` (CAUTION→GO) + `/ck:scenario` (34 edge cases, 5 Critical fixed).
 > Estimated effort revised: ~83h → ~89-92h. All Critical items applied. Plan READY TO IMPLEMENT.
 
-## Current State — 2026-05-22
+## Current State — 2026-05-24
 
 - Phase 01: complete. Internal MVP auth is email/password-only; live signup -> workspace -> dashboard smoke passed. Email verification, invite email, password reset, and Better Auth Google login are deferred.
 - Phase 02: complete. Production DB now has the v2 workspace-scoped business schema; old v1 business tables are preserved as `*_legacy_v1_20260519`.
-- Phase 03: ready for Phase 04. New shell, grouped sidebar, mobile sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs are in place. Code-reviewed 2026-05-21 — fixed ProjectSelector double-fetch race. Browser/live smoke still pending. Deferred: @tanstack/react-table install (do at Phase 04 kickoff), v1 file cleanup.
-- Phase 04: complete. Multi-view task management (Board/Timeline/Table/Calendar), DB-backed timer, task create/edit/complete/delete, drag-and-drop with optimistic rollback, task-templates spawn, @tanstack/react-table Table view, CSS Grid Timeline view, Calendar with "+N more" popover, targetUrl field added. Type-check and lint clean. V1 legacy TaskCard.tsx/TimerWidget.tsx marked @ts-nocheck pending Phase 05 cleanup.
+- Phase 03: complete. New shell, grouped sidebar, mobile sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs are in place. Code-reviewed 2026-05-21 — fixed ProjectSelector double-fetch race. Browser/live smoke still pending.
+- Phase 04: complete. Multi-view task management (Board/Timeline/Table/Calendar), DB-backed timer, task create/edit/complete/delete, drag-and-drop with optimistic rollback, task-templates spawn, @tanstack/react-table Table view, CSS Grid Timeline view, Calendar with "+N more" popover, targetUrl field added. Type-check and lint clean.
+- Phase 05: complete. Goals/sprints API and UI are implemented, task detail supports goal/sprint assignment, sprint cards deep-link to a sprint-filtered task board, creating a task from that board preserves `sprintId`, and review fixes landed for Radix Select sentinel values plus Zod refined-schema build compatibility. Validation green for lint, type-check, web tests, and placeholder-env build; root test still requires a running local Postgres for API integration tests.
 
 ## Feature Proposals with Reasoning
 

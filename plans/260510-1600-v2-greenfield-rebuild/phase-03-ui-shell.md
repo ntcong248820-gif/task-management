@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "UI Shell Redesign"
-status: ready-for-phase-04
+status: complete
 priority: P1
 effort: "~7-8h"
 dependencies: [1, 2]
@@ -19,7 +19,7 @@ các phase sau sẽ build vào. Giữ shadcn/ui + Tailwind CSS, redesign composi
 > Phase 01 auth was simplified on 2026-05-18: email/password-only, no Google login, no email verification/reset/invite email.
 > Phase 01/02 readiness gate passed on 2026-05-19: production signup/workspace smoke passed and authenticated `/api/projects` + `/api/tasks` return `200` on the v2 schema.
 > Implemented on 2026-05-19: shell/layout/navigation/stores/placeholders are code complete with local type-check, tests, lint, build, and code-review verification passing. Browser/live smoke remains pending.
-> Code-reviewed on 2026-05-21: READY_WITH_CONCERNS (no blockers). Fixed: removed redundant `fetchProjects` useEffect from `project-selector.tsx` (was causing double-fetch race on workspace switch). Deferred: `@tanstack/react-table` install (needed for Phase 04 Table view — install at Phase 04 kickoff). Route group uses flat `/dashboard/` instead of `(app)/dashboard/` — functional but asymmetric with `(auth)/`.
+> Code-reviewed on 2026-05-21: READY_WITH_CONCERNS (no blockers). Fixed: removed redundant `fetchProjects` useEffect from `project-selector.tsx` (was causing double-fetch race on workspace switch). Phase 04 consumed the task view shell and installed the table view dependency. Route group uses flat `/dashboard/` instead of `(app)/dashboard/` — functional but asymmetric with `(auth)/`.
 
 ## Design Principles
 

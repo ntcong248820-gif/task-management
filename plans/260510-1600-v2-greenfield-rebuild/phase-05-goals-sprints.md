@@ -1,13 +1,15 @@
 ---
 phase: 5
 title: "Goals & Sprint Management"
-status: pending
+status: complete
 priority: P1
 effort: "~10h"
 dependencies: [2, 4]
 ---
 
 # Phase 05: Goals & Sprint Management
+
+> **Completed 2026-05-24.** Goals/sprints API and UI are implemented, task goal/sprint linking works from the task detail panel, sprint cards link into a sprint-filtered task board, and the Radix Select empty-value runtime bug plus Zod refined-schema build bug are fixed. Validation: type-check, lint, web tests, and placeholder-env build pass. Root `npm run test` is blocked by local Postgres not running on `localhost:5432`.
 
 ## Overview
 
@@ -51,7 +53,7 @@ POST   /api/goals              — create
 GET    /api/goals/:id          — get with linked sprints + tasks count
 PUT    /api/goals/:id          — update
 DELETE /api/goals/:id          — delete
-GET    /api/goals/:id/progress — computed progress { tasksTotal, tasksDone, metricCurrent }
+GET    /api/goals/:id/progress — computed task progress { tasksTotal, tasksDone }
 ```
 
 ### Sprints Routes (`packages/api-app/src/routes/sprints.ts`)
@@ -83,8 +85,9 @@ async function batchGoalProgress(goalIds: number[]) {
     .groupBy(tasks.goalId);
 }
 
-// GET /api/goals/:id/progress → single goal detail with metric progress
+// GET /api/goals/:id/progress → single goal task progress
 // GET /api/goals list → inline progress via batchGoalProgress() — no extra queries
+// Metric progress is deferred to analytics phases, where real GSC/GA4 data is available.
 ```
 
 ## Frontend Pages
@@ -115,8 +118,7 @@ GoalDetailPage
   │       ├── Name, date range, status
   │       ├── Task count + done count
   │       └── [View Tasks] → filtered tasks board
-  └── LinkedTasksSection
-      └── TaskList (all tasks under this goal)
+  └── Workload summary for linked sprint/task distribution
 ```
 
 ### Sprint Planning View
@@ -124,7 +126,9 @@ GoalDetailPage
 When viewing a sprint → show tasks board filtered by `sprintId`:
 - Uses same Board/Timeline/Table components from Phase 04
 - Filter pre-applied: `sprintId=X`
-- "Add to sprint" button on task cards when sprint is active
+- Sprint cards link to `/dashboard/tasks?view=board&sprintId=X`
+- New tasks created from the sprint-filtered board inherit `sprintId`
+- Existing tasks can be assigned to a sprint from the task detail panel
 
 ### Goal Create/Edit Dialog
 
@@ -144,7 +148,7 @@ Fields:
 Two ways to link task → goal/sprint:
 
 1. **From task detail panel** (Phase 04): Goal select + Sprint select dropdowns
-2. **From sprint view**: "Add existing task to sprint" or create task directly in sprint
+2. **From sprint view**: open sprint-filtered task board and create task directly in sprint
 
 ## Team Workload View
 
@@ -166,9 +170,9 @@ Simple bar chart using task count × estimatedMinutes per user.
 - `packages/api-app/src/routes/goals.ts`
 - `packages/api-app/src/routes/sprints.ts`
 - `packages/api-app/src/schemas/goal-schema.ts`
-- `apps/web/src/app/(app)/dashboard/goals/page.tsx`
-- `apps/web/src/app/(app)/dashboard/goals/[id]/page.tsx`
-- `apps/web/src/app/(app)/dashboard/sprints/page.tsx`
+- `apps/web/src/app/dashboard/goals/page.tsx`
+- `apps/web/src/app/dashboard/goals/[id]/page.tsx`
+- `apps/web/src/app/dashboard/sprints/page.tsx`
 - `apps/web/src/components/features/goals/goal-card.tsx`
 - `apps/web/src/components/features/goals/goal-create-dialog.tsx`
 - `apps/web/src/components/features/goals/sprint-card.tsx`
@@ -181,25 +185,34 @@ Simple bar chart using task count × estimatedMinutes per user.
 
 ## Todo
 
-- [ ] Create `goals.ts` API route — goals scoped to projectId, GET list returns inline batchGoalProgress
-- [ ] Create `sprints.ts` API route — state machine guards on /start and /complete; multiple active sprints OK
-- [ ] Create Zod schemas in `goal-schema.ts` — targetValue as numeric, goalId optional on sprint
-- [ ] Implement `batchGoalProgress()` helper (GROUP BY — no N+1)
-- [ ] Build GoalsPage (list view)
-- [ ] Build GoalCard component with progress bar
-- [ ] Build GoalCreateDialog
-- [ ] Build GoalDetailPage with sprints section
-- [ ] Build SprintCard component
-- [ ] Build workload chart (simple bar)
-- [ ] Add Goal + Sprint selectors to TaskDetailPanel
-- [ ] Write SWR hooks for goals + sprints
-- [ ] Run `npm run type-check`
+- [x] Create `goals.ts` API route — goals scoped to projectId, GET list returns inline batchGoalProgress
+- [x] Create `sprints.ts` API route — state machine guards on /start and /complete; multiple active sprints OK
+- [x] Create Zod schemas in `goal-schema.ts` — targetValue as numeric, goalId optional on sprint
+- [x] Implement `batchGoalProgress()` helper (GROUP BY — no N+1)
+- [x] Build GoalsPage (list view)
+- [x] Build GoalCard component with progress bar
+- [x] Build GoalCreateDialog
+- [x] Build GoalDetailPage with sprints section
+- [x] Build SprintCard component
+- [x] Build workload chart (simple bar)
+- [x] Add Goal + Sprint selectors to TaskDetailPanel
+- [x] Write SWR hooks for goals + sprints
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] Can create goal with metric target
-- [ ] Can create sprint linked to goal
-- [ ] Task can be assigned to goal + sprint
-- [ ] Goal progress bar updates as tasks are done
-- [ ] Sprint board shows only sprint's tasks
-- [ ] Workload chart shows team distribution
+- [x] Can create goal with metric target
+- [x] Can create sprint linked to goal
+- [x] Task can be assigned to goal + sprint
+- [x] Goal progress bar updates as tasks are done
+- [x] Sprint board shows only sprint's tasks
+- [x] Workload chart shows team distribution
+
+## Validation
+
+- `npm --workspace @seo-impact-os/web run type-check` — pass
+- `npm --workspace @seo-impact-os/web run test` — pass, 20/20
+- `npm run lint` — pass
+- `npm run type-check` — pass
+- `npm run build` with local placeholder required env — pass
+- `npm run test` — blocked by local Postgres connection refused for API integration tests; web tests still pass
