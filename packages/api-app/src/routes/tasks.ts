@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { db, tasks, timeLogs, eq, and, sql, isNull } from '@repo/db';
 import { logger } from '../utils/logger';
 import { createTaskSchema, updateTaskSchema, moveTaskSchema } from '../schemas/task-schema';
-import { projectBelongsToWorkspace, goalBelongsToWorkspace, sprintBelongsToWorkspace, isUuid } from '../utils/project-access';
+import { projectBelongsToWorkspace, goalBelongsToProject, sprintBelongsToProject, isUuid } from '../utils/project-access';
 
 const log = logger.child('Tasks');
 type AppVariables = { userId: string; workspaceId: string };
@@ -63,9 +63,9 @@ app.post('/', zValidator('json', createTaskSchema), async (c) => {
 
     if (!(await projectBelongsToWorkspace(body.projectId, workspaceId)))
       return c.json({ success: false, error: 'Project not found' }, 404);
-    if (body.goalId && !(await goalBelongsToWorkspace(body.goalId, workspaceId)))
+    if (body.goalId && !(await goalBelongsToProject(body.goalId, workspaceId, body.projectId)))
       return c.json({ success: false, error: 'Goal not found' }, 404);
-    if (body.sprintId && !(await sprintBelongsToWorkspace(body.sprintId, workspaceId)))
+    if (body.sprintId && !(await sprintBelongsToProject(body.sprintId, workspaceId, body.projectId)))
       return c.json({ success: false, error: 'Sprint not found' }, 404);
 
     const [task] = await db
@@ -134,17 +134,21 @@ app.put('/:id', zValidator('json', updateTaskSchema), async (c) => {
     const workspaceId = c.get('workspaceId');
 
     const [existing] = await db
-      .select({ id: tasks.id })
+      .select({ id: tasks.id, projectId: tasks.projectId, goalId: tasks.goalId, sprintId: tasks.sprintId })
       .from(tasks)
       .where(and(eq(tasks.id, id), eq(tasks.workspaceId, workspaceId)))
       .limit(1);
     if (!existing) return c.json({ success: false, error: 'Task not found' }, 404);
 
+    const nextProjectId = body.projectId ?? existing.projectId;
+    const nextGoalId = body.goalId !== undefined ? body.goalId : existing.goalId;
+    const nextSprintId = body.sprintId !== undefined ? body.sprintId : existing.sprintId;
+
     if (body.projectId && !(await projectBelongsToWorkspace(body.projectId, workspaceId)))
       return c.json({ success: false, error: 'Project not found' }, 404);
-    if (body.goalId && !(await goalBelongsToWorkspace(body.goalId, workspaceId)))
+    if (nextGoalId && !(await goalBelongsToProject(nextGoalId, workspaceId, nextProjectId)))
       return c.json({ success: false, error: 'Goal not found' }, 404);
-    if (body.sprintId && !(await sprintBelongsToWorkspace(body.sprintId, workspaceId)))
+    if (nextSprintId && !(await sprintBelongsToProject(nextSprintId, workspaceId, nextProjectId)))
       return c.json({ success: false, error: 'Sprint not found' }, 404);
 
     const patch: Record<string, unknown> = { updatedAt: new Date() };

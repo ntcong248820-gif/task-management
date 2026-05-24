@@ -44,6 +44,30 @@ export async function goalBelongsToWorkspace(goalId: string, workspaceId: string
     return Boolean(goal);
 }
 
+export async function getGoalProjectId(goalId: string, workspaceId: string): Promise<string | null> {
+    if (!isUuid(goalId)) return null;
+
+    const [goal] = await db
+        .select({ projectId: goals.projectId })
+        .from(goals)
+        .where(and(eq(goals.id, goalId), eq(goals.workspaceId, workspaceId)))
+        .limit(1);
+
+    return goal?.projectId ?? null;
+}
+
+export async function goalBelongsToProject(goalId: string, workspaceId: string, projectId: string): Promise<boolean> {
+    if (!isUuid(goalId) || !isUuid(projectId)) return false;
+
+    const [goal] = await db
+        .select({ id: goals.id })
+        .from(goals)
+        .where(and(eq(goals.id, goalId), eq(goals.workspaceId, workspaceId), eq(goals.projectId, projectId)))
+        .limit(1);
+
+    return Boolean(goal);
+}
+
 export async function sprintBelongsToWorkspace(sprintId: string, workspaceId: string): Promise<boolean> {
     if (!isUuid(sprintId)) return false;
 
@@ -51,6 +75,18 @@ export async function sprintBelongsToWorkspace(sprintId: string, workspaceId: st
         .select({ id: sprints.id })
         .from(sprints)
         .where(and(eq(sprints.id, sprintId), eq(sprints.workspaceId, workspaceId)))
+        .limit(1);
+
+    return Boolean(sprint);
+}
+
+export async function sprintBelongsToProject(sprintId: string, workspaceId: string, projectId: string): Promise<boolean> {
+    if (!isUuid(sprintId) || !isUuid(projectId)) return false;
+
+    const [sprint] = await db
+        .select({ id: sprints.id })
+        .from(sprints)
+        .where(and(eq(sprints.id, sprintId), eq(sprints.workspaceId, workspaceId), eq(sprints.projectId, projectId)))
         .limit(1);
 
     return Boolean(sprint);
