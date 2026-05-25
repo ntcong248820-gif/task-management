@@ -1,7 +1,7 @@
 # Project Roadmap
 
 > **Last Updated:** 2026-05-24
-> **Overall Progress:** v2 Phases 01-05 complete. Phase 06 Analytics Intelligence is next; full root test requires local Postgres for API integration tests.
+> **Overall Progress:** v2 Phases 01-06 complete. Phase 07 Analytics Dashboards v2 is next; root test requires local Postgres for API integration tests.
 
 ## v2 Greenfield Rebuild
 
@@ -12,6 +12,7 @@
 | 3 | UI Shell Redesign | Done | New dashboard shell, grouped sidebar, mobile Sheet nav, workspace/project selectors, alert/user controls, placeholder routes, and task `?view=` tabs |
 | 4 | Task Management v2 (Multi-View) | Done (2026-05-23) | Board/Timeline/Table/Calendar views; DB-backed timer; task filters; Kanban drag & drop; TanStack Table; CSS Grid Gantt-lite; template spawn with idempotent constraints. Post-release: fixed UUID regex, target_url migration, DB tracking table — production verified 2026-05-23 |
 | 5 | Goals & Sprint Management | Done (2026-05-24) | Goals/sprints CRUD, project-scoped goal progress, sprint state actions, goal/sprint selectors in task detail, sprint-filtered task board links, workload chart. Review fixes: Select sentinels, query-preserving view tabs, Zod schema build compatibility |
+| 6 | Analytics Intelligence | Done (2026-05-24) | Z-score anomaly alerts (DoW-normalized, 8-week history), content decay detection (set-based SQL), cross-source correlation (correlated_drop + source_discrepancy), rule-based recommendations, per-user alert read tracking via join table, weekly digest job, in-app alerts page, NotificationBell 30s polling, dashboard digest card. Review fixed: cross-workspace GSC data isolation, SQL-level unreadOnly filter, read-all bulk cap |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
@@ -56,6 +57,14 @@
 - **Review Fixes:** Replaced empty Radix Select values with explicit sentinels, preserved query params while switching task views, and split refined Zod schemas so update schemas compile/build.
 - **Validation:** `npm run lint`, `npm run type-check`, web tests `20/20`, and placeholder-env `npm run build` pass. Root `npm run test` currently needs local Postgres on `localhost:5432` for API integration tests.
 
+### Phase 06 Delivery Notes (2026-05-24)
+- **Alert Engine:** Z-score anomaly detection (day-of-week normalized, 8-week same-DoW history, `MIN_DATA_POINTS=4`), content decay (30% impression drop over 7-day windows via set-based SQL), cross-source correlated drop + source discrepancy (GSC+GA4 z-score), rule-based recommendations (4 rules: optimize_meta, refresh_content, audit_decaying_pages, build_links)
+- **API Routes:** `GET/PATCH/DELETE /api/alerts` with per-user read state via `alert_reads` join table; `GET /api/digest/latest` for weekly digest; cron routes `/api/cron/run-alerts` and `/api/cron/weekly-digest` guarded by `verifyCronSecret`
+- **Schema:** New `workspace_digests` table with `UNIQUE(workspaceId, weekStart)`; `alerts` type constraint extended with `correlated_drop` + `source_discrepancy`
+- **Frontend:** Alerts page with severity/type/unread filters; `AlertCard` with expand/collapse metadata; `NotificationBell` with 30s polling; dashboard `WeeklyDigestCard` with WoW % badges and keyword deltas; `AlertsOverviewCard` unread count
+- **Review Fixes:** C1 — weekly digest GSC queries scoped to workspace project IDs (cross-tenant isolation); C2 — `unreadOnly` pushed to SQL `WHERE isNull(alertReads.id)` instead of in-memory filter after LIMIT; H1 — `PATCH /read-all` capped at 500 rows; H2 — limit/offset sanitized with `Math.min/max`
+- **Validation:** Lint, type-check, and build all pass clean
+
 ## Phase Status
 
 | Phase | Name | Status | Progress |
@@ -65,7 +74,7 @@
 | 3 | UI Shell Redesign | Done | 100% |
 | 4 | Task Management v2 | Done | 100% |
 | 5 | Goals & Sprint Management | Done | 100% |
-| 6 | Analytics Intelligence | Planned | 0% |
+| 6 | Analytics Intelligence | Done (2026-05-24) | 100% |
 | 7 | Analytics Dashboards v2 | Planned | 0% |
 
 ## Legacy Phase 7 Hardening Backlog

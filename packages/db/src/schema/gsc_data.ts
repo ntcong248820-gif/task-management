@@ -29,6 +29,8 @@ export const gscData = pgTable('gsc_data', {
   projectDateIdx: index('gsc_data_project_date_idx').on(table.projectId, table.date),
   projectPageIdx: index('gsc_data_project_page_idx').on(table.projectId, table.page),
   projectQueryIdx: index('gsc_data_project_query_idx').on(table.projectId, table.query),
+  projectQueryDateIdx: index('gsc_data_project_query_date_idx').on(table.projectId, table.query, table.date),
+  projectPageDateIdx: index('gsc_data_project_page_date_idx').on(table.projectId, table.page, table.date),
 }));
 
 export type GSCData = typeof gscData.$inferSelect;

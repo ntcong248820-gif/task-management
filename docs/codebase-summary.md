@@ -15,6 +15,10 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/routes/task-templates.ts` | Template CRUD + `/spawn` (idempotent `ON CONFLICT DO NOTHING` on recurringTemplateId+startDate) |
 | `src/routes/goals.ts` | Phase 05 workspace/project-scoped goals CRUD + batch task progress |
 | `src/routes/sprints.ts` | Phase 05 sprint CRUD + start/complete actions + sprint task listing |
+| `src/routes/alerts.ts` | Phase 06 alert CRUD; per-user read state via `alert_reads` left-join; supports projectId/severity/type/unreadOnly/limit/offset filters |
+| `src/routes/digest.ts` | Phase 06 `GET /api/digest/latest` — most recent workspace digest row |
+| `src/routes/cron/run-alerts.ts` | Phase 06 cron endpoint: runs alert engine for all projects with GSC connections |
+| `src/routes/cron/weekly-digest.ts` | Phase 06 cron endpoint: generates weekly digest for all workspaces |
 | `src/routes/analytics.ts` | Combined GSC + GA4 metrics |
 | `src/routes/correlation.ts` | Task-traffic correlation data |
 | `src/routes/rankings.ts` | Keyword position tracking |
@@ -26,6 +30,9 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/utils/signed-oauth-state.ts` | HMAC signed OAuth state bound to project/user/workspace |
 | `src/jobs/sync-gsc.ts` | GSC sync logic using `gsc_connections` and UUID project IDs |
 | `src/jobs/sync-ga4.ts` | GA4 sync logic using `ga4_connections` and `engagementRate` |
+| `src/jobs/alert-engine.ts` | Phase 06 alert engine: z-score anomaly detection (DoW-normalized), content decay (set-based SQL), cross-source correlation, recommendation rule evaluation |
+| `src/jobs/weekly-digest.ts` | Phase 06 weekly digest: GSC click/impression totals, keyword position deltas, task/alert counts → upserts to `workspace_digests` |
+| `src/config/recommendation-rules.ts` | Phase 06 rule definitions: 4 rules (optimize_meta, refresh_content, audit_decaying_pages, build_links) |
 | `src/schemas/` | Zod validation schemas (project-schema.ts, task-schema.ts, goal-schema.ts) |
 | `src/utils/crypto-tokens.ts` | AES-256-GCM encrypt/decrypt for OAuth tokens |
 | `src/utils/token-refresh.ts` | Decrypt + refresh Google OAuth tokens |
@@ -63,17 +70,20 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/dashboard/tasks/` | Phase 04 multi-view task hub with `?view=board|timeline|table|calendar` (default: board) |
 | `src/app/dashboard/goals/` | Phase 05 goals list/detail UI with progress and linked sprints |
 | `src/app/dashboard/sprints/` | Phase 05 sprint planning UI with status actions, workload, and task-board links |
-| `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`, `alerts`) |
+| `src/app/dashboard/analytics/alerts/page.tsx` | Phase 06 live alerts page with severity/type/unread filters, `AlertCard` list, mark-all-read |
+| `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`); `alerts` now live (Phase 06) |
 | `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
 | `src/components/ui/` | shadcn/ui primitives |
 | `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
 | `src/components/features/tasks/` | Phase 04/05 task components: multi-view task UI, query-preserving tabs, goal/sprint assignment in detail panel, create dialog with sprint defaults |
 | `src/components/features/goals/` | Phase 05 goal cards/dialogs, sprint cards, and workload chart |
+| `src/components/features/alerts/` | Phase 06 `AlertCard` (severity icon, expand/collapse metadata, mark-read, dismiss) + `AlertFilters` (severity pills, unread toggle, type select, mark-all-read) |
 | `src/components/features/` | Feature components (tasks, goals, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
 | `src/hooks/use-tasks.ts` | Phase 04 SWR hooks: `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` |
 | `src/hooks/use-goals.ts` | Phase 05 SWR hooks and mutations for goals |
 | `src/hooks/use-sprints.ts` | Phase 05 SWR hooks and mutations for sprints |
+| `src/hooks/use-alerts.ts` | Phase 06 SWR hooks: `useAlerts()`, `useAlertCount()` (30s refresh), `useLatestDigest()`; mutation helpers `markAlertRead`, `markAllAlertsRead`, `dismissAlert` |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
 | `src/stores/useTimerStore.ts` | Phase 04 rewrite: DB-backed timer state via `/start` `/stop` endpoints, localStorage persist, syncFromDb() |
 | `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`) |
@@ -96,8 +106,9 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/schema/goals.ts` | Project-scoped goals; current value is derived, not stored |
 | `src/schema/sprints.ts` | Workspace sprints/campaign periods with optional project scope |
 | `src/schema/task-templates.ts` | Recurring task templates |
-| `src/schema/alerts.ts` | Workspace/project alerts with severity/type metadata |
-| `src/schema/alert-reads.ts` | Per-user alert read tracking |
+| `src/schema/alerts.ts` | Workspace/project alerts with severity/type metadata; types: traffic_drop, ranking_drop, content_decay, anomaly, recommendation, correlated_drop, source_discrepancy |
+| `src/schema/alert-reads.ts` | Per-user alert read tracking; `UNIQUE(alertId, userId)` |
+| `src/schema/workspace-digests.ts` | Phase 06 weekly digest storage; `UNIQUE(workspaceId, weekStart)` |
 | `src/schema/gsc_data.ts` | Raw GSC data with UUID project FK, no workspace column |
 | `src/schema/gsc_data_aggregated.ts` | Aggregated GSC metrics with numeric CTR/position |
 | `src/schema/ga4_data.ts` | GA4 data with `engagementRate`, conversion/source/medium/device dimensions |
@@ -105,7 +116,7 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 
 ## packages/types
 
-Shared TypeScript interfaces: `Project`, `Task`, `TimeLog`, `Goal`, `Sprint`, `Alert`, `GscConnection`, `Ga4Connection`, `GscData`, `Ga4Data`, etc.
+Shared TypeScript interfaces: `Project`, `Task`, `TimeLog`, `Goal`, `Sprint`, `Alert` (with injected `isRead`), `DigestData`, `WorkspaceDigest`, `GscConnection`, `Ga4Connection`, `GscData`, `Ga4Data`, etc.
 
 ## Root-level Scripts
 

@@ -29,6 +29,7 @@ export const ga4Data = pgTable('ga4_data', {
     table.deviceCategory
   ),
   projectDateIdx: index('ga4_data_project_date_idx').on(table.projectId, table.date),
+  projectSourceDateIdx: index('ga4_data_project_source_date_idx').on(table.projectId, table.source, table.date),
 }));
 
 export type GA4Data = typeof ga4Data.$inferSelect;

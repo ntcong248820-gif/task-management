@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, gscData, tasks, eq, and, gte, lte, sql } from '@repo/db';
+import { db, gscData, ga4Data, tasks, eq, and, gte, lte, sql } from '@repo/db';
 import { logger } from '../utils/logger';
 import { requireProjectInWorkspace } from '../utils/project-access';
 
@@ -8,178 +8,241 @@ const log = logger.child('Correlation');
 type AppVariables = { workspaceId: string };
 const app = new Hono<{ Variables: AppVariables }>();
 
-interface CorrelationDataPoint {
-    date: string;
-    displayDate: string;
-    clicks: number;
-    impressions: number;
-    position: number;
-    completedTasks: {
-        id: string;
-        title: string;
-        type: string;
-        timeSpent: number;
-    }[];
-}
-
-const extractTrafficImpact = (value: unknown): number => {
-    if (!value || typeof value !== 'object') return 0;
-    const actualImpact = value as Record<string, unknown>;
-    const trafficIncrease = actualImpact.traffic_increase ?? actualImpact.trafficIncrease;
-    return typeof trafficIncrease === 'number' ? Math.round(trafficIncrease) : 0;
-};
-
-// GET /api/correlation?projectId=<uuid>&days=30
+/**
+ * GET /api/correlation?projectId=X&days=90&url=X (optional)
+ * Chart data: daily GSC clicks+impressions, task annotations (affectsWebsite=true only)
+ */
 app.get('/', async (c) => {
     try {
-        const rawProjectId = c.req.query('projectId');
-        if (!rawProjectId) {
-            return c.json({ success: false, error: 'projectId is required' }, 400);
-        }
-        const projectId = rawProjectId;
+        const { projectId, days = '90', url } = c.req.query();
+        if (!projectId) return c.json({ success: false, error: 'projectId is required' }, 400);
         const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
         if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
-        const days = Number(c.req.query('days') || 30);
 
+        const numDays = Math.min(Math.max(Number(days) || 90, 7), 365);
         const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - days);
+        const startDate = new Date(endDate.getTime() - numDays * 86400000);
+        const start = startDate.toISOString().split('T')[0];
+        const end = endDate.toISOString().split('T')[0];
+        const decodedUrl = url ? decodeURIComponent(url) : null;
 
-        // Get GSC data for date range
-        const gscDataResult = await db
+        // GSC daily data (optionally filtered by URL)
+        const gscWhere: any[] = [
+            eq(gscData.projectId, projectId),
+            gte(gscData.date, start),
+            lte(gscData.date, end),
+        ];
+        if (decodedUrl) gscWhere.push(eq(gscData.page, decodedUrl));
+
+        const gscRaw = await db
             .select({
                 date: gscData.date,
                 clicks: sql<number>`COALESCE(SUM(${gscData.clicks}), 0)`,
                 impressions: sql<number>`COALESCE(SUM(${gscData.impressions}), 0)`,
-                position: sql<number>`COALESCE(AVG(${gscData.position}), 0)`,
             })
             .from(gscData)
-            .where(
-                and(
-                    eq(gscData.projectId, projectId),
-                    gte(gscData.date, startDate.toISOString().split('T')[0]),
-                    lte(gscData.date, endDate.toISOString().split('T')[0])
-                )
-            )
+            .where(and(...gscWhere))
             .groupBy(gscData.date)
             .orderBy(gscData.date);
 
-        // Get completed tasks in date range
-        const completedTasks = await db
+        // GA4 daily sessions
+        const ga4Raw = await db
+            .select({
+                date: ga4Data.date,
+                sessions: sql<number>`COALESCE(SUM(${ga4Data.sessions}), 0)`,
+            })
+            .from(ga4Data)
+            .where(and(eq(ga4Data.projectId, projectId), gte(ga4Data.date, start), lte(ga4Data.date, end)))
+            .groupBy(ga4Data.date)
+            .orderBy(ga4Data.date);
+
+        const ga4Map = new Map(ga4Raw.map(d => [String(d.date), Number(d.sessions)]));
+
+        // Build continuous daily series
+        const dateMap = new Map(gscRaw.map(d => [String(d.date), d]));
+        const chartData: { date: string; clicks: number; impressions: number; sessions: number }[] = [];
+        const cur = new Date(startDate);
+        while (cur <= endDate) {
+            const dateStr = cur.toISOString().split('T')[0];
+            const gscDay = dateMap.get(dateStr);
+            chartData.push({
+                date: dateStr,
+                clicks: Number(gscDay?.clicks) || 0,
+                impressions: Number(gscDay?.impressions) || 0,
+                sessions: ga4Map.get(dateStr) || 0,
+            });
+            cur.setDate(cur.getDate() + 1);
+        }
+
+        // Task annotations — affectsWebsite=true only
+        const taskWhere: any[] = [
+            eq(tasks.projectId, projectId),
+            eq(tasks.status, 'done'),
+            eq(tasks.affectsWebsite, true),
+            gte(tasks.completedAt, startDate),
+            lte(tasks.completedAt, endDate),
+        ];
+        if (decodedUrl) taskWhere.push(eq(tasks.targetUrl, decodedUrl));
+
+        const annotations = await db
             .select({
                 id: tasks.id,
                 title: tasks.title,
                 taskType: tasks.taskType,
-                timeSpent: tasks.timeSpent,
                 completedAt: tasks.completedAt,
-                actualImpact: tasks.actualImpact,
             })
             .from(tasks)
-            .where(
-                and(
-                    eq(tasks.projectId, projectId),
-                    eq(tasks.status, 'done'),
-                    gte(tasks.completedAt, startDate),
-                    lte(tasks.completedAt, endDate)
-                )
-            );
-
-        // Create a map of date -> tasks
-        const tasksByDate = new Map<string, typeof completedTasks>();
-        completedTasks.forEach(task => {
-            if (task.completedAt) {
-                const dateStr = task.completedAt.toISOString().split('T')[0];
-                if (!tasksByDate.has(dateStr)) {
-                    tasksByDate.set(dateStr, []);
-                }
-                tasksByDate.get(dateStr)!.push(task);
-            }
-        });
-
-        // Generate data points for all days in range
-        const correlationData: CorrelationDataPoint[] = [];
-        const currentDate = new Date(startDate);
-
-        // Create GSC data map for quick lookup
-        const gscDataMap = new Map<string, typeof gscDataResult[0]>();
-        gscDataResult.forEach(d => {
-            const dateStr = String(d.date);
-            gscDataMap.set(dateStr, d);
-        });
-
-        while (currentDate <= endDate) {
-            const dateStr = currentDate.toISOString().split('T')[0];
-            const gscDay = gscDataMap.get(dateStr);
-            const tasksOnDay = tasksByDate.get(dateStr) || [];
-
-            correlationData.push({
-                date: dateStr,
-                displayDate: new Date(dateStr).toLocaleDateString('vi-VN', { day: '2-digit', month: 'short' }),
-                clicks: Number(gscDay?.clicks) || 0,
-                impressions: Number(gscDay?.impressions) || 0,
-                position: Number(gscDay?.position) || 0,
-                completedTasks: tasksOnDay.map(t => ({
-                    id: t.id,
-                    title: t.title,
-                    type: t.taskType || 'technical',
-                    timeSpent: t.timeSpent || 0,
-                })),
-            });
-
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        // Calculate summary metrics
-        const totalClicks = correlationData.reduce((sum, d) => sum + d.clicks, 0);
-        const totalImpressions = correlationData.reduce((sum, d) => sum + d.impressions, 0);
-        const avgPosition = correlationData.reduce((sum, d) => sum + d.position, 0) / correlationData.length || 0;
-        const tasksCompleted = completedTasks.length;
-
-        // Calculate change vs previous period
-        const prevStartDate = new Date(startDate);
-        prevStartDate.setDate(prevStartDate.getDate() - days);
-        const prevGscData = await db
-            .select({
-                clicks: sql<number>`COALESCE(SUM(${gscData.clicks}), 0)`,
-            })
-            .from(gscData)
-            .where(
-                and(
-                    eq(gscData.projectId, projectId),
-                    gte(gscData.date, prevStartDate.toISOString().split('T')[0]),
-                    lte(gscData.date, startDate.toISOString().split('T')[0])
-                )
-            );
-
-        const prevClicks = Number(prevGscData[0]?.clicks) || 1;
-        const trafficGrowth = ((totalClicks - prevClicks) / prevClicks * 100);
+            .where(and(...taskWhere))
+            .orderBy(tasks.completedAt);
 
         return c.json({
             success: true,
             data: {
-                chartData: correlationData,
-                metrics: {
-                    totalClicks,
-                    totalImpressions,
-                    avgPosition: Math.round(avgPosition * 10) / 10,
-                    tasksCompleted,
-                    trafficGrowth: Math.round(trafficGrowth * 10) / 10,
-                },
-                recentImpactTasks: completedTasks.slice(0, 5).map(t => ({
+                chartData,
+                tasks: annotations.map(t => ({
                     id: t.id,
                     title: t.title,
-                    type: t.taskType || 'technical',
-                    date: t.completedAt?.toISOString().split('T')[0],
-                    impact: extractTrafficImpact(t.actualImpact),
+                    taskType: t.taskType,
+                    completedAt: t.completedAt?.toISOString().split('T')[0] ?? null,
                 })),
+                dateRange: { start, end },
             },
         });
     } catch (error: any) {
         log.error('Correlation API error', error);
+        return c.json({ success: false, error: 'Failed to fetch correlation data' }, 500);
+    }
+});
+
+/**
+ * GET /api/correlation/urls?projectId=X
+ * Unique URLs that have GSC data, for correlation URL filter dropdown
+ */
+app.get('/urls', async (c) => {
+    try {
+        const { projectId } = c.req.query();
+        if (!projectId) return c.json({ success: false, error: 'projectId is required' }, 400);
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
+
+        // Last 90 days, top 100 by clicks
+        const cutoff = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+        const result = await db
+            .select({
+                page: gscData.page,
+                clicks: sql<number>`SUM(${gscData.clicks})`,
+            })
+            .from(gscData)
+            .where(and(eq(gscData.projectId, projectId), gte(gscData.date, cutoff)))
+            .groupBy(gscData.page)
+            .orderBy(sql`SUM(${gscData.clicks}) DESC`)
+            .limit(100);
+
         return c.json({
-            success: false,
-            error: 'Failed to fetch correlation data',
-        }, 500);
+            success: true,
+            data: { urls: result.map(r => r.page) },
+        });
+    } catch (error: any) {
+        log.error('Correlation URLs error', error);
+        return c.json({ success: false, error: 'Failed to fetch correlation URLs' }, 500);
+    }
+});
+
+/**
+ * GET /api/correlation/impact-window?projectId=X&from=DATE&to=DATE&url=X
+ * Compute aggregate metrics for user-selected date range vs equal prior period
+ */
+app.get('/impact-window', async (c) => {
+    try {
+        const { projectId, from, to, url } = c.req.query();
+        if (!projectId || !from || !to) {
+            return c.json({ success: false, error: 'projectId, from, and to are required' }, 400);
+        }
+        const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
+        if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
+
+        const decodedUrl = url ? decodeURIComponent(url) : null;
+        const fromDate = new Date(from);
+        const toDate = new Date(to);
+        const rangeDays = Math.ceil((toDate.getTime() - fromDate.getTime()) / 86400000);
+
+        const priorTo = new Date(fromDate.getTime() - 86400000);
+        const priorFrom = new Date(priorTo.getTime() - rangeDays * 86400000);
+
+        const priorFromStr = priorFrom.toISOString().split('T')[0];
+        const priorToStr = priorTo.toISOString().split('T')[0];
+
+        const buildWhere = (startStr: string, endStr: string) => {
+            const conds: any[] = [
+                eq(gscData.projectId, projectId),
+                gte(gscData.date, startStr),
+                lte(gscData.date, endStr),
+            ];
+            if (decodedUrl) conds.push(eq(gscData.page, decodedUrl));
+            return and(...conds);
+        };
+
+        const [[rangeMetrics], [priorMetrics]] = await Promise.all([
+            db.select({
+                clicks: sql<number>`COALESCE(SUM(${gscData.clicks}), 0)`,
+                impressions: sql<number>`COALESCE(SUM(${gscData.impressions}), 0)`,
+                avgPosition: sql<number>`COALESCE(AVG(${gscData.position}), 0)`,
+            }).from(gscData).where(buildWhere(from, to)),
+            db.select({
+                clicks: sql<number>`COALESCE(SUM(${gscData.clicks}), 0)`,
+                impressions: sql<number>`COALESCE(SUM(${gscData.impressions}), 0)`,
+                avgPosition: sql<number>`COALESCE(AVG(${gscData.position}), 0)`,
+            }).from(gscData).where(buildWhere(priorFromStr, priorToStr)),
+        ]);
+
+        const rangeClicks = Number(rangeMetrics?.clicks) || 0;
+        const rangeImpressions = Number(rangeMetrics?.impressions) || 0;
+        const rangeAvgPosition = Math.round((Number(rangeMetrics?.avgPosition) || 0) * 10) / 10;
+        const priorClicks = Number(priorMetrics?.clicks) || 0;
+        const priorImpressions = Number(priorMetrics?.impressions) || 0;
+
+        const calcDelta = (curr: number, prev: number) => {
+            if (!prev) return curr > 0 ? 100 : 0;
+            return Math.round(((curr - prev) / prev) * 1000) / 10;
+        };
+
+        // Also return tasks completed in the selected window
+        const taskWhere: any[] = [
+            eq(tasks.projectId, projectId),
+            eq(tasks.status, 'done'),
+            eq(tasks.affectsWebsite, true),
+            gte(tasks.completedAt, fromDate),
+            lte(tasks.completedAt, toDate),
+        ];
+        const windowTasks = await db
+            .select({ id: tasks.id, title: tasks.title, taskType: tasks.taskType, completedAt: tasks.completedAt })
+            .from(tasks)
+            .where(and(...taskWhere))
+            .orderBy(tasks.completedAt);
+
+        return c.json({
+            success: true,
+            data: {
+                rangeClicks,
+                rangeImpressions,
+                rangeAvgPosition,
+                priorPeriodClicks: priorClicks,
+                priorPeriodImpressions: priorImpressions,
+                deltaClicks: calcDelta(rangeClicks, priorClicks),
+                deltaImpressions: calcDelta(rangeImpressions, priorImpressions),
+                periodLabel: `${from} → ${to} (${rangeDays} days)`,
+                priorPeriodLabel: `${priorFromStr} → ${priorToStr}`,
+                tasks: windowTasks.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    taskType: t.taskType,
+                    completedAt: t.completedAt?.toISOString().split('T')[0] ?? null,
+                })),
+            },
+        });
+    } catch (error: any) {
+        log.error('Correlation impact-window error', error);
+        return c.json({ success: false, error: 'Failed to fetch impact window' }, 500);
     }
 });
 
