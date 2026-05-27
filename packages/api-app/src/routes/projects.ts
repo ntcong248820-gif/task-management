@@ -76,14 +76,20 @@ app.post('/', zValidator('json', createProjectSchema), async (c) => {
 
     return c.json({ success: true, data: result[0], message: 'Project created successfully' }, 201);
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : '';
+    // Check for unique constraint violation (domain already exists in workspace)
+    if (errorMsg.includes('unique') || errorMsg.includes('23505')) {
+      log.warn('Duplicate domain on create', { error: errorMsg });
+      return c.json({ success: false, error: 'Domain already used in this workspace' }, 409);
+    }
     log.error('Error creating project', error);
     return c.json({ success: false, error: 'Failed to create project' }, 500);
   }
 });
 
 app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
+  const id = c.req.param('id');
   try {
-    const id = c.req.param('id');
     if (!isUuid(id)) {
       return c.json({ success: false, error: 'Invalid project ID' }, 400);
     }
@@ -117,6 +123,12 @@ app.put('/:id', zValidator('json', updateProjectSchema), async (c) => {
 
     return c.json({ success: true, data: result[0], message: 'Project updated successfully' });
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : '';
+    // Check for unique constraint violation (domain already exists in workspace)
+    if (errorMsg.includes('unique') || errorMsg.includes('23505')) {
+      log.warn('Duplicate domain on update', { projectId: id, error: errorMsg });
+      return c.json({ success: false, error: 'Domain already used in this workspace' }, 409);
+    }
     log.error('Error updating project', error);
     return c.json({ success: false, error: 'Failed to update project' }, 500);
   }
