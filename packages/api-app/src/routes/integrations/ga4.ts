@@ -174,11 +174,11 @@ app.get('/callback', async (c) => {
         const { code, state, error } = c.req.query();
 
         if (error) {
-            return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=${encodeURIComponent(error)}`);
+            return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?error=${encodeURIComponent(error)}`);
         }
 
         if (!code || !state) {
-            return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=no_code`);
+            return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?error=no_code`);
         }
 
         const stateData = verifySignedOAuthState(state, 'ga4');
@@ -243,10 +243,10 @@ app.get('/callback', async (c) => {
             });
         }
 
-        return c.redirect(`${getFrontendUrl()}/dashboard/integrations?success=ga4_connected`);
+        return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?success=ga4_connected`);
     } catch (callbackError) {
         log.error('GA4 callback error', callbackError);
-        return c.redirect(`${getFrontendUrl()}/dashboard/integrations?error=connection_failed`);
+        return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?error=connection_failed`);
     }
 });
 
