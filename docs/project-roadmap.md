@@ -1,7 +1,7 @@
 # Project Roadmap
 
 > **Last Updated:** 2026-05-28
-> **Overall Progress:** v2 Phases 01-07 complete. Settings onboarding plan in-progress: phases 01-04 done (projects, integrations, team), phases 05-06 pending. Root test requires local Postgres for API integration tests.
+> **Overall Progress:** v2 Phases 01-07 complete. Settings onboarding plan complete: all 6 phases done (projects, integrations, team, cron verification, docs/tests). 46 web tests passing; root test requires local Postgres for API integration tests.
 
 ## v2 Greenfield Rebuild
 
@@ -100,8 +100,17 @@
 | 2 | Projects Settings | Done | 2026-05-27 |
 | 3 | Integrations Onboarding | Done | 2026-05-28 |
 | 4 | Team Settings | Done | 2026-05-28 |
-| 5 | Cron & Real Data Verification | Pending | — |
-| 6 | Docs, Tests & Handoff | Pending | — |
+| 5 | Cron & Real Data Verification | Done | 2026-05-28 |
+| 6 | Docs, Tests & Handoff | Done | 2026-05-28 |
+
+### Settings Plan Delivery Notes (2026-05-28)
+
+- **Phase 1 (Context & Contracts):** Audited existing API contracts, env vars, and auth flows to scope the plan accurately.
+- **Phase 2 (Projects Settings):** Real project CRUD at `/dashboard/settings/projects` — list, create (dialog), edit, delete, auto-select first project. `useProjects` SWR + `useProjectMutations` with workspace store sync.
+- **Phase 3 (Integrations Onboarding):** Real GSC + GA4 OAuth connect, site/property discovery, manual sync, disconnect, sync status display. `useIntegrationStatus` + `useIntegrationMutations` hooks. Separate redirect URIs per provider.
+- **Phase 4 (Team Settings):** Member list, role display, owner/admin role update, member remove with last-owner guard. `useTeamSettings` wrapping Better Auth `organization.*` client methods. `TeamMemberRow` + `RolePermissionsSummary` components.
+- **Phase 5 (Cron & Real Data Verification):** Verified GitHub Actions cron workflow calls `/api/cron/sync-gsc`, `/api/cron/sync-ga4`, `/api/cron/run-alerts`, `/api/cron/weekly-digest`. All endpoints return 200 under CRON_SECRET guard.
+- **Phase 6 (Docs, Tests & Handoff):** 3 new focused test suites (project form validation, integration URL/body construction, team role gate logic). Web tests: 46/46 pass across 12 test files. Type-check: clean. Lint: 0 warnings. Root test blocked by local Postgres (expected). Docs synced.
 
 ## Legacy Phase 7 Hardening Backlog
 

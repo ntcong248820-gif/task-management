@@ -1,5 +1,21 @@
 # Project Changelog
 
+## 2026-05-28
+
+### Added
+- Completed Settings & Real Data Onboarding plan (phases 01-06).
+- Real project CRUD at `/dashboard/settings/projects` with create/edit dialog, delete, and auto-select first project on workspace load.
+- Real GSC + GA4 onboarding at `/dashboard/settings/integrations`: OAuth connect, site/property discovery, manual sync with row count feedback, disconnect, sync error display. Separate redirect URIs per provider.
+- Team settings at `/dashboard/settings/team`: member list with roles, owner/admin role update, member remove with last-owner guard. Deferred invite delivery (no email provider in MVP).
+- Cron verification: GitHub Actions workflow (`cron-sync.yml`) confirmed calling all four cron endpoints (`sync-gsc`, `sync-ga4`, `run-alerts`, `weekly-digest`) with `CRON_SECRET` guard.
+- 3 new focused test suites for settings plan: project form validation, integration URL/body construction, team role gate logic.
+
+### Validation
+- `npm --workspace @seo-impact-os/web run type-check` → clean
+- `npm --workspace @seo-impact-os/web run lint` → 0 warnings/errors
+- `npm --workspace @seo-impact-os/web run test` → 46/46 pass (12 test files, +3 new settings tests)
+- Root `npm run test` blocked by local Postgres `ECONNREFUSED` (expected; CI uses production DB env)
+
 ## 2026-05-24
 
 ### Added

@@ -83,6 +83,13 @@ Hono standalone (port 3001, optional)
 - Task detail UI can assign goal and sprint; sprint cards deep-link into `/dashboard/tasks?view=board&sprintId=...`.
 - Metric progress remains deferred to analytics phases; current Phase 05 progress is task-count based.
 
+**Key Change (Settings Plan):** Real settings surfaces replacing all placeholder pages.
+- `/dashboard/settings/projects` — project CRUD with `useProjects` SWR + `useProjectMutations`; auto-selects first project and updates workspace store on create/delete.
+- `/dashboard/settings/integrations` — Google OAuth onboarding for GSC and GA4; `useIntegrationStatus` polls connection state, `useIntegrationMutations` wraps authorize/discover/sync/disconnect. Two separate redirect URIs to avoid GSC↔GA4 callback collision.
+- `/dashboard/settings/team` — member list with role display; owner/admin can update roles and remove members via `useTeamSettings` wrapping `authClient.organization.*`. Last-owner removal blocked client-side and enforced by Better Auth.
+- `ProjectFormDialog` validates name (required, max 100 chars) and optional domain before calling mutations.
+- Cron GitHub Actions workflow verified: calls all four cron endpoints with `CRON_SECRET` guard via Bearer token.
+
 **Key Change (Phase 07):** Deep-dive analytics dashboards with honest correlation analysis.
 - `/api/analytics/*` routes serve KPIs, keyword details, page details with decay status.
 - `/api/correlation/*` redesigned: no auto-calculated impact %; users select custom date ranges.
