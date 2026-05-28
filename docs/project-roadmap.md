@@ -1,7 +1,7 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-25
-> **Overall Progress:** v2 Phases 01-07 complete. All core features implemented; root test requires local Postgres for API integration tests.
+> **Last Updated:** 2026-05-28
+> **Overall Progress:** v2 Phases 01-07 complete. Settings onboarding plan in-progress: phases 01-04 done (projects, integrations, team), phases 05-06 pending. Root test requires local Postgres for API integration tests.
 
 ## v2 Greenfield Rebuild
 
@@ -91,6 +91,17 @@
 | 5 | Goals & Sprint Management | Done | 100% |
 | 6 | Analytics Intelligence | Done (2026-05-24) | 100% |
 | 7 | Analytics Dashboards v2 | Done (2026-05-25) | 100% |
+
+## Settings & Real Data Onboarding (plan: 260526-1958)
+
+| Phase | Name | Status | Completed |
+|-------|------|--------|-----------|
+| 1 | Context & Contracts | Done | 2026-05-27 |
+| 2 | Projects Settings | Done | 2026-05-27 |
+| 3 | Integrations Onboarding | Done | 2026-05-28 |
+| 4 | Team Settings | Done | 2026-05-28 |
+| 5 | Cron & Real Data Verification | Pending | — |
+| 6 | Docs, Tests & Handoff | Pending | — |
 
 ## Legacy Phase 7 Hardening Backlog
 

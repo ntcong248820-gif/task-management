@@ -75,13 +75,16 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/dashboard/analytics/keywords/page.tsx` | Phase 07 keywords deep dive with search/sort/filter, server-side paginated TanStack Table, sparkline trends, click to open keyword detail panel |
 | `src/app/dashboard/analytics/pages/page.tsx` | Phase 07 pages deep dive with search/sort/filter by decay, server-side paginated TanStack Table, decay status 🟢🟡🔴, click to open page detail panel |
 | `src/app/dashboard/analytics/` | Phase 07 complete analytics dashboard suite (overview, keywords, pages); Phase 06 alerts still at `/alerts` |
-| `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
+| `src/app/dashboard/settings/projects/page.tsx` | Real project CRUD — list, create, edit, delete, auto-select first project |
+| `src/app/dashboard/settings/integrations/page.tsx` | Real GSC + GA4 onboarding — connect, discover site/property, manual sync, disconnect |
+| `src/app/dashboard/settings/team/page.tsx` | Real team view — member list, role management (owner/admin), deferred invite, permissions summary |
 | `src/components/ui/` | shadcn/ui primitives |
 | `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
 | `src/components/features/tasks/` | Phase 04/05 task components: multi-view task UI, query-preserving tabs, goal/sprint assignment in detail panel, create dialog with sprint defaults |
 | `src/components/features/goals/` | Phase 05 goal cards/dialogs, sprint cards, and workload chart |
 | `src/components/features/alerts/` | Phase 06 `AlertCard` (severity icon, expand/collapse metadata, mark-read, dismiss) + `AlertFilters` (severity pills, unread toggle, type select, mark-all-read) |
 | `src/components/features/analytics/` | Phase 07 analytics component suite: `sparkline.tsx` (pure SVG), `kpi-cards.tsx`, `traffic-trend-chart.tsx` (dual-axis ComposedChart), `top-movers-section.tsx`, `correlation-chart-v2.tsx` (with ReferenceArea + task annotations), `impact-window-picker.tsx` (date range), `impact-summary-panel.tsx`, `cross-source-insight-card.tsx` (GA4 source filter), `keywords-table.tsx`, `keyword-detail-panel.tsx`, `pages-table.tsx`, `page-detail-panel.tsx` |
+| `src/components/features/settings/` | Settings plan components: `project-form-dialog.tsx`, `project-settings-table.tsx` (phase 02); `integration-card.tsx` (phase 03); `team-member-row.tsx`, `role-permissions-summary.tsx` (phase 04) |
 | `src/components/ui/chart.tsx` | Phase 07 shadcn ChartContainer wrapper for Recharts |
 | `src/components/features/` | Feature components (tasks, goals, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
@@ -91,6 +94,9 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/hooks/use-alerts.ts` | Phase 06 SWR hooks: `useAlerts()`, `useAlertCount()` (30s refresh), `useLatestDigest()`; mutation helpers `markAlertRead`, `markAllAlertsRead`, `dismissAlert` |
 | `src/hooks/use-analytics.ts` | Phase 07 SWR hooks: `useAnalyticsOverview()`, `useKeywordsData()`, `useKeywordDetail()`, `usePagesData()`, `usePageDetail()` |
 | `src/hooks/use-correlation.ts` | Phase 07 SWR hooks: `useCorrelationChart()`, `useCorrelationUrls()`, `useImpactWindow()` |
+| `src/hooks/use-projects-settings.ts` | Settings plan phase 02: `useProjects()` SWR + `useProjectMutations()` (create/update/delete) |
+| `src/hooks/use-integrations-settings.ts` | Settings plan phase 03: `useIntegrationStatus()` SWR + `useIntegrationMutations()` (authorize/discover/sync/disconnect) |
+| `src/hooks/use-team-settings.ts` | Settings plan phase 04: SWR hook wrapping Better Auth `organization.listMembers/updateMemberRole/removeMember` |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
 | `src/stores/useTimerStore.ts` | Phase 04 rewrite: DB-backed timer state via `/start` `/stop` endpoints, localStorage persist, syncFromDb() |
 | `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`) |

@@ -55,11 +55,11 @@ Use Better Auth organization plugin as source of truth for workspace members and
 
 ## Success Criteria
 
-- [ ] Team page no longer shows placeholder state.
-- [ ] Current workspace members and roles are visible.
-- [ ] Role permission summary matches `packages/auth-config/src/permissions.ts`.
-- [ ] Invite flow is either real and verified, or explicitly deferred in UI/docs.
-- [ ] No deferred auth features are accidentally reintroduced.
+- [x] Team page no longer shows placeholder state.
+- [x] Current workspace members and roles are visible.
+- [x] Role permission summary matches `packages/auth-config/src/permissions.ts`.
+- [x] Invite flow is either real and verified, or explicitly deferred in UI/docs.
+- [x] No deferred auth features are accidentally reintroduced.
 
 ## Risk Assessment
 

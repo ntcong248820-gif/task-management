@@ -1,7 +1,7 @@
 ---
 title: "Settings & Real Data Onboarding Completion"
 description: "Finish the post-v2 settings surfaces so a workspace can create projects, connect GSC/GA4, sync real data, and verify cron/data readiness."
-status: pending
+status: in-progress
 priority: P1
 branch: "main"
 tags: [settings, onboarding, projects, gsc, ga4, team, real-data]
@@ -45,9 +45,9 @@ Non-goals: no Better Auth Google social login, no email invite delivery unless a
 
 ## Success Criteria
 
-- [ ] New workspace can create a project from Settings and the header selector updates without reload.
-- [ ] Integrations settings can connect GSC and GA4 for the selected project.
-- [ ] User can discover/select GSC site and GA4 property, then manually sync real data.
-- [ ] Settings surfaces display connection state, last sync, sync status, and sync error.
-- [ ] Team settings show current members/roles and enforce the internal-MVP invite boundary.
+- [x] New workspace can create a project from Settings and the header selector updates without reload.
+- [x] Integrations settings can connect GSC and GA4 for the selected project.
+- [x] User can discover/select GSC site and GA4 property, then manually sync real data.
+- [x] Settings surfaces display connection state, last sync, sync status, and sync error.
+- [x] Team settings show current members/roles and enforce the internal-MVP invite boundary.
 - [ ] Cron workflow calls real-data sync and analytics intelligence endpoints, with runbook evidence.

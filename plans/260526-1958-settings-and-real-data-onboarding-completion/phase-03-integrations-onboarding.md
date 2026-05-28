@@ -64,13 +64,13 @@ The page uses SWR hooks for status/discovery and mutation helpers for authorize,
 
 ## Success Criteria
 
-- [ ] User can click Connect GSC and reach Google OAuth with signed state.
-- [ ] User returns to settings and sees GSC connected state.
-- [ ] User can discover/select/save GSC site and run manual GSC sync.
-- [ ] User can click Connect GA4 and reach Google OAuth with signed state.
-- [ ] User returns to settings and sees GA4 connected state.
-- [ ] User can discover/select/save GA4 property and run manual GA4 sync.
-- [ ] Errors show actionable messages without leaking token details.
+- [x] User can click Connect GSC and reach Google OAuth with signed state.
+- [x] User returns to settings and sees GSC connected state.
+- [x] User can discover/select/save GSC site and run manual GSC sync.
+- [x] User can click Connect GA4 and reach Google OAuth with signed state.
+- [x] User returns to settings and sees GA4 connected state.
+- [x] User can discover/select/save GA4 property and run manual GA4 sync.
+- [x] Errors show actionable messages without leaking token details.
 
 ## Risk Assessment
 
