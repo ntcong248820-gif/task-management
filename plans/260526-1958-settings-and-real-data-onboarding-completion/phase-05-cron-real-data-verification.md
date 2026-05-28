@@ -1,7 +1,7 @@
 ---
 phase: 5
 title: "Cron & Real Data Verification"
-status: pending
+status: complete
 priority: P1
 effort: "3h"
 dependencies: [3]
@@ -58,12 +58,12 @@ Keep GitHub Actions as the trigger. The app remains the fan-out executor through
 
 ## Success Criteria
 
-- [ ] GitHub Actions workflow calls `/api/cron/sync-gsc`.
-- [ ] GitHub Actions workflow calls `/api/cron/sync-ga4`.
-- [ ] GitHub Actions workflow calls `/api/cron/run-alerts`.
-- [ ] Weekly digest endpoint is scheduled or clearly documented as manual/deferred.
-- [ ] Runbook exists and separates CLI-validated, browser-verified, and env-blocked checks.
-- [ ] Cron failures surface response bodies in Actions logs without exposing secrets.
+- [x] GitHub Actions workflow calls `/api/cron/sync-gsc`.
+- [x] GitHub Actions workflow calls `/api/cron/sync-ga4`.
+- [x] GitHub Actions workflow calls `/api/cron/run-alerts`.
+- [x] Weekly digest endpoint is scheduled or clearly documented as manual/deferred.
+- [x] Runbook exists and separates CLI-validated, browser-verified, and env-blocked checks.
+- [x] Cron failures surface response bodies in Actions logs without exposing secrets.
 
 ## Risk Assessment
 

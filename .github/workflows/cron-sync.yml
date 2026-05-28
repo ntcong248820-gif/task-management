@@ -11,17 +11,68 @@ jobs:
     steps:
       - name: Trigger GSC Sync
         run: |
-          curl -f -X POST https://${{ vars.APP_URL }}/api/cron/sync-gsc \
+          response=$(curl -s -w "\n%{http_code}" -X POST https://${{ vars.APP_URL }}/api/cron/sync-gsc \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n1)
+          echo "HTTP $code — $body"
+          [ "$code" -lt 400 ]
 
   sync-ga4:
     runs-on: ubuntu-latest
-    needs: sync-gsc  # stagger: GA4 runs after GSC to avoid concurrent DB writes
+    needs: sync-gsc
     if: always()     # GA4 sync is independent — run even if GSC fails
     steps:
       - name: Trigger GA4 Sync
         run: |
-          curl -f -X POST https://${{ vars.APP_URL }}/api/cron/sync-ga4 \
+          response=$(curl -s -w "\n%{http_code}" -X POST https://${{ vars.APP_URL }}/api/cron/sync-ga4 \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n1)
+          echo "HTTP $code — $body"
+          [ "$code" -lt 400 ]
+
+  run-alerts:
+    runs-on: ubuntu-latest
+    needs: [sync-gsc, sync-ga4]
+    if: always()     # run alert engine after both syncs regardless of outcome
+    steps:
+      - name: Trigger Alert Engine
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST https://${{ vars.APP_URL }}/api/cron/run-alerts \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n1)
+          echo "HTTP $code — $body"
+          [ "$code" -lt 400 ]
+
+  weekly-digest:
+    runs-on: ubuntu-latest
+    needs: run-alerts
+    # Only runs on Sundays (day-of-week = 0) or when manually dispatched
+    if: |
+      always() && (
+        github.event_name == 'workflow_dispatch' ||
+        contains(fromJSON('["0"]'), format('{0}', github.event.schedule != '' && '0' || ''))
+      )
+    steps:
+      - name: Check if Sunday
+        id: day_check
+        run: |
+          DOW=$(date -u +%u)   # 1=Mon … 7=Sun
+          echo "day_of_week=$DOW" >> "$GITHUB_OUTPUT"
+          echo "Day of week (ISO): $DOW"
+
+      - name: Trigger Weekly Digest
+        if: steps.day_check.outputs.day_of_week == '7' || github.event_name == 'workflow_dispatch'
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST https://${{ vars.APP_URL }}/api/cron/weekly-digest \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n1)
+          echo "HTTP $code — $body"
+          [ "$code" -lt 400 ]

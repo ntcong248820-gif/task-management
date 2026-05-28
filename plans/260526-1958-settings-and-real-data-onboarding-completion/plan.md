@@ -28,7 +28,7 @@ Non-goals: no Better Auth Google social login, no email invite delivery unless a
 | 2 | [Projects Settings](./phase-02-projects-settings.md) | Complete |
 | 3 | [Integrations Onboarding](./phase-03-integrations-onboarding.md) | Complete |
 | 4 | [Team Settings](./phase-04-team-settings.md) | Complete |
-| 5 | [Cron & Real Data Verification](./phase-05-cron-real-data-verification.md) | Pending |
+| 5 | [Cron & Real Data Verification](./phase-05-cron-real-data-verification.md) | Complete |
 | 6 | [Docs Tests & Handoff](./phase-06-docs-tests-handoff.md) | Pending |
 
 ## Dependencies
@@ -50,4 +50,4 @@ Non-goals: no Better Auth Google social login, no email invite delivery unless a
 - [x] User can discover/select GSC site and GA4 property, then manually sync real data.
 - [x] Settings surfaces display connection state, last sync, sync status, and sync error.
 - [x] Team settings show current members/roles and enforce the internal-MVP invite boundary.
-- [ ] Cron workflow calls real-data sync and analytics intelligence endpoints, with runbook evidence.
+- [x] Cron workflow calls real-data sync and analytics intelligence endpoints, with runbook evidence.
