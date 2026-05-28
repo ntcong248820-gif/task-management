@@ -1,7 +1,7 @@
 ---
 title: "Settings & Real Data Onboarding Completion"
 description: "Finish the post-v2 settings surfaces so a workspace can create projects, connect GSC/GA4, sync real data, and verify cron/data readiness."
-status: in-progress
+status: completed
 priority: P1
 branch: "main"
 tags: [settings, onboarding, projects, gsc, ga4, team, real-data]
@@ -29,7 +29,7 @@ Non-goals: no Better Auth Google social login, no email invite delivery unless a
 | 3 | [Integrations Onboarding](./phase-03-integrations-onboarding.md) | Complete |
 | 4 | [Team Settings](./phase-04-team-settings.md) | Complete |
 | 5 | [Cron & Real Data Verification](./phase-05-cron-real-data-verification.md) | Complete |
-| 6 | [Docs Tests & Handoff](./phase-06-docs-tests-handoff.md) | Pending |
+| 6 | [Docs Tests & Handoff](./phase-06-docs-tests-handoff.md) | Complete |
 
 ## Dependencies
 

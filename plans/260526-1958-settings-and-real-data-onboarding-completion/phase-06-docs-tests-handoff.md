@@ -1,7 +1,7 @@
 ---
 phase: 6
 title: "Docs Tests & Handoff"
-status: pending
+status: complete
 priority: P1
 effort: "3h"
 dependencies: [2, 3, 4, 5]
@@ -61,12 +61,12 @@ Testing should follow existing repo patterns: web type-check/lint/build, focused
 
 ## Success Criteria
 
-- [ ] Type-check passes.
-- [ ] Lint passes or any existing lint concern is documented honestly.
-- [ ] Focused web tests pass.
-- [ ] Build passes or env blockers are documented with exact missing vars.
-- [ ] Acceptance runbook states `PASS`, `PASS_WITH_CONCERNS`, `BLOCKED`, or `FAIL`.
-- [ ] Docs reflect real implementation status and no stale placeholder wording remains.
+- [x] Type-check passes.
+- [x] Lint passes or any existing lint concern is documented honestly.
+- [x] Focused web tests pass.
+- [x] Build passes or env blockers are documented with exact missing vars.
+- [x] Acceptance runbook states `PASS`, `PASS_WITH_CONCERNS`, `BLOCKED`, or `FAIL`.
+- [x] Docs reflect real implementation status and no stale placeholder wording remains.
 
 ## Risk Assessment
 
