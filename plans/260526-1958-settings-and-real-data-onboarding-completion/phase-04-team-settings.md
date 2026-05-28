@@ -1,7 +1,7 @@
 ---
 phase: 4
 title: "Team Settings"
-status: pending
+status: complete
 priority: P2
 effort: "4h"
 dependencies: [1]
