@@ -1,0 +1,1437 @@
+{
+  "/Users/kong.peterpan/Documents/Personal App/task-management/vercel.json": {
+    "mtime": 1777197908.1001742,
+    "ast_hash": "450478503f20ff0e9deb55d971a4ef54",
+    "semantic_hash": "450478503f20ff0e9deb55d971a4ef54"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/turbo.json": {
+    "mtime": 1778604399.8864565,
+    "ast_hash": "3ad5dc0f9b6a0a49981d6c4e306dfbeb",
+    "semantic_hash": "3ad5dc0f9b6a0a49981d6c4e306dfbeb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/package.json": {
+    "mtime": 1779608655.9764059,
+    "ast_hash": "a49d4e71cbdcd73e3a6083a20c92efb3",
+    "semantic_hash": "a49d4e71cbdcd73e3a6083a20c92efb3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/tsconfig.json": {
+    "mtime": 1778604399.8861206,
+    "ast_hash": "a07d391d4c60ca5531115dbf00bc8976",
+    "semantic_hash": "a07d391d4c60ca5531115dbf00bc8976"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/setup-all-projects.sh": {
+    "mtime": 1766754965.7958224,
+    "ast_hash": "dc10215a900f44fab9f43ab71965ff31",
+    "semantic_hash": "dc10215a900f44fab9f43ab71965ff31"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/scripts/discover-and-sync.ts": {
+    "mtime": 1766511934.7781453,
+    "ast_hash": "4b33b37b05047252859b27f1e49fce1d",
+    "semantic_hash": "4b33b37b05047252859b27f1e49fce1d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/scripts/add-ga4-property.ts": {
+    "mtime": 1766512168.097561,
+    "ast_hash": "4e08b24eafd01af3d02ffd3db384135b",
+    "semantic_hash": "4e08b24eafd01af3d02ffd3db384135b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/scripts/check-and-sync.ts": {
+    "mtime": 1766511841.3333385,
+    "ast_hash": "32449a9df0fa48f528f694270b88a55a",
+    "semantic_hash": "32449a9df0fa48f528f694270b88a55a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/scripts/encode-db-url.ts": {
+    "mtime": 1766752876.9602435,
+    "ast_hash": "d3c672b138d9ac8c79977eb9636e059c",
+    "semantic_hash": "d3c672b138d9ac8c79977eb9636e059c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/ui/package.json": {
+    "mtime": 1765991343.7743106,
+    "ast_hash": "39a55d95c28273c83ea0ac616055bdf5",
+    "semantic_hash": "39a55d95c28273c83ea0ac616055bdf5"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/ui/tsconfig.json": {
+    "mtime": 1778638730.3636138,
+    "ast_hash": "67dd4a5f5fc89c5fe211469dc4b3182b",
+    "semantic_hash": "67dd4a5f5fc89c5fe211469dc4b3182b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/ui/src/index.ts": {
+    "mtime": 1765991350.132642,
+    "ast_hash": "9d24bf0b34a3ce785cb39d6a85b2d10b",
+    "semantic_hash": "9d24bf0b34a3ce785cb39d6a85b2d10b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/ui/src/lib/utils.ts": {
+    "mtime": 1765991355.1035573,
+    "ast_hash": "a40ab276f43a0e0a273926a9fa5055cc",
+    "semantic_hash": "a40ab276f43a0e0a273926a9fa5055cc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/types/package.json": {
+    "mtime": 1765991324.346763,
+    "ast_hash": "4d6af73549c19d740923038159cb5c50",
+    "semantic_hash": "4d6af73549c19d740923038159cb5c50"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/types/tsconfig.json": {
+    "mtime": 1778638730.3633697,
+    "ast_hash": "61e70f121b2f5f0e1aa110dc4382735e",
+    "semantic_hash": "61e70f121b2f5f0e1aa110dc4382735e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/types/src/index.ts": {
+    "mtime": 1779638405.2604058,
+    "ast_hash": "1fdc6a4c2c05284e634a39a00caf64a3",
+    "semantic_hash": "1fdc6a4c2c05284e634a39a00caf64a3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/package.json": {
+    "mtime": 1778604399.8872015,
+    "ast_hash": "f182e684e78c67596820feb6eb9b6bcc",
+    "semantic_hash": "f182e684e78c67596820feb6eb9b6bcc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/tsconfig.json": {
+    "mtime": 1777199260.2797394,
+    "ast_hash": "0c09d6eda34eed3c7a0472ef8341e789",
+    "semantic_hash": "0c09d6eda34eed3c7a0472ef8341e789"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/app.ts": {
+    "mtime": 1779638700.914143,
+    "ast_hash": "cd0568522286a5392e8309dc8bbbfd01",
+    "semantic_hash": "cd0568522286a5392e8309dc8bbbfd01"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/index.ts": {
+    "mtime": 1777199149.7467334,
+    "ast_hash": "e98ae2b329ffd71c87d4e15bf9ded13e",
+    "semantic_hash": "e98ae2b329ffd71c87d4e15bf9ded13e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/config/recommendation-rules.ts": {
+    "mtime": 1779639008.303865,
+    "ast_hash": "9bb7dee5d434297f3de2e0889e65e7f5",
+    "semantic_hash": "9bb7dee5d434297f3de2e0889e65e7f5"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/utils/logger.ts": {
+    "mtime": 1777199129.656607,
+    "ast_hash": "5004ebc486da21fbca2a942ef3797c96",
+    "semantic_hash": "5004ebc486da21fbca2a942ef3797c96"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/utils/validate-env.ts": {
+    "mtime": 1779122003.9590483,
+    "ast_hash": "ee7b0787c8be6644baefe5588a7f1269",
+    "semantic_hash": "ee7b0787c8be6644baefe5588a7f1269"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/utils/signed-oauth-state.ts": {
+    "mtime": 1778722427.1008067,
+    "ast_hash": "756c389eff4af12623308bc8d5c4dc6a",
+    "semantic_hash": "756c389eff4af12623308bc8d5c4dc6a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/utils/project-access.ts": {
+    "mtime": 1779606560.0966485,
+    "ast_hash": "6719adda218b7f1fcfc42c222e6b4489",
+    "semantic_hash": "6719adda218b7f1fcfc42c222e6b4489"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/schemas/goal-schema.ts": {
+    "mtime": 1779561750.0378718,
+    "ast_hash": "e17e98d9d7e60b8815edd6ea8e31386b",
+    "semantic_hash": "e17e98d9d7e60b8815edd6ea8e31386b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/schemas/task-schema.ts": {
+    "mtime": 1779519923.7285812,
+    "ast_hash": "6a22999a1b10b54d3eaecc22d3a91fae",
+    "semantic_hash": "6a22999a1b10b54d3eaecc22d3a91fae"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/schemas/project-schema.ts": {
+    "mtime": 1778722349.5764072,
+    "ast_hash": "674fb16e956a45839b0d3e7d1ba78285",
+    "semantic_hash": "674fb16e956a45839b0d3e7d1ba78285"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/jobs/alert-engine.ts": {
+    "mtime": 1779638973.9820318,
+    "ast_hash": "8c70deaad1ee3d4f2488faef66ae96a9",
+    "semantic_hash": "8c70deaad1ee3d4f2488faef66ae96a9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/jobs/weekly-digest.ts": {
+    "mtime": 1779639627.3080916,
+    "ast_hash": "ab90ab797f6ba66550f03f96b7df0c81",
+    "semantic_hash": "ab90ab797f6ba66550f03f96b7df0c81"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/jobs/index.ts": {
+    "mtime": 1777199135.5372176,
+    "ast_hash": "ca1353a0c7b9b6cfcc0bb11632631ec7",
+    "semantic_hash": "ca1353a0c7b9b6cfcc0bb11632631ec7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/jobs/sync-ga4.ts": {
+    "mtime": 1778765052.6853752,
+    "ast_hash": "bddd7d5e412dda81a460beaed5a59f37",
+    "semantic_hash": "bddd7d5e412dda81a460beaed5a59f37"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/jobs/sync-gsc.ts": {
+    "mtime": 1778765042.2708583,
+    "ast_hash": "412e02f92f067607ace4a0ab9dae35da",
+    "semantic_hash": "412e02f92f067607ace4a0ab9dae35da"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/correlation.ts": {
+    "mtime": 1779715786.1882837,
+    "ast_hash": "b901ab33902c4a3471c8ec90e4dd1433",
+    "semantic_hash": "b901ab33902c4a3471c8ec90e4dd1433"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/urls.ts": {
+    "mtime": 1778764954.7659366,
+    "ast_hash": "4c46d70eac3683afe91a002d357d3726",
+    "semantic_hash": "4c46d70eac3683afe91a002d357d3726"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/projects.ts": {
+    "mtime": 1778722349.5771942,
+    "ast_hash": "7f66d80ffbc4d444c1a8e039c0c25fa2",
+    "semantic_hash": "7f66d80ffbc4d444c1a8e039c0c25fa2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/analytics.ts": {
+    "mtime": 1779716426.4773176,
+    "ast_hash": "d48a06f9203d12263068b1f3ddac4ea8",
+    "semantic_hash": "d48a06f9203d12263068b1f3ddac4ea8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/task-templates.ts": {
+    "mtime": 1779384493.3211465,
+    "ast_hash": "1490c73c580e0e63f24fd9dafc44b975",
+    "semantic_hash": "1490c73c580e0e63f24fd9dafc44b975"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/diagnosis.ts": {
+    "mtime": 1778764971.5935555,
+    "ast_hash": "c48c2faf85837defc109c089fa9673b7",
+    "semantic_hash": "c48c2faf85837defc109c089fa9673b7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/time-logs.ts": {
+    "mtime": 1779384522.265831,
+    "ast_hash": "aed902685662275e1ccfcedf14967669",
+    "semantic_hash": "aed902685662275e1ccfcedf14967669"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/rankings.ts": {
+    "mtime": 1778764943.1751494,
+    "ast_hash": "2a9616adcb65059bd30989d614196183",
+    "semantic_hash": "2a9616adcb65059bd30989d614196183"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/keywords.ts": {
+    "mtime": 1778764964.9894152,
+    "ast_hash": "2098de10d4dde385d32080859be8a6d2",
+    "semantic_hash": "2098de10d4dde385d32080859be8a6d2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/goals.ts": {
+    "mtime": 1779546794.7526414,
+    "ast_hash": "b101e2b8876b52f9985af52f812c1f19",
+    "semantic_hash": "b101e2b8876b52f9985af52f812c1f19"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/tasks.ts": {
+    "mtime": 1779606585.7839777,
+    "ast_hash": "f8a0e5a708b0fb0991fcfa160b711ac6",
+    "semantic_hash": "f8a0e5a708b0fb0991fcfa160b711ac6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/sprints.ts": {
+    "mtime": 1779606655.6887918,
+    "ast_hash": "c45fc2915c16a44904ad72393ead18fd",
+    "semantic_hash": "c45fc2915c16a44904ad72393ead18fd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/digest.ts": {
+    "mtime": 1779638655.3196352,
+    "ast_hash": "387fd338e14ff87dfe62c86d63dd5f80",
+    "semantic_hash": "387fd338e14ff87dfe62c86d63dd5f80"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/alerts.ts": {
+    "mtime": 1779639690.0220575,
+    "ast_hash": "dd7c6acb7378bd64f8af934f66e59331",
+    "semantic_hash": "dd7c6acb7378bd64f8af934f66e59331"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/integrations/ga4.ts": {
+    "mtime": 1778765032.4214635,
+    "ast_hash": "ff7b2b517324aef59ee7aa037ef88cdb",
+    "semantic_hash": "ff7b2b517324aef59ee7aa037ef88cdb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/integrations/gsc.ts": {
+    "mtime": 1778765011.3396285,
+    "ast_hash": "9ce5e79b503cd5aa61694ee6dd64ca2a",
+    "semantic_hash": "9ce5e79b503cd5aa61694ee6dd64ca2a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/integrations/index.ts": {
+    "mtime": 1778722447.7711697,
+    "ast_hash": "b593f0c2ee5ce1d64a8ec9ba3c5f6325",
+    "semantic_hash": "b593f0c2ee5ce1d64a8ec9ba3c5f6325"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/cron/run-alerts.ts": {
+    "mtime": 1779638665.3369963,
+    "ast_hash": "6969f19289e167f73362d32a476bc9a3",
+    "semantic_hash": "6969f19289e167f73362d32a476bc9a3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/cron/weekly-digest.ts": {
+    "mtime": 1779638673.2292862,
+    "ast_hash": "b3b5ac78b6bedfa91ae7995b41285a0f",
+    "semantic_hash": "b3b5ac78b6bedfa91ae7995b41285a0f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/cron/index.ts": {
+    "mtime": 1779638682.2286434,
+    "ast_hash": "06f846ad796c4b788eeaa28c3497b4f5",
+    "semantic_hash": "06f846ad796c4b788eeaa28c3497b4f5"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/cron/sync-ga4.ts": {
+    "mtime": 1777826985.9181798,
+    "ast_hash": "0d0cc7582b3c600addc76f509fe71678",
+    "semantic_hash": "0d0cc7582b3c600addc76f509fe71678"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/api-app/src/routes/cron/sync-gsc.ts": {
+    "mtime": 1777826977.3301742,
+    "ast_hash": "99164a82b164692297e5e98d3f6b2a1f",
+    "semantic_hash": "99164a82b164692297e5e98d3f6b2a1f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/package.json": {
+    "mtime": 1765991361.4193456,
+    "ast_hash": "072375c448460cde51991117e4ca4e47",
+    "semantic_hash": "072375c448460cde51991117e4ca4e47"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/tsconfig.json": {
+    "mtime": 1778638730.3637674,
+    "ast_hash": "0f2c88f261da9a43a033b1b761020cc3",
+    "semantic_hash": "0f2c88f261da9a43a033b1b761020cc3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/ga4/package.json": {
+    "mtime": 1766289817.2392018,
+    "ast_hash": "4a7ad230ec785bbef11f08990894d946",
+    "semantic_hash": "4a7ad230ec785bbef11f08990894d946"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/ga4/src/types.ts": {
+    "mtime": 1766289881.4386,
+    "ast_hash": "87134f19f94a6328f0b0953dc1d42215",
+    "semantic_hash": "87134f19f94a6328f0b0953dc1d42215"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/ga4/src/client.ts": {
+    "mtime": 1766540781.4446592,
+    "ast_hash": "5fbe0b1f7a2608dc0e1124939cd198cb",
+    "semantic_hash": "5fbe0b1f7a2608dc0e1124939cd198cb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/ga4/src/index.ts": {
+    "mtime": 1766289871.0270994,
+    "ast_hash": "93c93536c4d962ead3ce535fc277d6e2",
+    "semantic_hash": "93c93536c4d962ead3ce535fc277d6e2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/gsc/package.json": {
+    "mtime": 1766289805.657383,
+    "ast_hash": "b99a1ddca39500d69a4badb79700f18e",
+    "semantic_hash": "b99a1ddca39500d69a4badb79700f18e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/gsc/src/oauth.ts": {
+    "mtime": 1766289837.1930916,
+    "ast_hash": "c722ac8cc5793565c82eb9cb0df47caf",
+    "semantic_hash": "c722ac8cc5793565c82eb9cb0df47caf"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/gsc/src/types.ts": {
+    "mtime": 1766289827.4731572,
+    "ast_hash": "e94e4563e78a614e7b93864ff369a86f",
+    "semantic_hash": "e94e4563e78a614e7b93864ff369a86f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/gsc/src/client.ts": {
+    "mtime": 1766541684.8023875,
+    "ast_hash": "0dea81609cd522d9e24540b2a42ae40d",
+    "semantic_hash": "0dea81609cd522d9e24540b2a42ae40d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/gsc/src/index.ts": {
+    "mtime": 1766289840.60715,
+    "ast_hash": "279bc6412bb0a6ba732eb2e6f6e345e6",
+    "semantic_hash": "279bc6412bb0a6ba732eb2e6f6e345e6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/integrations/src/index.ts": {
+    "mtime": 1765991367.5629563,
+    "ast_hash": "ae1855f66eb1c09a5b416f09a9c4fc8b",
+    "semantic_hash": "ae1855f66eb1c09a5b416f09a9c4fc8b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/package.json": {
+    "mtime": 1778604652.9101753,
+    "ast_hash": "0b594972ca114bc549317f211479f45e",
+    "semantic_hash": "0b594972ca114bc549317f211479f45e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/tsconfig.json": {
+    "mtime": 1765991975.5002103,
+    "ast_hash": "4079414e52f2f9160ba9ac75ff7f6a58",
+    "semantic_hash": "4079414e52f2f9160ba9ac75ff7f6a58"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/drizzle.config.ts": {
+    "mtime": 1766514091.7072358,
+    "ast_hash": "a5174845a5e4e7c7d13caf9b0021e36a",
+    "semantic_hash": "a5174845a5e4e7c7d13caf9b0021e36a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0006_phase02_v2_schema_reconcile.sql": {
+    "mtime": 1779205170.4356413,
+    "ast_hash": "800221ec16c15e28e337fa2c6891b5eb",
+    "semantic_hash": "800221ec16c15e28e337fa2c6891b5eb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0004_yielding_invaders.sql": {
+    "mtime": 1766306142.4349554,
+    "ast_hash": "74e3672aafb94905f32a7ee4009e694b",
+    "semantic_hash": "74e3672aafb94905f32a7ee4009e694b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0001_wide_ironclad.sql": {
+    "mtime": 1766294368.9260938,
+    "ast_hash": "49f3f52bf78144b7ff6a6b6e53d3b3c4",
+    "semantic_hash": "49f3f52bf78144b7ff6a6b6e53d3b3c4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0007_phase04_target_url.sql": {
+    "mtime": 1779383415.0533197,
+    "ast_hash": "687b88cfffd03e0a22509056a9b1ecdd",
+    "semantic_hash": "687b88cfffd03e0a22509056a9b1ecdd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0002_breezy_hulk.sql": {
+    "mtime": 1766304568.7748373,
+    "ast_hash": "808b96437d1e0b939b9e1bb399e1b8cb",
+    "semantic_hash": "808b96437d1e0b939b9e1bb399e1b8cb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0003_bright_the_renegades.sql": {
+    "mtime": 1766304898.1686676,
+    "ast_hash": "5b5a6c59726ac3fc4554f6bc93196e6d",
+    "semantic_hash": "5b5a6c59726ac3fc4554f6bc93196e6d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/0005_lovely_preak.sql": {
+    "mtime": 1766576975.7719805,
+    "ast_hash": "a93f2f7d47c13dcaf8d9013145bf01aa",
+    "semantic_hash": "a93f2f7d47c13dcaf8d9013145bf01aa"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0003_snapshot.json": {
+    "mtime": 1766304898.168086,
+    "ast_hash": "02ce5c2b5674753e3210dae7d83abb57",
+    "semantic_hash": "02ce5c2b5674753e3210dae7d83abb57"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0004_snapshot.json": {
+    "mtime": 1766306142.4343727,
+    "ast_hash": "28ce69704c01aeac584f9aa0ecd5a5b3",
+    "semantic_hash": "28ce69704c01aeac584f9aa0ecd5a5b3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0000_snapshot.json": {
+    "mtime": 1765992732.9670875,
+    "ast_hash": "4fc1df366cefc7939fff8e1a3d348db8",
+    "semantic_hash": "4fc1df366cefc7939fff8e1a3d348db8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/_journal.json": {
+    "mtime": 1779525604.72742,
+    "ast_hash": "5ee12c2aa1548d26fc5c97f13786c092",
+    "semantic_hash": "5ee12c2aa1548d26fc5c97f13786c092"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0001_snapshot.json": {
+    "mtime": 1766294368.925199,
+    "ast_hash": "c896be3d3d1e7723dee931896f8501c0",
+    "semantic_hash": "c896be3d3d1e7723dee931896f8501c0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0005_snapshot.json": {
+    "mtime": 1766576975.7713792,
+    "ast_hash": "5687496d88fa057ec614a67bbc69973c",
+    "semantic_hash": "5687496d88fa057ec614a67bbc69973c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0002_snapshot.json": {
+    "mtime": 1766304568.774083,
+    "ast_hash": "ed6fcc72dd07f715ce3f2da4461cffb1",
+    "semantic_hash": "ed6fcc72dd07f715ce3f2da4461cffb1"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/migrations/meta/0006_snapshot.json": {
+    "mtime": 1779204806.7550836,
+    "ast_hash": "feed7167b306dc9dfbbeec77da34c415",
+    "semantic_hash": "feed7167b306dc9dfbbeec77da34c415"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/index.ts": {
+    "mtime": 1779638714.331331,
+    "ast_hash": "6b6db513d13437bb3987893191368ff6",
+    "semantic_hash": "6b6db513d13437bb3987893191368ff6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/gsc-connections.ts": {
+    "mtime": 1778722189.546419,
+    "ast_hash": "f5a0a5e2c4237095b9f9f2d6120d3e63",
+    "semantic_hash": "f5a0a5e2c4237095b9f9f2d6120d3e63"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/projects.ts": {
+    "mtime": 1778722116.7409627,
+    "ast_hash": "b92bf2e458a994f35741751f1cb002e8",
+    "semantic_hash": "b92bf2e458a994f35741751f1cb002e8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/workspace-digests.ts": {
+    "mtime": 1779638389.6246374,
+    "ast_hash": "065e7b142b8556e1d6a8707f4e478a5c",
+    "semantic_hash": "065e7b142b8556e1d6a8707f4e478a5c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/task-templates.ts": {
+    "mtime": 1778722189.546752,
+    "ast_hash": "105aaca081714a13e966a24a42b57346",
+    "semantic_hash": "105aaca081714a13e966a24a42b57346"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/auth-schema.ts": {
+    "mtime": 1778604664.8541615,
+    "ast_hash": "5539115211aa958ee0f8727a0e720618",
+    "semantic_hash": "5539115211aa958ee0f8727a0e720618"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/alert-reads.ts": {
+    "mtime": 1778722189.5468838,
+    "ast_hash": "b7329aafa01371a026fc6df1aceba0fd",
+    "semantic_hash": "b7329aafa01371a026fc6df1aceba0fd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/gsc_data.ts": {
+    "mtime": 1779714929.9477835,
+    "ast_hash": "6bc48c28edbdb590bb12188604ff4ed2",
+    "semantic_hash": "6bc48c28edbdb590bb12188604ff4ed2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/ga4-connections.ts": {
+    "mtime": 1778722189.5464916,
+    "ast_hash": "03361af6aebfbf6071790bd01b7b6ecd",
+    "semantic_hash": "03361af6aebfbf6071790bd01b7b6ecd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/time-logs.ts": {
+    "mtime": 1778722189.54601,
+    "ast_hash": "94d501df48c1dbd4e0b8b27543e49d73",
+    "semantic_hash": "94d501df48c1dbd4e0b8b27543e49d73"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/ga4_data.ts": {
+    "mtime": 1779714935.8517098,
+    "ast_hash": "9d90fd9daeaa3ec1cf9f8bb3ff264972",
+    "semantic_hash": "9d90fd9daeaa3ec1cf9f8bb3ff264972"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/goals.ts": {
+    "mtime": 1778722189.5465605,
+    "ast_hash": "b0b315117f6ffe970088a4d2f861134b",
+    "semantic_hash": "b0b315117f6ffe970088a4d2f861134b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/index.ts": {
+    "mtime": 1779638377.143642,
+    "ast_hash": "c85317c87288231b021c5ddd04291992",
+    "semantic_hash": "c85317c87288231b021c5ddd04291992"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/gsc_data_aggregated.ts": {
+    "mtime": 1778722116.7418954,
+    "ast_hash": "1904da96594938982adb107dadf8b971",
+    "semantic_hash": "1904da96594938982adb107dadf8b971"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/tasks.ts": {
+    "mtime": 1779383401.8900213,
+    "ast_hash": "a21d33679199d37584033d741a33fb40",
+    "semantic_hash": "a21d33679199d37584033d741a33fb40"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/sprints.ts": {
+    "mtime": 1778722189.5466733,
+    "ast_hash": "63e21fd296e4ea0c9a45076e270de258",
+    "semantic_hash": "63e21fd296e4ea0c9a45076e270de258"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/db/src/schema/alerts.ts": {
+    "mtime": 1779638946.1132185,
+    "ast_hash": "0bb85f566c4d0df52bd18e26deb17d14",
+    "semantic_hash": "0bb85f566c4d0df52bd18e26deb17d14"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/auth-config/package.json": {
+    "mtime": 1779121970.0519803,
+    "ast_hash": "a8ba831823227aad04bdf2808575debb",
+    "semantic_hash": "a8ba831823227aad04bdf2808575debb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/auth-config/tsconfig.json": {
+    "mtime": 1778604399.8875923,
+    "ast_hash": "0c09d6eda34eed3c7a0472ef8341e789",
+    "semantic_hash": "0c09d6eda34eed3c7a0472ef8341e789"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/auth-config/src/permissions.ts": {
+    "mtime": 1778604593.6717484,
+    "ast_hash": "066d1926eb156c09b3e52e778c15195e",
+    "semantic_hash": "066d1926eb156c09b3e52e778c15195e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/packages/auth-config/src/index.ts": {
+    "mtime": 1779121963.6242654,
+    "ast_hash": "b14329db281542700094acc6c10d9f80",
+    "semantic_hash": "b14329db281542700094acc6c10d9f80"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/tailwind.config.js": {
+    "mtime": 1765991258.4463944,
+    "ast_hash": "afb33ef498a6f8b0b631b524d6b1c09b",
+    "semantic_hash": "afb33ef498a6f8b0b631b524d6b1c09b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/next.config.js": {
+    "mtime": 1779114907.5103712,
+    "ast_hash": "d337e32d8fe2887f8fa4b1f523a4e5ac",
+    "semantic_hash": "d337e32d8fe2887f8fa4b1f523a4e5ac"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/next-env.d.ts": {
+    "mtime": 1777199370.8414958,
+    "ast_hash": "a64595e6014adce3002d3bf762d2dbeb",
+    "semantic_hash": "a64595e6014adce3002d3bf762d2dbeb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/package.json": {
+    "mtime": 1779521376.6357927,
+    "ast_hash": "62f2b4fc1cfc2d99a289b0043fce3217",
+    "semantic_hash": "62f2b4fc1cfc2d99a289b0043fce3217"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/components.json": {
+    "mtime": 1766155143.9104595,
+    "ast_hash": "aecc3e53cb7b09790afb975ce2faafc0",
+    "semantic_hash": "aecc3e53cb7b09790afb975ce2faafc0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/tsconfig.json": {
+    "mtime": 1766155836.9356859,
+    "ast_hash": "576219c4c432533e468d92f14d8bd752",
+    "semantic_hash": "576219c4c432533e468d92f14d8bd752"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/vitest.config.ts": {
+    "mtime": 1766505334.941175,
+    "ast_hash": "29cb6c2338798163c32c46f9ef3b9cbd",
+    "semantic_hash": "29cb6c2338798163c32c46f9ef3b9cbd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/postcss.config.js": {
+    "mtime": 1765991263.4354346,
+    "ast_hash": "8640f9b2e6475cc3f5b1ff4548925765",
+    "semantic_hash": "8640f9b2e6475cc3f5b1ff4548925765"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/.eslintrc.json": {
+    "mtime": 1778605220.2953181,
+    "ast_hash": "6c636976577d27c2ebdc12da2f6f2b56",
+    "semantic_hash": "6c636976577d27c2ebdc12da2f6f2b56"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/types/task.types.ts": {
+    "mtime": 1779383418.0540168,
+    "ast_hash": "e31dcb8bd7b2e44cadffe55b3e09ce03",
+    "semantic_hash": "e31dcb8bd7b2e44cadffe55b3e09ce03"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/types/goal.types.ts": {
+    "mtime": 1779545322.5818539,
+    "ast_hash": "d62a89481a6713eacff50f336870eb36",
+    "semantic_hash": "d62a89481a6713eacff50f336870eb36"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/contexts/DateContext.tsx": {
+    "mtime": 1766423935.708618,
+    "ast_hash": "2d4ec37ebc197827f5d6eb26936c0688",
+    "semantic_hash": "2d4ec37ebc197827f5d6eb26936c0688"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/contexts/ProjectContext.tsx": {
+    "mtime": 1778722751.1358364,
+    "ast_hash": "55722d207883261a42d730d0b8292f1a",
+    "semantic_hash": "55722d207883261a42d730d0b8292f1a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/layout.tsx": {
+    "mtime": 1779208428.362528,
+    "ast_hash": "8079a1c907e3ec4d0321b40d2370ea7b",
+    "semantic_hash": "8079a1c907e3ec4d0321b40d2370ea7b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/page.tsx": {
+    "mtime": 1766155363.7253087,
+    "ast_hash": "8bd2c8988c987b2c7a3f0c38d892af3c",
+    "semantic_hash": "8bd2c8988c987b2c7a3f0c38d892af3c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/layout.tsx": {
+    "mtime": 1779114907.5097165,
+    "ast_hash": "b25648daa7a766ae28e1edc6522d2689",
+    "semantic_hash": "b25648daa7a766ae28e1edc6522d2689"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/dashboard-shell.tsx": {
+    "mtime": 1779521398.2065396,
+    "ast_hash": "de9b598acec1b9c40fd6299b62f0bc6e",
+    "semantic_hash": "de9b598acec1b9c40fd6299b62f0bc6e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/page.tsx": {
+    "mtime": 1779639048.3523183,
+    "ast_hash": "a9536e004cdc81db2b81ae98f15a5847",
+    "semantic_hash": "a9536e004cdc81db2b81ae98f15a5847"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/settings/projects/page.tsx": {
+    "mtime": 1779207148.1296346,
+    "ast_hash": "6b434b9d3e0b05109474ed3e62d2bde8",
+    "semantic_hash": "6b434b9d3e0b05109474ed3e62d2bde8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/settings/integrations/page.tsx": {
+    "mtime": 1779207148.1297991,
+    "ast_hash": "6220e518cec89a43069a26d02c110156",
+    "semantic_hash": "6220e518cec89a43069a26d02c110156"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/settings/team/page.tsx": {
+    "mtime": 1779207148.1297271,
+    "ast_hash": "6b1217c5510ecf0bcdfcf532f0a1167f",
+    "semantic_hash": "6b1217c5510ecf0bcdfcf532f0a1167f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/tasks/page.tsx": {
+    "mtime": 1779561638.0171986,
+    "ast_hash": "8960eeadbc838f4320b6f31945edd724",
+    "semantic_hash": "8960eeadbc838f4320b6f31945edd724"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/goals/page.tsx": {
+    "mtime": 1779606631.8295212,
+    "ast_hash": "9de9412da9222fc6be325243ea62a56b",
+    "semantic_hash": "9de9412da9222fc6be325243ea62a56b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/goals/[id]/page.tsx": {
+    "mtime": 1779606619.4536376,
+    "ast_hash": "6bf7cf96f4d88f7db3f73ea26e5c2357",
+    "semantic_hash": "6bf7cf96f4d88f7db3f73ea26e5c2357"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/sprints/page.tsx": {
+    "mtime": 1779606638.0202005,
+    "ast_hash": "1c9491bbf592221b1c4480cfd0acc25b",
+    "semantic_hash": "1c9491bbf592221b1c4480cfd0acc25b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/projects/page.tsx": {
+    "mtime": 1779207157.216832,
+    "ast_hash": "079d7402ea77bd557a62cb12c0473131",
+    "semantic_hash": "079d7402ea77bd557a62cb12c0473131"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/integrations/page.tsx": {
+    "mtime": 1779207157.2178624,
+    "ast_hash": "bd74736cbe265f1526e51fe46f26cb3b",
+    "semantic_hash": "bd74736cbe265f1526e51fe46f26cb3b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/rankings/page.tsx": {
+    "mtime": 1779207157.2182617,
+    "ast_hash": "c4d26edc602d157ffe02e448d7e1e719",
+    "semantic_hash": "c4d26edc602d157ffe02e448d7e1e719"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/urls/page.tsx": {
+    "mtime": 1779207157.2188363,
+    "ast_hash": "23b363e26bfa93d7ae1aeade03a9c7ae",
+    "semantic_hash": "23b363e26bfa93d7ae1aeade03a9c7ae"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/keywords/[keyword]/page.tsx": {
+    "mtime": 1779207254.5014703,
+    "ast_hash": "3e6f3c2e7ac7b63129e6fe11a9334c6d",
+    "semantic_hash": "3e6f3c2e7ac7b63129e6fe11a9334c6d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/analytics/page.tsx": {
+    "mtime": 1779715914.7266035,
+    "ast_hash": "80fcdb65253d2d81b3fc32ed7a984e7d",
+    "semantic_hash": "80fcdb65253d2d81b3fc32ed7a984e7d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/analytics/alerts/page.tsx": {
+    "mtime": 1779638856.2875319,
+    "ast_hash": "76e7be948600ebce4e57948030a8021f",
+    "semantic_hash": "76e7be948600ebce4e57948030a8021f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/analytics/keywords/page.tsx": {
+    "mtime": 1779715745.7517629,
+    "ast_hash": "87065fcbde00e156c493ddc025dfb782",
+    "semantic_hash": "87065fcbde00e156c493ddc025dfb782"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/dashboard/analytics/pages/page.tsx": {
+    "mtime": 1779715757.992463,
+    "ast_hash": "6f120bc75cb38cbc0e63fc295914cd90",
+    "semantic_hash": "6f120bc75cb38cbc0e63fc295914cd90"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/api/auth/[...all]/route.ts": {
+    "mtime": 1778604826.3511398,
+    "ast_hash": "8b35cddf37a065f3e75ac91fc8de2607",
+    "semantic_hash": "8b35cddf37a065f3e75ac91fc8de2607"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/api/[[...route]]/route.ts": {
+    "mtime": 1777199168.1582592,
+    "ast_hash": "9e35b40c99a0d7095b6dbd8cf289baf7",
+    "semantic_hash": "9e35b40c99a0d7095b6dbd8cf289baf7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/(auth)/layout.tsx": {
+    "mtime": 1778604919.4166484,
+    "ast_hash": "085ed218aaf991a3c4851845243483a1",
+    "semantic_hash": "085ed218aaf991a3c4851845243483a1"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/(auth)/signup/page.tsx": {
+    "mtime": 1779121963.6256628,
+    "ast_hash": "4edc38ee056778908e66efe89446895d",
+    "semantic_hash": "4edc38ee056778908e66efe89446895d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/(auth)/workspace/page.tsx": {
+    "mtime": 1779205064.5206625,
+    "ast_hash": "59c6fa61961dd67e5f1ba8676595b999",
+    "semantic_hash": "59c6fa61961dd67e5f1ba8676595b999"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/app/(auth)/login/page.tsx": {
+    "mtime": 1779121963.6259959,
+    "ast_hash": "7c0c5eb9d6ae9ce335f15d8e4e509ddb",
+    "semantic_hash": "7c0c5eb9d6ae9ce335f15d8e4e509ddb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/test/setup.ts": {
+    "mtime": 1766332894.0169864,
+    "ast_hash": "b6047cb48430aab17d0c9a3cec1e4bb5",
+    "semantic_hash": "b6047cb48430aab17d0c9a3cec1e4bb5"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/stores/use-alert-store.ts": {
+    "mtime": 1779638755.6152866,
+    "ast_hash": "2e030b59b79f8d81e712f6252259eda2",
+    "semantic_hash": "2e030b59b79f8d81e712f6252259eda2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/stores/useTimerStore.ts": {
+    "mtime": 1779384535.8589172,
+    "ast_hash": "c2613a6581776365985552f1dd92e70e",
+    "semantic_hash": "c2613a6581776365985552f1dd92e70e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/stores/use-project-store.ts": {
+    "mtime": 1779208163.076974,
+    "ast_hash": "2fa3e1af9e0f007aac235e25f1432140",
+    "semantic_hash": "2fa3e1af9e0f007aac235e25f1432140"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/stores/use-workspace-store.ts": {
+    "mtime": 1779207183.3663146,
+    "ast_hash": "8b9f0aa210689af9a1b279419c101997",
+    "semantic_hash": "8b9f0aa210689af9a1b279419c101997"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/error-boundary.tsx": {
+    "mtime": 1777167219.862076,
+    "ast_hash": "f40466680193487505dd8596a56d1d89",
+    "semantic_hash": "f40466680193487505dd8596a56d1d89"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/TaskCard.tsx": {
+    "mtime": 1779383996.3686671,
+    "ast_hash": "e290ec15d9e07db453cbfe9edb9b96a4",
+    "semantic_hash": "e290ec15d9e07db453cbfe9edb9b96a4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/TaskDialog.tsx": {
+    "mtime": 1766254022.8266814,
+    "ast_hash": "fa26480608828d350a188e6f83adcafb",
+    "semantic_hash": "fa26480608828d350a188e6f83adcafb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/NewTaskDialog.tsx": {
+    "mtime": 1778722751.1379807,
+    "ast_hash": "43546d116112fa1d00b7ea2229240b84",
+    "semantic_hash": "43546d116112fa1d00b7ea2229240b84"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/KanbanBoard.tsx": {
+    "mtime": 1778723543.6013968,
+    "ast_hash": "c459a2daf8ad7ee7692aaad5c212105a",
+    "semantic_hash": "c459a2daf8ad7ee7692aaad5c212105a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/TaskFilters.tsx": {
+    "mtime": 1766254304.1808317,
+    "ast_hash": "8a8334f1631abf524e64169e30a9fbef",
+    "semantic_hash": "8a8334f1631abf524e64169e30a9fbef"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/TimerWidget.tsx": {
+    "mtime": 1779383997.5689049,
+    "ast_hash": "e9d08804c6d3e8ef3043a32c7bb03cd9",
+    "semantic_hash": "e9d08804c6d3e8ef3043a32c7bb03cd9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/Header.tsx": {
+    "mtime": 1778722751.1381922,
+    "ast_hash": "06dfbcb156c5d444c75bf92dc43dd7e8",
+    "semantic_hash": "06dfbcb156c5d444c75bf92dc43dd7e8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/Sidebar.tsx": {
+    "mtime": 1766418950.1904194,
+    "ast_hash": "81af7886d533539ab4b36c01c96ead8c",
+    "semantic_hash": "81af7886d533539ab4b36c01c96ead8c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/KanbanColumn.tsx": {
+    "mtime": 1778722751.138497,
+    "ast_hash": "642c3953b4437c4640f188741f85560e",
+    "semantic_hash": "642c3953b4437c4640f188741f85560e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/KanbanBoardSkeleton.tsx": {
+    "mtime": 1766254910.3565185,
+    "ast_hash": "a845495eac9deb52c7a3b33034e236e9",
+    "semantic_hash": "a845495eac9deb52c7a3b33034e236e9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/EmptyState.tsx": {
+    "mtime": 1766254864.331669,
+    "ast_hash": "9caef0b231d13df28240621f67189c20",
+    "semantic_hash": "9caef0b231d13df28240621f67189c20"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/tabs.tsx": {
+    "mtime": 1766313352.4021142,
+    "ast_hash": "2dbb55bc73557d9794b1f166bb7e903b",
+    "semantic_hash": "2dbb55bc73557d9794b1f166bb7e903b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/card.tsx": {
+    "mtime": 1766155193.4744158,
+    "ast_hash": "a8c37b8b2cb24a44f46cbae530c075af",
+    "semantic_hash": "a8c37b8b2cb24a44f46cbae530c075af"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/popover.tsx": {
+    "mtime": 1766423294.744452,
+    "ast_hash": "e96b2d95c0ff5bc623df880cd3a084eb",
+    "semantic_hash": "e96b2d95c0ff5bc623df880cd3a084eb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/chart.tsx": {
+    "mtime": 1779715155.3771274,
+    "ast_hash": "6dd9148ceb0aea88a151d90fbb9265dc",
+    "semantic_hash": "6dd9148ceb0aea88a151d90fbb9265dc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/sheet.tsx": {
+    "mtime": 1779207640.4212766,
+    "ast_hash": "f1090873dd28ae9f90c76da92a59071d",
+    "semantic_hash": "f1090873dd28ae9f90c76da92a59071d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/empty-state.tsx": {
+    "mtime": 1779206959.6576688,
+    "ast_hash": "915015d562646824f3245ec9750a7076",
+    "semantic_hash": "915015d562646824f3245ec9750a7076"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/loading-skeleton.tsx": {
+    "mtime": 1779206959.657947,
+    "ast_hash": "ac9336c39fb23225362f95e3d7560f81",
+    "semantic_hash": "ac9336c39fb23225362f95e3d7560f81"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/label.tsx": {
+    "mtime": 1766221104.6491663,
+    "ast_hash": "2934c5185e4509b4f1c90d17b1dc5dcf",
+    "semantic_hash": "2934c5185e4509b4f1c90d17b1dc5dcf"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/calendar.tsx": {
+    "mtime": 1766424703.9184046,
+    "ast_hash": "915c558e0ad010f8f9df3a078ce84deb",
+    "semantic_hash": "915c558e0ad010f8f9df3a078ce84deb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/dialog.tsx": {
+    "mtime": 1766155209.3179913,
+    "ast_hash": "9870e9161bb181336cca23e98d2b1999",
+    "semantic_hash": "9870e9161bb181336cca23e98d2b1999"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/badge.tsx": {
+    "mtime": 1766221025.6193302,
+    "ast_hash": "1f1c2c5ba3e0ab786b6c301ef22799a0",
+    "semantic_hash": "1f1c2c5ba3e0ab786b6c301ef22799a0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/button.tsx": {
+    "mtime": 1766155169.515123,
+    "ast_hash": "33f8ef5c351115f8904b2a2f3decef54",
+    "semantic_hash": "33f8ef5c351115f8904b2a2f3decef54"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/page-header.tsx": {
+    "mtime": 1779206959.657763,
+    "ast_hash": "5eb02109ec63db111621c14e0da09e69",
+    "semantic_hash": "5eb02109ec63db111621c14e0da09e69"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/collapsible.tsx": {
+    "mtime": 1779207640.4209507,
+    "ast_hash": "3c4ea9e2a14792a5718026a7c4da2fa4",
+    "semantic_hash": "3c4ea9e2a14792a5718026a7c4da2fa4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/dropdown-menu.tsx": {
+    "mtime": 1779206959.6571972,
+    "ast_hash": "d81590f2ce47558ea587d4b05c9f7017",
+    "semantic_hash": "d81590f2ce47558ea587d4b05c9f7017"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/select.tsx": {
+    "mtime": 1766155232.666469,
+    "ast_hash": "03ecf87b3b0eff2ad63d279e3a6b6b9f",
+    "semantic_hash": "03ecf87b3b0eff2ad63d279e3a6b6b9f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/textarea.tsx": {
+    "mtime": 1766221102.6515057,
+    "ast_hash": "28125e1fe776cabb750918265ca1b70b",
+    "semantic_hash": "28125e1fe776cabb750918265ca1b70b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/ui/input.tsx": {
+    "mtime": 1766221098.5699787,
+    "ast_hash": "bed31bd135af29928969ddd275678db6",
+    "semantic_hash": "bed31bd135af29928969ddd275678db6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/notification-bell.tsx": {
+    "mtime": 1779639224.453966,
+    "ast_hash": "323be348f6aebc91bc389970385397a1",
+    "semantic_hash": "323be348f6aebc91bc389970385397a1"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/workspace-selector.tsx": {
+    "mtime": 1779207640.4221964,
+    "ast_hash": "560320b2cefed4173749bdd374aea220",
+    "semantic_hash": "560320b2cefed4173749bdd374aea220"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/user-menu.tsx": {
+    "mtime": 1779207073.6587877,
+    "ast_hash": "24df9150786014b69b88ec6174a4d8bc",
+    "semantic_hash": "24df9150786014b69b88ec6174a4d8bc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/nav-item.tsx": {
+    "mtime": 1779207020.764699,
+    "ast_hash": "ea1f00911abbbbb184545e96c3c65d05",
+    "semantic_hash": "ea1f00911abbbbb184545e96c3c65d05"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/header.tsx": {
+    "mtime": 1779208305.4518893,
+    "ast_hash": "e09a697208a5a9d6c58e0eb56699b970",
+    "semantic_hash": "e09a697208a5a9d6c58e0eb56699b970"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/sidebar.tsx": {
+    "mtime": 1779207163.170642,
+    "ast_hash": "76db5ca6df3fffd670736362c069fce0",
+    "semantic_hash": "76db5ca6df3fffd670736362c069fce0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/mobile-sidebar-sheet.tsx": {
+    "mtime": 1779207640.4215643,
+    "ast_hash": "f0f18413258fd50137cca5196b078ea1",
+    "semantic_hash": "f0f18413258fd50137cca5196b078ea1"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/nav-group.tsx": {
+    "mtime": 1779207640.421428,
+    "ast_hash": "9eb5a583920156fbeb38348b9c71a93b",
+    "semantic_hash": "9eb5a583920156fbeb38348b9c71a93b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/sidebar-trigger.tsx": {
+    "mtime": 1779207020.7651114,
+    "ast_hash": "07e34141f5c9447da79c2a4483a6ef47",
+    "semantic_hash": "07e34141f5c9447da79c2a4483a6ef47"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/layout/project-selector.tsx": {
+    "mtime": 1779381993.5967226,
+    "ast_hash": "4cc821eac6776a2baece35dc41857bd8",
+    "semantic_hash": "4cc821eac6776a2baece35dc41857bd8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/timeline-view.tsx": {
+    "mtime": 1779521448.0362084,
+    "ast_hash": "ec451723a19f5d5f368bd53b1d689d68",
+    "semantic_hash": "ec451723a19f5d5f368bd53b1d689d68"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/task-timer-section.tsx": {
+    "mtime": 1779527723.8127012,
+    "ast_hash": "30c874bd03688f71748e86cde681dcaa",
+    "semantic_hash": "30c874bd03688f71748e86cde681dcaa"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/task-filters-bar.tsx": {
+    "mtime": 1779383582.268045,
+    "ast_hash": "0878caac6c29f88c4904a52f0e27e4fc",
+    "semantic_hash": "0878caac6c29f88c4904a52f0e27e4fc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/kanban-board.tsx": {
+    "mtime": 1779521322.3739789,
+    "ast_hash": "394b19881ad7594cf46688119ae387e5",
+    "semantic_hash": "394b19881ad7594cf46688119ae387e5"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/task-detail-panel.tsx": {
+    "mtime": 1779606595.2255385,
+    "ast_hash": "7c053f3072feed21ed739b32e4c25f26",
+    "semantic_hash": "7c053f3072feed21ed739b32e4c25f26"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/table-view.tsx": {
+    "mtime": 1779383922.700528,
+    "ast_hash": "ae6dad97483a8746c46f71e06edf11db",
+    "semantic_hash": "ae6dad97483a8746c46f71e06edf11db"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/task-card.tsx": {
+    "mtime": 1779383594.4375384,
+    "ast_hash": "e1d3ab0d089914f1675f6c55a1a73d9d",
+    "semantic_hash": "e1d3ab0d089914f1675f6c55a1a73d9d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/calendar-view.tsx": {
+    "mtime": 1779384005.9587865,
+    "ast_hash": "afe4dae1397e0fc6f91cf67726c6f8a6",
+    "semantic_hash": "afe4dae1397e0fc6f91cf67726c6f8a6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/kanban-column.tsx": {
+    "mtime": 1779383629.2211998,
+    "ast_hash": "7bd72a6f77bf4fd02e13ad57505f8a98",
+    "semantic_hash": "7bd72a6f77bf4fd02e13ad57505f8a98"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/view-switcher-tabs.tsx": {
+    "mtime": 1779561638.0180373,
+    "ast_hash": "2d4c0e7dfad5b2a7745f136abbf8911f",
+    "semantic_hash": "2d4c0e7dfad5b2a7745f136abbf8911f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/tasks/create-task-dialog.tsx": {
+    "mtime": 1779561638.0176222,
+    "ast_hash": "ce633c9915383e69761d6ea349026856",
+    "semantic_hash": "ce633c9915383e69761d6ea349026856"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/goals/workload-chart.tsx": {
+    "mtime": 1779545463.3134482,
+    "ast_hash": "4687ff7687d1460cab17515946300098",
+    "semantic_hash": "4687ff7687d1460cab17515946300098"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/goals/sprint-card.tsx": {
+    "mtime": 1779561638.0181613,
+    "ast_hash": "48695160d9f42365c730a8374e0b6550",
+    "semantic_hash": "48695160d9f42365c730a8374e0b6550"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/goals/goal-card.tsx": {
+    "mtime": 1779545404.0824456,
+    "ast_hash": "f3dc1b7c9f440ad3ef8e8c58c5741e22",
+    "semantic_hash": "f3dc1b7c9f440ad3ef8e8c58c5741e22"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/goals/sprint-create-dialog.tsx": {
+    "mtime": 1779606612.0575686,
+    "ast_hash": "96f7174eba18e7b3d71f7d5c8ac074c9",
+    "semantic_hash": "96f7174eba18e7b3d71f7d5c8ac074c9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/goals/goal-create-dialog.tsx": {
+    "mtime": 1779606626.6736302,
+    "ast_hash": "9fb08a06cecbc2d692cd3eabfd1d3168",
+    "semantic_hash": "9fb08a06cecbc2d692cd3eabfd1d3168"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/alerts/alert-filters.tsx": {
+    "mtime": 1779638829.5150433,
+    "ast_hash": "fc4d7736d2969b67e7ca0c640a1a32cf",
+    "semantic_hash": "fc4d7736d2969b67e7ca0c640a1a32cf"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/alerts/alert-card.tsx": {
+    "mtime": 1779639234.2872205,
+    "ast_hash": "ca33803bac3408c0aed30650877e2d9f",
+    "semantic_hash": "ca33803bac3408c0aed30650877e2d9f"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/KPICard.tsx": {
+    "mtime": 1766331964.3615756,
+    "ast_hash": "a5945874c11bf5fda72fd9514bf79880",
+    "semantic_hash": "a5945874c11bf5fda72fd9514bf79880"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/RecentTasksTable.tsx": {
+    "mtime": 1778722751.139582,
+    "ast_hash": "fbca75d765724b024fd89699e97905a7",
+    "semantic_hash": "fbca75d765724b024fd89699e97905a7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/LayerControls.tsx": {
+    "mtime": 1766331988.323449,
+    "ast_hash": "1221af8fa5cd37b434efe0103b914311",
+    "semantic_hash": "1221af8fa5cd37b434efe0103b914311"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/CorrelationChart.tsx": {
+    "mtime": 1778722751.1400495,
+    "ast_hash": "feb49c72a23a0540e2a7f71c4b34cc67",
+    "semantic_hash": "feb49c72a23a0540e2a7f71c4b34cc67"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/KPICard.test.tsx": {
+    "mtime": 1766332972.840439,
+    "ast_hash": "cd2586602bf065c772ad04ec93fcfa9c",
+    "semantic_hash": "cd2586602bf065c772ad04ec93fcfa9c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/CustomTooltip.tsx": {
+    "mtime": 1778722751.139816,
+    "ast_hash": "b749ef2026f1e1e25a6595d7c6ec45ff",
+    "semantic_hash": "b749ef2026f1e1e25a6595d7c6ec45ff"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/dashboard/index.ts": {
+    "mtime": 1766332031.4531026,
+    "ast_hash": "9d61bf249d8d6815aa1f1f5efab108c8",
+    "semantic_hash": "9d61bf249d8d6815aa1f1f5efab108c8"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/rankings/KeywordTable.tsx": {
+    "mtime": 1766421553.8343298,
+    "ast_hash": "ed7e15f80da13d03591e16008d9065b7",
+    "semantic_hash": "ed7e15f80da13d03591e16008d9065b7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/rankings/RankingChart.tsx": {
+    "mtime": 1766416278.8620234,
+    "ast_hash": "5e98588a20715d0b39c35e4f45b2d5bf",
+    "semantic_hash": "5e98588a20715d0b39c35e4f45b2d5bf"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/rankings/PositionDistribution.tsx": {
+    "mtime": 1766416282.1278422,
+    "ast_hash": "25ea081517cc3b8be1a19f8be40ff936",
+    "semantic_hash": "25ea081517cc3b8be1a19f8be40ff936"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/rankings/index.ts": {
+    "mtime": 1766416284.1754365,
+    "ast_hash": "9a10128026bca35b7c2de420b3bed0fd",
+    "semantic_hash": "9a10128026bca35b7c2de420b3bed0fd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/rankings/TopMovers.tsx": {
+    "mtime": 1766416245.939753,
+    "ast_hash": "e65348e8ee23d054cdd47a0e45cd0c63",
+    "semantic_hash": "e65348e8ee23d054cdd47a0e45cd0c63"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/date-picker/DateRangePicker.tsx": {
+    "mtime": 1766423982.6708064,
+    "ast_hash": "5c324eb95702cfd0fa317f8d6025c3ca",
+    "semantic_hash": "5c324eb95702cfd0fa317f8d6025c3ca"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/urls/DiagnosisPanel.tsx": {
+    "mtime": 1766421431.1621985,
+    "ast_hash": "5eed3f46833157cec1ddaa5e1da969ea",
+    "semantic_hash": "5eed3f46833157cec1ddaa5e1da969ea"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/urls/DecliningURLs.tsx": {
+    "mtime": 1766417804.295106,
+    "ast_hash": "68f311fef936dbb351f2a7e68e8a92f1",
+    "semantic_hash": "68f311fef936dbb351f2a7e68e8a92f1"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/urls/URLDetailChart.tsx": {
+    "mtime": 1766417835.9987903,
+    "ast_hash": "f6a9d16a758d33a17e798f1360db99cc",
+    "semantic_hash": "f6a9d16a758d33a17e798f1360db99cc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/urls/index.ts": {
+    "mtime": 1766421433.1891522,
+    "ast_hash": "957a6cf78a25eab95659db407e39abb4",
+    "semantic_hash": "957a6cf78a25eab95659db407e39abb4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/urls/URLTable.tsx": {
+    "mtime": 1766417833.2181857,
+    "ast_hash": "db0403b81f4f06cb41ff1098c297b208",
+    "semantic_hash": "db0403b81f4f06cb41ff1098c297b208"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/keywords-table.tsx": {
+    "mtime": 1779715845.9808269,
+    "ast_hash": "1471c18137ac7fb6b6771afafaaef97d",
+    "semantic_hash": "1471c18137ac7fb6b6771afafaaef97d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/keyword-detail-panel.tsx": {
+    "mtime": 1779715345.1375384,
+    "ast_hash": "ae080b03e673deb2b09dc4e7c85aea5a",
+    "semantic_hash": "ae080b03e673deb2b09dc4e7c85aea5a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/TrafficSourcesTable.tsx": {
+    "mtime": 1766332236.8376875,
+    "ast_hash": "c3dd35b8e0b2fa62129722885f692dcc",
+    "semantic_hash": "c3dd35b8e0b2fa62129722885f692dcc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/cross-source-insight-card.tsx": {
+    "mtime": 1779715844.9090436,
+    "ast_hash": "4f7ea3e2d8652089362e213a556bbb50",
+    "semantic_hash": "4f7ea3e2d8652089362e213a556bbb50"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/page-detail-panel.tsx": {
+    "mtime": 1779715415.2108908,
+    "ast_hash": "23e11f3ea41fb7110d6e6df7f7034701",
+    "semantic_hash": "23e11f3ea41fb7110d6e6df7f7034701"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/kpi-cards.tsx": {
+    "mtime": 1779715242.0385146,
+    "ast_hash": "ed1a06bda353a061f99335ddf7aa5540",
+    "semantic_hash": "ed1a06bda353a061f99335ddf7aa5540"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/sparkline.tsx": {
+    "mtime": 1779715226.7501109,
+    "ast_hash": "b46a93f910b896ef8076db57b1b27e36",
+    "semantic_hash": "b46a93f910b896ef8076db57b1b27e36"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/MetricCard.tsx": {
+    "mtime": 1766332216.5775657,
+    "ast_hash": "00a6fbde7c5a87a21cdd93a188e2f941",
+    "semantic_hash": "00a6fbde7c5a87a21cdd93a188e2f941"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/impact-summary-panel.tsx": {
+    "mtime": 1779715609.3082368,
+    "ast_hash": "f5a91ebc434ca3f15a9137c174d65683",
+    "semantic_hash": "f5a91ebc434ca3f15a9137c174d65683"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/impact-window-picker.tsx": {
+    "mtime": 1779716451.1127493,
+    "ast_hash": "7cc7e851fc086cd64b17ceabea13f13c",
+    "semantic_hash": "7cc7e851fc086cd64b17ceabea13f13c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/LoadingSkeleton.tsx": {
+    "mtime": 1766332240.4464865,
+    "ast_hash": "a0c99832650c27d548cfcd0b4c74addb",
+    "semantic_hash": "a0c99832650c27d548cfcd0b4c74addb"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/traffic-trend-chart.tsx": {
+    "mtime": 1779715267.6112444,
+    "ast_hash": "7b062cea0f333f0697f99224b46a2e36",
+    "semantic_hash": "7b062cea0f333f0697f99224b46a2e36"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/top-movers-section.tsx": {
+    "mtime": 1779715283.4469502,
+    "ast_hash": "a4f6faaa79032bf7ce616cd6af6db9fc",
+    "semantic_hash": "a4f6faaa79032bf7ce616cd6af6db9fc"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/index.ts": {
+    "mtime": 1766332242.5033033,
+    "ast_hash": "593702f6617b6555b5c4619d3a066540",
+    "semantic_hash": "593702f6617b6555b5c4619d3a066540"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/AnalyticsCharts.tsx": {
+    "mtime": 1766425244.4668808,
+    "ast_hash": "f804775450f5e2de2f235435cc3fead4",
+    "semantic_hash": "f804775450f5e2de2f235435cc3fead4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/correlation-chart-v2.tsx": {
+    "mtime": 1779715843.63033,
+    "ast_hash": "66f040be171c043db6c339be4e83258b",
+    "semantic_hash": "66f040be171c043db6c339be4e83258b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/features/analytics/pages-table.tsx": {
+    "mtime": 1779715393.5021777,
+    "ast_hash": "01d8d6b855cb79691cc72c6b85e8d54d",
+    "semantic_hash": "01d8d6b855cb79691cc72c6b85e8d54d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/__tests__/button.test.tsx": {
+    "mtime": 1766505411.5047176,
+    "ast_hash": "d39f9990854b3a532794d006f0ef52a0",
+    "semantic_hash": "d39f9990854b3a532794d006f0ef52a0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/__tests__/select-item-empty-value.test.ts": {
+    "mtime": 1779561660.2774262,
+    "ast_hash": "66d72065e56155e8fad13fe5a8bc5cbe",
+    "semantic_hash": "66d72065e56155e8fad13fe5a8bc5cbe"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/components/__tests__/sprint-project-scope.test.ts": {
+    "mtime": 1779606672.5722766,
+    "ast_hash": "16ed838c9b305eb8468cdcc032ccc14c",
+    "semantic_hash": "16ed838c9b305eb8468cdcc032ccc14c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/__tests__/setup.ts": {
+    "mtime": 1766505375.005702,
+    "ast_hash": "a42ae146e86062397f04f07746ce5774",
+    "semantic_hash": "a42ae146e86062397f04f07746ce5774"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/__tests__/helpers.tsx": {
+    "mtime": 1766505377.0307534,
+    "ast_hash": "33fedb0463193045f06d5985e5ae6783",
+    "semantic_hash": "33fedb0463193045f06d5985e5ae6783"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-correlation.ts": {
+    "mtime": 1779715204.4706247,
+    "ast_hash": "8b29945665ea5baf9115812a149cf43a",
+    "semantic_hash": "8b29945665ea5baf9115812a149cf43a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useAnalyticsData.ts": {
+    "mtime": 1778722751.136212,
+    "ast_hash": "bc63114c6c26bc147f776c52812df998",
+    "semantic_hash": "bc63114c6c26bc147f776c52812df998"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-alerts.ts": {
+    "mtime": 1779638732.1324248,
+    "ast_hash": "54b9de66910e845a2f8b9510ae28faff",
+    "semantic_hash": "54b9de66910e845a2f8b9510ae28faff"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useURLsData.ts": {
+    "mtime": 1778722751.1368697,
+    "ast_hash": "c7a9e9573e2f1dfa943682768bb58489",
+    "semantic_hash": "c7a9e9573e2f1dfa943682768bb58489"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-analytics.ts": {
+    "mtime": 1779715841.8947906,
+    "ast_hash": "6aa135fd6b9953eb64a9dc071f5c4a83",
+    "semantic_hash": "6aa135fd6b9953eb64a9dc071f5c4a83"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useDiagnosisData.ts": {
+    "mtime": 1778722751.1373522,
+    "ast_hash": "78d28d946d375c9f69cf80ae7da9921c",
+    "semantic_hash": "78d28d946d375c9f69cf80ae7da9921c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-sprints.ts": {
+    "mtime": 1779606590.4094563,
+    "ast_hash": "843fca1a74c88aa3cf8c6efd55a7909e",
+    "semantic_hash": "843fca1a74c88aa3cf8c6efd55a7909e"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useTaskForm.ts": {
+    "mtime": 1778723555.1976175,
+    "ast_hash": "6f360241b4faab4932b8ac11fe63fbd6",
+    "semantic_hash": "6f360241b4faab4932b8ac11fe63fbd6"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useRankingsData.ts": {
+    "mtime": 1778722751.136592,
+    "ast_hash": "f01795bd2ee2a00425a56106f7bc3fcd",
+    "semantic_hash": "f01795bd2ee2a00425a56106f7bc3fcd"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/useKeywordDetailData.ts": {
+    "mtime": 1778722751.1371436,
+    "ast_hash": "96eabc1b54781fda66edccc9e8da1846",
+    "semantic_hash": "96eabc1b54781fda66edccc9e8da1846"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-goals.ts": {
+    "mtime": 1779545334.5252593,
+    "ast_hash": "3603770778dca6054df3a9c119bf44d7",
+    "semantic_hash": "3603770778dca6054df3a9c119bf44d7"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/index.ts": {
+    "mtime": 1779638743.5446393,
+    "ast_hash": "dd8176f5f613d1a5dc944c5ab33cbd5a",
+    "semantic_hash": "dd8176f5f613d1a5dc944c5ab33cbd5a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/use-tasks.ts": {
+    "mtime": 1779472362.5231147,
+    "ast_hash": "20f94f89ae2b3d0842a7a659733ce4b2",
+    "semantic_hash": "20f94f89ae2b3d0842a7a659733ce4b2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/hooks/__tests__/use-sprints.test.ts": {
+    "mtime": 1779606666.8795593,
+    "ast_hash": "a32ce6a011ed40b1990e7967ee8eedb3",
+    "semantic_hash": "a32ce6a011ed40b1990e7967ee8eedb3"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/api-client.ts": {
+    "mtime": 1778604826.3518524,
+    "ast_hash": "5ca8fd5c643a73ba2034fb7888b1c49a",
+    "semantic_hash": "5ca8fd5c643a73ba2034fb7888b1c49a"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/server-local-storage-shim.ts": {
+    "mtime": 1779208428.3622036,
+    "ast_hash": "808dbd691ab81c3ef28d4850192d9b9b",
+    "semantic_hash": "808dbd691ab81c3ef28d4850192d9b9b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/select-values.ts": {
+    "mtime": 1779561638.0146565,
+    "ast_hash": "ca91761820391cb796a5a17fa2383e71",
+    "semantic_hash": "ca91761820391cb796a5a17fa2383e71"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/formatTime.ts": {
+    "mtime": 1766250891.595397,
+    "ast_hash": "097be4adb7ee2b30138266be2191bb44",
+    "semantic_hash": "097be4adb7ee2b30138266be2191bb44"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/auth-redirect.ts": {
+    "mtime": 1778639855.7385604,
+    "ast_hash": "6924c98621f8899e11c789c32dec4873",
+    "semantic_hash": "6924c98621f8899e11c789c32dec4873"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/workspace-slug.ts": {
+    "mtime": 1778604826.3507366,
+    "ast_hash": "fc4a1239d0a41aeefb878079ef986893",
+    "semantic_hash": "fc4a1239d0a41aeefb878079ef986893"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/auth-errors.ts": {
+    "mtime": 1778604826.3509502,
+    "ast_hash": "8bd19273305c1e155293e2ba398ae0f0",
+    "semantic_hash": "8bd19273305c1e155293e2ba398ae0f0"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/utils.ts": {
+    "mtime": 1766156083.2267497,
+    "ast_hash": "ea1c194ee828369e6fcdde84b4d8b8ba",
+    "semantic_hash": "ea1c194ee828369e6fcdde84b4d8b8ba"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/config.ts": {
+    "mtime": 1777613658.989253,
+    "ast_hash": "6a29a031f1ae9e424c36dcfffd8c30a4",
+    "semantic_hash": "6a29a031f1ae9e424c36dcfffd8c30a4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/auth-client.ts": {
+    "mtime": 1778604826.350496,
+    "ast_hash": "657c6c6c71c36de29219b950a0cd132d",
+    "semantic_hash": "657c6c6c71c36de29219b950a0cd132d"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/__tests__/workspace-slug.test.ts": {
+    "mtime": 1778605180.3820207,
+    "ast_hash": "130e810144b768dce1e0889f123e9ab4",
+    "semantic_hash": "130e810144b768dce1e0889f123e9ab4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/__tests__/select-values.test.ts": {
+    "mtime": 1779561638.0187476,
+    "ast_hash": "43ff8b55d0f14cb1a9dc1677f6e952ab",
+    "semantic_hash": "43ff8b55d0f14cb1a9dc1677f6e952ab"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/__tests__/auth-redirect.test.ts": {
+    "mtime": 1778639897.260149,
+    "ast_hash": "bde4f1b338cafae1c594b540bc7dbf0c",
+    "semantic_hash": "bde4f1b338cafae1c594b540bc7dbf0c"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/web/src/lib/__tests__/auth-errors.test.ts": {
+    "mtime": 1778605180.382278,
+    "ast_hash": "8c06a46964b5127ed4eb6fd137b97ec9",
+    "semantic_hash": "8c06a46964b5127ed4eb6fd137b97ec9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/package.json": {
+    "mtime": 1778765096.9960506,
+    "ast_hash": "1a11df529c35c896985669ea69cbbe59",
+    "semantic_hash": "1a11df529c35c896985669ea69cbbe59"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/tsconfig.json": {
+    "mtime": 1778722871.0960155,
+    "ast_hash": "ae7bdf187c28f16e511d04d50d9aff61",
+    "semantic_hash": "ae7bdf187c28f16e511d04d50d9aff61"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/vitest.config.ts": {
+    "mtime": 1777166495.8724108,
+    "ast_hash": "9ece6b8acb09a1aefcb7f825d83289f4",
+    "semantic_hash": "9ece6b8acb09a1aefcb7f825d83289f4"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/index.ts": {
+    "mtime": 1777199162.5501652,
+    "ast_hash": "58946feb9e201d496a694377301d7a80",
+    "semantic_hash": "58946feb9e201d496a694377301d7a80"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/utils/logger.ts": {
+    "mtime": 1766332448.418287,
+    "ast_hash": "5004ebc486da21fbca2a942ef3797c96",
+    "semantic_hash": "5004ebc486da21fbca2a942ef3797c96"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/utils/logger.test.ts": {
+    "mtime": 1766332851.774323,
+    "ast_hash": "eed0ed1ac8a9f34082aa7059e87babce",
+    "semantic_hash": "eed0ed1ac8a9f34082aa7059e87babce"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/__tests__/helpers.ts": {
+    "mtime": 1778765064.6751692,
+    "ast_hash": "d6fcf9ff278e34a76fea85b202e231e9",
+    "semantic_hash": "d6fcf9ff278e34a76fea85b202e231e9"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/__tests__/setup.ts": {
+    "mtime": 1778765068.5102444,
+    "ast_hash": "a0202332e788726f7f827adf130989a2",
+    "semantic_hash": "a0202332e788726f7f827adf130989a2"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/routes/__tests__/projects.test.ts": {
+    "mtime": 1778723256.8422906,
+    "ast_hash": "9969d4b52bdc03ca29ad38a3b8f2037b",
+    "semantic_hash": "9969d4b52bdc03ca29ad38a3b8f2037b"
+  },
+  "/Users/kong.peterpan/Documents/Personal App/task-management/apps/api/src/routes/__tests__/tasks.test.ts": {
+    "mtime": 1778723263.298141,
+    "ast_hash": "4ff7609ad3b80887c2dbc2ebdd0388aa",
+    "semantic_hash": "4ff7609ad3b80887c2dbc2ebdd0388aa"
+  }
+}

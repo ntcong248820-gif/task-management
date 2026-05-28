@@ -272,28 +272,46 @@ app.get('/properties', async (c) => {
         const client = new GA4Client(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
         const properties = await client.listProperties();
 
-        if (save === 'true') {
+        if (save === 'true' && properties.length > 0) {
+            const existingConnections = await db
+                .select()
+                .from(ga4Connections)
+                .where(and(
+                    eq(ga4Connections.projectId, projectId),
+                    eq(ga4Connections.workspaceId, workspaceId)
+                ));
+
+            const existingById = new Map(
+                existingConnections.map((conn) => [conn.propertyId, conn])
+            );
+
+            const commonData = {
+                workspaceId,
+                authorizedByUserId: c.get('userId'),
+                accountEmail: tokenRecord.accountEmail,
+                accessToken: tokenRecord.accessToken,
+                refreshToken: tokenRecord.refreshToken,
+                tokenExpiresAt: tokenRecord.tokenExpiresAt,
+                syncStatus: 'idle' as const,
+                syncError: null,
+                updatedAt: new Date(),
+            };
+
             for (const property of properties) {
-                const existingConnection = await findProjectConnection(projectId, workspaceId, property.propertyId);
+                if (!property.propertyId) continue;
+                const existing = existingById.get(property.propertyId);
+
                 const connectionData = {
-                    workspaceId,
-                    authorizedByUserId: c.get('userId'),
-                    accountEmail: tokenRecord.accountEmail,
+                    ...commonData,
                     propertyId: property.propertyId,
                     propertyName: property.propertyName,
-                    accessToken: tokenRecord.accessToken,
-                    refreshToken: tokenRecord.refreshToken,
-                    tokenExpiresAt: tokenRecord.tokenExpiresAt,
-                    syncStatus: 'idle' as const,
-                    syncError: null,
-                    updatedAt: new Date(),
                 };
 
-                if (existingConnection) {
+                if (existing) {
                     await db
                         .update(ga4Connections)
                         .set(connectionData)
-                        .where(eq(ga4Connections.id, existingConnection.id));
+                        .where(eq(ga4Connections.id, existing.id));
                 } else {
                     await db.insert(ga4Connections).values({
                         projectId,

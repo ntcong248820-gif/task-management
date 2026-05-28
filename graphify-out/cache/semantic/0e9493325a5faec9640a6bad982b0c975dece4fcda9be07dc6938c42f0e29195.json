@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "api_app_package", "target": "google_analytics_4_api", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "packages/api-app/src/jobs/sync-ga4.ts", "source_location": null, "weight": 1.0}], "hyperedges": []}

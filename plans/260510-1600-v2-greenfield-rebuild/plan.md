@@ -83,12 +83,12 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 | 04 | [Task Management v2](./phase-04-task-management-v2.md) | Multi-view (Board/Timeline/Table/Calendar via ?view= param), recurring templates, workload | ~20h | ✅ Complete | ✅ Reviewed — `reports/review-260511-1941-phase-04-05-feasibility.md` (security fix, pagination, CSS Grid, timer design confirmed) |
 | 05 | [Goals & Sprint Management](./phase-05-goals-sprints.md) | Goal hierarchy, sprint planning, goal-task linking | ~10h | ✅ Complete | ✅ Implemented and status-synced 2026-05-24; review findings fixed |
 | 06 | [Analytics Intelligence](./phase-06-analytics-intelligence.md) | Anomaly alerts, content decay, scheduled digests, recommendations | ~16h | ✅ Complete | ✅ Implemented 2026-05-24; review fixed C1 (cross-workspace leak), C2 (unreadOnly SQL), H1 (read-all cap), H2 (limit cap) |
-| 07 | [Analytics Dashboards v2](./phase-07-analytics-dashboards-v2.md) | Deep-dive per URL/keyword, correlation v2, cross-source insights | ~14h | pending | ✅ Reviewed — `reports/brainstorm-260511-2029-phase-06-07-review.md` |
+| 07 | [Analytics Dashboards v2](./phase-07-analytics-dashboards-v2.md) | Deep-dive per URL/keyword, correlation v2, cross-source insights | ~14h | ✅ Complete | ✅ Implemented 2026-05-25; code-reviewed (3 bugs fixed); all checkboxes marked |
 
 > **Final Feasibility Review: 2026-05-11** — `/ck:predict` (CAUTION→GO) + `/ck:scenario` (34 edge cases, 5 Critical fixed).
 > Estimated effort revised: ~83h → ~89-92h. All Critical items applied. Plan READY TO IMPLEMENT.
 
-## Current State — 2026-05-24
+## Current State — 2026-05-25
 
 - Phase 01: complete. Internal MVP auth is email/password-only; live signup -> workspace -> dashboard smoke passed. Email verification, invite email, password reset, and Better Auth Google login are deferred.
 - Phase 02: complete. Production DB now has the v2 workspace-scoped business schema; old v1 business tables are preserved as `*_legacy_v1_20260519`.
@@ -96,6 +96,7 @@ Hiện tại single-user, không có auth. V2 cần workspace + team.
 - Phase 04: complete. Multi-view task management (Board/Timeline/Table/Calendar), DB-backed timer, task create/edit/complete/delete, drag-and-drop with optimistic rollback, task-templates spawn, @tanstack/react-table Table view, CSS Grid Timeline view, Calendar with "+N more" popover, targetUrl field added. Type-check and lint clean.
 - Phase 05: complete. Goals/sprints API and UI are implemented, task detail supports goal/sprint assignment, sprint cards deep-link to a sprint-filtered task board, creating a task from that board preserves `sprintId`, and review fixes landed for Radix Select sentinel values plus Zod refined-schema build compatibility. Validation green for lint, type-check, web tests, and placeholder-env build; root test still requires a running local Postgres for API integration tests.
 - Phase 06: complete. Alert engine (z-score anomaly, content decay, cross-source, recommendations), weekly digest job, alert CRUD API with per-user read tracking, cron routes, in-app alerts page with filters, NotificationBell with 30s polling, dashboard digest card. Review fixed: cross-workspace GSC data isolation (C1), unreadOnly SQL-level filter (C2), read-all bulk cap (H1), limit/offset input sanitization (H2). Type-check clean.
+- Phase 07: complete. Analytics dashboards v2: `/api/analytics/overview`, `/api/analytics/keywords`, `/api/analytics/keywords/:keyword`, `/api/analytics/pages`, `/api/analytics/pages/detail`, `/api/correlation/*` redesigned with no auto-calculated impact %, all components (charts, tables, sparklines, panels) built, hooked up with SWR, all pages wired (analytics overview, keywords, pages), type-checked clean, code-reviewed (3 bugs found and fixed), all todos and success criteria marked complete.
 
 ## Feature Proposals with Reasoning
 

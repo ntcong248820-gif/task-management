@@ -1,7 +1,7 @@
 # Project Roadmap
 
-> **Last Updated:** 2026-05-24
-> **Overall Progress:** v2 Phases 01-06 complete. Phase 07 Analytics Dashboards v2 is next; root test requires local Postgres for API integration tests.
+> **Last Updated:** 2026-05-25
+> **Overall Progress:** v2 Phases 01-07 complete. All core features implemented; root test requires local Postgres for API integration tests.
 
 ## v2 Greenfield Rebuild
 
@@ -13,6 +13,7 @@
 | 4 | Task Management v2 (Multi-View) | Done (2026-05-23) | Board/Timeline/Table/Calendar views; DB-backed timer; task filters; Kanban drag & drop; TanStack Table; CSS Grid Gantt-lite; template spawn with idempotent constraints. Post-release: fixed UUID regex, target_url migration, DB tracking table — production verified 2026-05-23 |
 | 5 | Goals & Sprint Management | Done (2026-05-24) | Goals/sprints CRUD, project-scoped goal progress, sprint state actions, goal/sprint selectors in task detail, sprint-filtered task board links, workload chart. Review fixes: Select sentinels, query-preserving view tabs, Zod schema build compatibility |
 | 6 | Analytics Intelligence | Done (2026-05-24) | Z-score anomaly alerts (DoW-normalized, 8-week history), content decay detection (set-based SQL), cross-source correlation (correlated_drop + source_discrepancy), rule-based recommendations, per-user alert read tracking via join table, weekly digest job, in-app alerts page, NotificationBell 30s polling, dashboard digest card. Review fixed: cross-workspace GSC data isolation, SQL-level unreadOnly filter, read-all bulk cap |
+| 7 | Analytics Dashboards v2 | Done (2026-05-25) | Deep-dive per URL/keyword, correlation v2 with no auto-calculated impact %, cross-source insights with GA4 source filter. API: `/analytics/overview|keywords|keywords/:keyword|pages|pages/detail`, `/correlation/*` with `/impact-window`. UI: analytics dashboard, keywords/pages deep dive, correlation chart with date range picker, KPI cards, top movers, decay status 🟢🟡🔴. Components: 15 new analytics features, 2 SWR hook suites (5+3 hooks), sparklines. Code review fixed 3 bugs; all todos and success criteria marked; type-check clean |
 
 ### Phase 01 Delivery Notes
 - Shared auth package at `packages/auth-config`
@@ -65,6 +66,20 @@
 - **Review Fixes:** C1 — weekly digest GSC queries scoped to workspace project IDs (cross-tenant isolation); C2 — `unreadOnly` pushed to SQL `WHERE isNull(alertReads.id)` instead of in-memory filter after LIMIT; H1 — `PATCH /read-all` capped at 500 rows; H2 — limit/offset sanitized with `Math.min/max`
 - **Validation:** Lint, type-check, and build all pass clean
 
+### Phase 07 Delivery Notes (2026-05-25)
+- **Database:** Composite indexes on `gsc_data` (project+query+date, project+page+date) and `ga4_data` (project+source+date) for fast date-range aggregation queries
+- **API Routes — Analytics:** `/overview` (KPIs, traffic trend, top movers, cross-source insight, `ga4Source` filter); `/keywords` (paginated 50/page, sort/filter); `/keywords/:keyword` (position/clicks history, top pages); `/pages` (paginated, decay status 🟢🟡🔴); `/pages/detail` (URL traffic, top keywords, linked tasks)
+- **API Routes — Correlation:** Redesigned to remove auto-calculated impact %; `/` (chart data + task annotations for affectsWebsite=true tasks); `/urls` (URL list for filter); `/impact-window` (custom date-range impact summary, no auto %)
+- **Frontend — Analytics:** KPI cards (period-over-period %), traffic trend chart (dual-axis GSC+GA4, task annotations, shadcn ComposedChart), top movers section (improving/declining keywords with ↑↓ arrows)
+- **Frontend — Correlation:** URL filter dropdown, date range picker (from/to), impact summary panel showing clicks/impressions/position with prior-period delta %, copy-as-report button
+- **Frontend — Cross-Source Insight:** GA4 source filter (All/Organic/Direct/Social/Referral), gap detection framing ("possible causes: bot traffic, JS gaps, consent, channel mix")
+- **Frontend — Keywords/Pages:** Server-side paginated TanStack Tables, search/sort/filter bars, sparkline trends per row (pure SVG), decay status badges, click-to-detail panels (slide-overs with charts, history, linked tasks)
+- **Components:** 15 new analytics features (`kpi-cards`, `traffic-trend-chart`, `top-movers-section`, `keywords-table`, `keyword-detail-panel`, `pages-table`, `page-detail-panel`, `correlation-chart-v2`, `impact-window-picker`, `impact-summary-panel`, `cross-source-insight-card`, `sparkline`), shadcn `ChartContainer` wrapper
+- **Hooks:** `use-analytics.ts` (5 hooks: overview, keywords list, keyword detail, pages list, page detail); `use-correlation.ts` (3 hooks: chart, urls, impact-window)
+- **Pages:** `/analytics` (overview with tabs), `/analytics/keywords` (deep dive), `/analytics/pages` (deep dive)
+- **Review Fixes:** 3 bugs found and fixed during code review
+- **Validation:** Type-check clean (8/8 packages), lint pass, web build pass, root build pass with placeholder env, commit f4508c7
+
 ## Phase Status
 
 | Phase | Name | Status | Progress |
@@ -75,7 +90,7 @@
 | 4 | Task Management v2 | Done | 100% |
 | 5 | Goals & Sprint Management | Done | 100% |
 | 6 | Analytics Intelligence | Done (2026-05-24) | 100% |
-| 7 | Analytics Dashboards v2 | Planned | 0% |
+| 7 | Analytics Dashboards v2 | Done (2026-05-25) | 100% |
 
 ## Legacy Phase 7 Hardening Backlog
 

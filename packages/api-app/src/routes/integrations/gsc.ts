@@ -291,30 +291,46 @@ app.get('/sites', async (c) => {
         const client = new GSCClient(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
         const sites = await client.listSites();
 
-        if (save === 'true') {
+        if (save === 'true' && sites.length > 0) {
+            const existingConnections = await db
+                .select()
+                .from(gscConnections)
+                .where(and(
+                    eq(gscConnections.projectId, projectId),
+                    eq(gscConnections.workspaceId, workspaceId)
+                ));
+
+            const existingByUrl = new Map(
+                existingConnections.map((conn) => [conn.siteUrl, conn])
+            );
+
+            const commonData = {
+                workspaceId,
+                authorizedByUserId: c.get('userId'),
+                accountEmail: tokenRecord.accountEmail,
+                accessToken: tokenRecord.accessToken,
+                refreshToken: tokenRecord.refreshToken,
+                tokenExpiresAt: tokenRecord.tokenExpiresAt,
+                syncStatus: 'idle' as const,
+                syncError: null,
+                updatedAt: new Date(),
+            };
+
             for (const site of sites) {
                 if (!site.siteUrl) continue;
+                const existing = existingByUrl.get(site.siteUrl);
 
-                const existingConnection = await findProjectConnection(projectId, workspaceId, site.siteUrl);
                 const connectionData = {
-                    workspaceId,
-                    authorizedByUserId: c.get('userId'),
-                    accountEmail: tokenRecord.accountEmail,
+                    ...commonData,
                     siteUrl: site.siteUrl,
                     permissionLevel: site.permissionLevel || null,
-                    accessToken: tokenRecord.accessToken,
-                    refreshToken: tokenRecord.refreshToken,
-                    tokenExpiresAt: tokenRecord.tokenExpiresAt,
-                    syncStatus: 'idle' as const,
-                    syncError: null,
-                    updatedAt: new Date(),
                 };
 
-                if (existingConnection) {
+                if (existing) {
                     await db
                         .update(gscConnections)
                         .set(connectionData)
-                        .where(eq(gscConnections.id, existingConnection.id));
+                        .where(eq(gscConnections.id, existing.id));
                 } else {
                     await db.insert(gscConnections).values({
                         projectId,

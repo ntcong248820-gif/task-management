@@ -1,0 +1,1 @@
+{"nodes": [{"id": "api_client_ts", "label": "api-client.ts", "file_type": "code", "source_file": "apps/web/src/lib/api-client.ts"}], "edges": [{"source": "api_client_ts", "target": "swr_library", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/lib/api-client.ts"}], "hyperedges": []}

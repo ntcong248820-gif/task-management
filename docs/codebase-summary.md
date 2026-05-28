@@ -19,11 +19,11 @@ Shared Hono application — imported by both `apps/web` (production) and `apps/a
 | `src/routes/digest.ts` | Phase 06 `GET /api/digest/latest` — most recent workspace digest row |
 | `src/routes/cron/run-alerts.ts` | Phase 06 cron endpoint: runs alert engine for all projects with GSC connections |
 | `src/routes/cron/weekly-digest.ts` | Phase 06 cron endpoint: generates weekly digest for all workspaces |
-| `src/routes/analytics.ts` | Combined GSC + GA4 metrics |
-| `src/routes/correlation.ts` | Task-traffic correlation data |
-| `src/routes/rankings.ts` | Keyword position tracking |
-| `src/routes/urls.ts` | URL performance + decline detection |
-| `src/routes/keywords.ts` | Keyword detail + SERP history |
+| `src/routes/analytics.ts` | Phase 07 redesigned: `/overview` (KPIs, traffic trend, top movers, cross-source), `/keywords` (paginated list), `/keywords/:keyword` (detail), `/pages` (paginated list with decay), `/pages/detail` (URL detail); `ga4Source` filter for cross-source insight |
+| `src/routes/correlation.ts` | Phase 07 redesigned: removed auto-calculated impact %, redesigned `/` (chart data + task annotations), `/urls` (URL filter list), `/impact-window` (custom date range impact summary) |
+| `src/routes/rankings.ts` | Keyword position tracking (deprecated — merged into analytics.ts) |
+| `src/routes/urls.ts` | URL performance + decline detection (deprecated — merged into analytics.ts) |
+| `src/routes/keywords.ts` | Keyword detail + SERP history (deprecated — merged into analytics.ts) |
 | `src/routes/diagnosis.ts` | AI rule-based diagnosis |
 | `src/routes/integrations/` | GSC + GA4 OAuth + sync routes backed by connection tables |
 | `src/routes/cron/` | HTTP endpoints for GitHub Actions cron trigger (`sync-gsc`, `sync-ga4`) with Bearer token auth |
@@ -71,19 +71,26 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/app/dashboard/goals/` | Phase 05 goals list/detail UI with progress and linked sprints |
 | `src/app/dashboard/sprints/` | Phase 05 sprint planning UI with status actions, workload, and task-board links |
 | `src/app/dashboard/analytics/alerts/page.tsx` | Phase 06 live alerts page with severity/type/unread filters, `AlertCard` list, mark-all-read |
-| `src/app/dashboard/analytics/` | Phase 03 analytics placeholders (`overview`, `keywords`, `pages`); `alerts` now live (Phase 06) |
+| `src/app/dashboard/analytics/page.tsx` | Phase 07 analytics overview with KPI cards, traffic trend chart, top movers, correlation section with URL filter/date range picker/impact summary, cross-source insight |
+| `src/app/dashboard/analytics/keywords/page.tsx` | Phase 07 keywords deep dive with search/sort/filter, server-side paginated TanStack Table, sparkline trends, click to open keyword detail panel |
+| `src/app/dashboard/analytics/pages/page.tsx` | Phase 07 pages deep dive with search/sort/filter by decay, server-side paginated TanStack Table, decay status 🟢🟡🔴, click to open page detail panel |
+| `src/app/dashboard/analytics/` | Phase 07 complete analytics dashboard suite (overview, keywords, pages); Phase 06 alerts still at `/alerts` |
 | `src/app/dashboard/settings/` | Phase 03 settings placeholders (`projects`, `team`, `integrations`) |
 | `src/components/ui/` | shadcn/ui primitives |
 | `src/components/layout/` | Phase 03 shell components: sidebar, header, selectors, mobile sheet, nav groups |
 | `src/components/features/tasks/` | Phase 04/05 task components: multi-view task UI, query-preserving tabs, goal/sprint assignment in detail panel, create dialog with sprint defaults |
 | `src/components/features/goals/` | Phase 05 goal cards/dialogs, sprint cards, and workload chart |
 | `src/components/features/alerts/` | Phase 06 `AlertCard` (severity icon, expand/collapse metadata, mark-read, dismiss) + `AlertFilters` (severity pills, unread toggle, type select, mark-all-read) |
+| `src/components/features/analytics/` | Phase 07 analytics component suite: `sparkline.tsx` (pure SVG), `kpi-cards.tsx`, `traffic-trend-chart.tsx` (dual-axis ComposedChart), `top-movers-section.tsx`, `correlation-chart-v2.tsx` (with ReferenceArea + task annotations), `impact-window-picker.tsx` (date range), `impact-summary-panel.tsx`, `cross-source-insight-card.tsx` (GA4 source filter), `keywords-table.tsx`, `keyword-detail-panel.tsx`, `pages-table.tsx`, `page-detail-panel.tsx` |
+| `src/components/ui/chart.tsx` | Phase 07 shadcn ChartContainer wrapper for Recharts |
 | `src/components/features/` | Feature components (tasks, goals, analytics, rankings, urls, dashboard) |
 | `src/components/error-boundary.tsx` | React error boundary for graceful error handling |
 | `src/hooks/use-tasks.ts` | Phase 04 SWR hooks: `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` |
 | `src/hooks/use-goals.ts` | Phase 05 SWR hooks and mutations for goals |
 | `src/hooks/use-sprints.ts` | Phase 05 SWR hooks and mutations for sprints |
 | `src/hooks/use-alerts.ts` | Phase 06 SWR hooks: `useAlerts()`, `useAlertCount()` (30s refresh), `useLatestDigest()`; mutation helpers `markAlertRead`, `markAllAlertsRead`, `dismissAlert` |
+| `src/hooks/use-analytics.ts` | Phase 07 SWR hooks: `useAnalyticsOverview()`, `useKeywordsData()`, `useKeywordDetail()`, `usePagesData()`, `usePageDetail()` |
+| `src/hooks/use-correlation.ts` | Phase 07 SWR hooks: `useCorrelationChart()`, `useCorrelationUrls()`, `useImpactWindow()` |
 | `src/hooks/` | Custom React hooks with SWR caching (useAnalyticsData, useRankingsData, useURLsData, useDiagnosisData, useKeywordDetailData) |
 | `src/stores/useTimerStore.ts` | Phase 04 rewrite: DB-backed timer state via `/start` `/stop` endpoints, localStorage persist, syncFromDb() |
 | `src/stores/` | Zustand stores (`use-project-store`, `use-workspace-store`, `use-alert-store`) |

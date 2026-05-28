@@ -1,7 +1,7 @@
 ---
 phase: 7
 title: "Analytics Dashboards v2 — Deep Dive & Correlation"
-status: pending
+status: completed
 priority: P1
 effort: "~14h"
 dependencies: [2, 5, 6]
@@ -293,38 +293,38 @@ for analytics endpoints. No Redis needed at 5-20 users. Invalidate on sync compl
 
 ## Todo
 
-- [ ] Add analytics indexes migration (4 composite indexes on gsc_data + ga4_data)
-- [ ] Redesign `analytics.ts` — overview, keywords (paginated), pages (paginated) endpoints
-- [ ] Add `ga4Source` filter to overview endpoint for cross-source insight
-- [ ] Redesign `correlation.ts` — remove calculateTaskImpact, add impact-window endpoint
-- [ ] Add `/api/correlation/urls` endpoint
-- [ ] Implement `getCrossSourceInsight()` with investigation framing
-- [ ] Build Analytics Overview page + KPI cards
-- [ ] Build TrafficTrendChart (shadcn ComposedChart, dual-axis, task annotations)
-- [ ] Build TopMovers section
-- [ ] Build Correlation section with URLFilter + ImpactWindowPicker + ImpactSummaryPanel
-- [ ] Build CrossSourceInsightCard with GA4 source filter dropdown
-- [ ] Build lightweight SVG sparkline component for table rows
-- [ ] Build Keywords page (TanStack Table, server-side paginated)
-- [ ] Build KeywordDetailPanel (slide-over, shadcn charts)
-- [ ] Build Pages page (TanStack Table, server-side paginated, decay status)
-- [ ] Build PageDetailPanel (slide-over)
-- [ ] Wire "Focus →" on task list → sets ImpactWindowPicker + scrolls to chart
-- [ ] Wire URL click in pages table → opens correlation with ?url= param
-- [ ] Write SWR hooks for analytics + correlation
-- [ ] Run `npm run type-check`
+- [x] Add analytics indexes migration (4 composite indexes on gsc_data + ga4_data)
+- [x] Redesign `analytics.ts` — overview, keywords (paginated), pages (paginated) endpoints
+- [x] Add `ga4Source` filter to overview endpoint for cross-source insight
+- [x] Redesign `correlation.ts` — remove calculateTaskImpact, add impact-window endpoint
+- [x] Add `/api/correlation/urls` endpoint
+- [x] Implement `getCrossSourceInsight()` with investigation framing
+- [x] Build Analytics Overview page + KPI cards
+- [x] Build TrafficTrendChart (shadcn ComposedChart, dual-axis, task annotations)
+- [x] Build TopMovers section
+- [x] Build Correlation section with URLFilter + ImpactWindowPicker + ImpactSummaryPanel
+- [x] Build CrossSourceInsightCard with GA4 source filter dropdown
+- [x] Build lightweight SVG sparkline component for table rows
+- [x] Build Keywords page (TanStack Table, server-side paginated)
+- [x] Build KeywordDetailPanel (slide-over, shadcn charts)
+- [x] Build Pages page (TanStack Table, server-side paginated, decay status)
+- [x] Build PageDetailPanel (slide-over)
+- [x] Wire "Focus →" on task list → sets ImpactWindowPicker + scrolls to chart
+- [x] Wire URL click in pages table → opens correlation with ?url= param
+- [x] Write SWR hooks for analytics + correlation
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] No auto-calculated impact %  anywhere in correlation code
-- [ ] ImpactSummaryPanel shows correct delta when date range selected
-- [ ] "Focus →" on task pre-fills date range from task.completedAt to today
-- [ ] URL filter on correlation chart updates both chart data and summary panel
-- [ ] Task annotations only show `affectsWebsite=true` tasks
-- [ ] Keywords table server-side paginated (50/page), sorts + filters correctly
-- [ ] Pages table server-side paginated (50/page), shows decay status 🟢🟡🔴
-- [ ] Cross-source insight uses "gap detected" framing, not "bot traffic"
-- [ ] GA4 source filter updates insight dynamically
-- [ ] KPI cards period-over-period % correct
-- [ ] Analytics queries complete in < 2s with indexes in place
-- [ ] Sparklines in table rows render without page performance regression
+- [x] No auto-calculated impact %  anywhere in correlation code
+- [x] ImpactSummaryPanel shows correct delta when date range selected
+- [x] "Focus →" on task pre-fills date range from task.completedAt to today
+- [x] URL filter on correlation chart updates both chart data and summary panel
+- [x] Task annotations only show `affectsWebsite=true` tasks
+- [x] Keywords table server-side paginated (50/page), sorts + filters correctly
+- [x] Pages table server-side paginated (50/page), shows decay status 🟢🟡🔴
+- [x] Cross-source insight uses "gap detected" framing, not "bot traffic"
+- [x] GA4 source filter updates insight dynamically
+- [x] KPI cards period-over-period % correct
+- [x] Analytics queries complete in < 2s with indexes in place
+- [x] Sparklines in table rows render without page performance regression

@@ -73,3 +73,9 @@ Two separate OAuth flows — GSC and GA4 use **different redirect URIs**:
 | Cron | GitHub Actions (`.github/workflows/cron-sync.yml`) | Active |
 
 See `./docs/deployment-guide.md` for full deployment steps.
+
+## Git Push
+
+- Remote: `https://github.com/ntcong248820-gif/task-management.git`
+- Credential: handled by `gh auth git-credential` — account `ntcong248820-gif` must be active (`gh auth status`).
+- If push fails with "could not read Username": run `git config --local --unset credential.helper` then retry.

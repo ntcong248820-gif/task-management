@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [{"source": "web_app", "target": "auth_config_package", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/lib/auth-client.ts", "source_location": null, "weight": 1.0}], "hyperedges": []}

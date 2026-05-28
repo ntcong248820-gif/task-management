@@ -1,0 +1,1 @@
+{"nodes": [{"id": "hono_vercel_adapter", "label": "hono/vercel adapter", "file_type": "code", "source_file": "apps/web/src/app/api/[[...route]]/route.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

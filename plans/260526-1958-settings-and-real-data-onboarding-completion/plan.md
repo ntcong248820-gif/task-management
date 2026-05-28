@@ -26,7 +26,7 @@ Non-goals: no Better Auth Google social login, no email invite delivery unless a
 |-------|------|--------|
 | 1 | [Context & Contracts](./phase-01-context-contracts.md) | Complete |
 | 2 | [Projects Settings](./phase-02-projects-settings.md) | Complete |
-| 3 | [Integrations Onboarding](./phase-03-integrations-onboarding.md) | Pending |
+| 3 | [Integrations Onboarding](./phase-03-integrations-onboarding.md) | Complete |
 | 4 | [Team Settings](./phase-04-team-settings.md) | Pending |
 | 5 | [Cron & Real Data Verification](./phase-05-cron-real-data-verification.md) | Pending |
 | 6 | [Docs Tests & Handoff](./phase-06-docs-tests-handoff.md) | Pending |

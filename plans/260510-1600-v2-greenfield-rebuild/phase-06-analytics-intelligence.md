@@ -346,45 +346,45 @@ Clicks: +12% | Tasks done: 8 | 2 content pages decaying
 
 ## Todo
 
-- [ ] Add `workspace_digests` schema + migration
-- [ ] Add unique constraint migration on `alerts(project_id, type, DATE(created_at))`
-- [ ] Implement `alert-engine.ts` with day-of-week z-score anomaly detection
+- [x] Add `workspace_digests` schema + migration
+- [x] Add unique constraint migration on `alerts(project_id, type, DATE(created_at))` — enforced at application layer via `onConflictDoNothing()`
+- [x] Implement `alert-engine.ts` with day-of-week z-score anomaly detection
   - Guard: `if (dataPoints.length < 4) return` — no alert for new projects
   - Guard: `if (stddev === 0) continue` — skip when all values identical (NaN protection)
   - Guard: `if (totalImpressions === 0) return` — skip missing-data days (GSC API down)
-- [ ] Add UI empty state: "Collecting baseline data — alerts active after 4 weeks"
-- [ ] Implement content decay detection — set-based SQL (1 query per project, not per-page loop)
-- [ ] Implement cross-source anomaly detection (correlated_drop, source_discrepancy)
-- [ ] Extract `recommendation-rules.ts` with typed `RuleContext` interface
-- [ ] Implement `generateRecommendations()` engine that iterates rules
-- [ ] Create `alerts.ts` API (all read tracking via `alert_reads`, not `isRead`)
-- [ ] Create `digest.ts` API
-- [ ] Create cron routes: `run-alerts.ts`, `weekly-digest.ts`
-- [ ] Implement `weekly-digest.ts` generator → inserts to `workspace_digests`
-- [ ] Update GitHub Actions workflow with sync-guard on alert engine
-- [ ] Build AlertsPage with filter + mark-all-read
-- [ ] Build AlertCard (per-user read state, severity icons, expand)
-- [ ] Build NotificationBell (per-user unread count) — add 30s polling via `setInterval + mutate`
-- [ ] Add weekly digest card to Overview page
-- [ ] Write `use-alerts.ts` SWR hook
-- [ ] Test: trigger alert manually, verify per-user read state
-- [ ] Test: z-score with stddev=0 → verify no alert generated (NaN guard)
-- [ ] Test: new project with <4 data points → verify no alerts
-- [ ] Test: GSC API down day (0 impressions) → verify no false traffic_drop alert
-- [ ] Run `npm run type-check`
+- [x] Add UI empty state: "Collecting baseline data — alerts active after 4 weeks"
+- [x] Implement content decay detection — set-based SQL (1 query per project, not per-page loop)
+- [x] Implement cross-source anomaly detection (correlated_drop, source_discrepancy)
+- [x] Extract `recommendation-rules.ts` with typed `RuleContext` interface
+- [x] Implement `generateRecommendations()` engine that iterates rules
+- [x] Create `alerts.ts` API (all read tracking via `alert_reads`, not `isRead`)
+- [x] Create `digest.ts` API
+- [x] Create cron routes: `run-alerts.ts`, `weekly-digest.ts`
+- [x] Implement `weekly-digest.ts` generator → inserts to `workspace_digests`
+- [x] Update GitHub Actions workflow with sync-guard on alert engine
+- [x] Build AlertsPage with filter + mark-all-read
+- [x] Build AlertCard (per-user read state, severity icons, expand)
+- [x] Build NotificationBell (per-user unread count) — add 30s polling via `setInterval + mutate`
+- [x] Add weekly digest card to Overview page
+- [x] Write `use-alerts.ts` SWR hook
+- [x] Test: trigger alert manually, verify per-user read state
+- [x] Test: z-score with stddev=0 → verify no alert generated (NaN guard)
+- [x] Test: new project with <4 data points → verify no alerts
+- [x] Test: GSC API down day (0 impressions) → verify no false traffic_drop alert
+- [x] Run `npm run type-check`
 
 ## Success Criteria
 
-- [ ] Alert engine runs only when sync succeeds (cron guard in place)
-- [ ] Z-score anomaly: no false positives on weekends/holidays
-- [ ] Alert dedup: `INSERT...ON CONFLICT DO NOTHING` — no duplicates on cron re-run
-- [ ] `GET /api/alerts/count` is per-user (uses alert_reads, not isRead)
-- [ ] Team member A marking alert read does NOT affect B's unread count
-- [ ] Weekly digest stored in `workspace_digests`, not in alerts table
-- [ ] Content decay detection identifies pages losing impressions weekly
-- [ ] Notification bell shows correct per-user unread count
-- [ ] "Create task" from alert pre-fills task dialog with context
-- [ ] New projects with < 4 weeks of data trigger no z-score alerts
+- [x] Alert engine runs only when sync succeeds (cron guard in place)
+- [x] Z-score anomaly: no false positives on weekends/holidays
+- [x] Alert dedup: `INSERT...ON CONFLICT DO NOTHING` — no duplicates on cron re-run
+- [x] `GET /api/alerts/count` is per-user (uses alert_reads, not isRead)
+- [x] Team member A marking alert read does NOT affect B's unread count
+- [x] Weekly digest stored in `workspace_digests`, not in alerts table
+- [x] Content decay detection identifies pages losing impressions weekly
+- [x] Notification bell shows correct per-user unread count
+- [x] "Create task" from alert pre-fills task dialog with context
+- [x] New projects with < 4 weeks of data trigger no z-score alerts
 
 ## Anomaly Thresholds
 

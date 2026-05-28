@@ -83,6 +83,14 @@ Hono standalone (port 3001, optional)
 - Task detail UI can assign goal and sprint; sprint cards deep-link into `/dashboard/tasks?view=board&sprintId=...`.
 - Metric progress remains deferred to analytics phases; current Phase 05 progress is task-count based.
 
+**Key Change (Phase 07):** Deep-dive analytics dashboards with honest correlation analysis.
+- `/api/analytics/*` routes serve KPIs, keyword details, page details with decay status.
+- `/api/correlation/*` redesigned: no auto-calculated impact %; users select custom date ranges.
+- Analytics pages at `/dashboard/analytics/*` provide keyword/URL deep dive with TanStack Tables, SWR hooks for data fetching.
+- Correlation section integrates interactive date range picker + impact summary (honest framing: user selects range, not algorithm).
+- GA4 source filter for cross-source insights (organic-only GSC vs all-traffic GA4 requires filtering).
+- Components: KPI cards (period-over-period %), traffic trend chart (dual-axis GSC+GA4), top movers (↑↓ arrows), correlation chart with task annotations, decay status badges (🟢🟡🔴), sparklines in table rows.
+
 ## Database Schema (Key Tables)
 
 | Table | Purpose |
@@ -98,9 +106,9 @@ Hono standalone (port 3001, optional)
 | `workspace_digests` | Weekly SEO digest per workspace; `UNIQUE(workspaceId, weekStart)` |
 | `gsc_connections` | Encrypted GSC tokens, site URL, permission level, sync status |
 | `ga4_connections` | Encrypted GA4 tokens, property metadata, sync status |
-| `gsc_data` | Raw GSC rows with UUID `project_id`; no direct workspace column |
+| `gsc_data` | Raw GSC rows with UUID `project_id`; no direct workspace column; Phase 07 indexes: (project_id, query, date DESC), (project_id, page, date DESC) |
 | `gsc_data_aggregated` | Daily aggregated GSC metrics with numeric CTR/position |
-| `ga4_data` | GA4 sessions, users, engagement rate, conversions, source/medium/device data |
+| `ga4_data` | GA4 sessions, users, engagement rate, conversions, source/medium/device data; Phase 07 index: (project_id, session_source, date DESC) |
 
 Better Auth adds its own managed tables for user, session, account, verification, organization, member, and invitation data.
 

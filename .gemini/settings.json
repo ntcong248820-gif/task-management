@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "supabase-task-management": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=hipvuijrwcmdoeirtswf"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "/opt/homebrew/bin/npx",
+      "args": ["-y", "chrome-devtools-mcp"]
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db, gscConnections, ga4Connections, eq, and } from '@repo/db';
+import { logger } from '../../utils/logger';
 
 type AppVariables = {
     userId: string;
@@ -44,7 +45,7 @@ app.get('/status', async (c) => {
                     connected: true,
                     lastSync: gscConnection.lastSyncedAt ?? gscConnection.createdAt,
                     scopes: [],
-                    email: gscConnection.accountEmail,
+                    accountEmail: gscConnection.accountEmail,
                     syncStatus: gscConnection.syncStatus,
                     syncError: gscConnection.syncError,
                 } : {
@@ -54,7 +55,7 @@ app.get('/status', async (c) => {
                     connected: true,
                     lastSync: ga4Connection.lastSyncedAt ?? ga4Connection.createdAt,
                     scopes: [],
-                    email: ga4Connection.accountEmail,
+                    accountEmail: ga4Connection.accountEmail,
                     syncStatus: ga4Connection.syncStatus,
                     syncError: ga4Connection.syncError,
                 } : {
@@ -63,7 +64,7 @@ app.get('/status', async (c) => {
             },
         });
     } catch (error) {
-        console.error('Get integration status error:', error);
+        logger.error('Get integration status error', error);
         return c.json({ success: false, error: 'Failed to get integration status' }, 500);
     }
 });
@@ -100,7 +101,7 @@ app.delete('/:provider/disconnect', async (c) => {
             message: `${provider.toUpperCase()} disconnected successfully`,
         });
     } catch (error) {
-        console.error('Disconnect integration error:', error);
+        logger.error('Disconnect integration error', error);
         return c.json({ success: false, error: 'Failed to disconnect integration' }, 500);
     }
 });
