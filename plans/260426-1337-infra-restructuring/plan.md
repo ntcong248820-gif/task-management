@@ -1,7 +1,7 @@
 ---
 title: "Infrastructure Restructuring"
 description: "Migrate Hono API into Next.js, consolidate to single Vercel deployment, fix 20 infra issues"
-status: in-progress
+status: completed
 priority: P1
 effort: 8h
 branch: main
@@ -24,11 +24,11 @@ Eliminate Render cold starts, consolidate to single Vercel deployment, fix 20 au
 
 | # | Phase | Status | Effort | Fixes |
 |---|-------|--------|--------|-------|
-| 01 | [Vercel + Turborepo monorepo config](./phase-01-vercel-monorepo-config.md) | pending | 1h | #1, #12, #13, #16, #17 |
+| 01 | [Vercel + Turborepo monorepo config](./phase-01-vercel-monorepo-config.md) | complete | 1h | #1, #12, #13, #16, #17 |
 | 02 | [Hono into Next.js Route Handlers](./phase-02-hono-into-nextjs.md) | complete | 3h | #3, #7, #14, #18, #19 |
 | 03 | [Vercel Cron migration](./phase-03-cron-migration.md) | complete | 1.5h | #2 |
 | 04 | [Env centralization + OAuth fixes](./phase-04-env-centralization.md) | complete | 1.5h | #4, #5, #8, #9, #17 |
-| 05 | [Cleanup (Render, Docker, orphan dirs)](./phase-05-cleanup.md) | in-progress (all immediate tasks done, waiting ~May 14 cron validation soak) | 1h | #6, #10, #11, #15, #20 |
+| 05 | [Cleanup (Render, Docker, orphan dirs)](./phase-05-cleanup.md) | complete | 1h | #6, #10, #11, #15, #20 |
 
 ## Dependency Graph
 ```
@@ -58,7 +58,7 @@ Eliminate Render cold starts, consolidate to single Vercel deployment, fix 20 au
 - [x] All `/api/*` routes work from web frontend (no CORS errors)
 - [x] Daily cron `/api/cron/sync-gsc` fires at 02:00 ICT (logs visible in GitHub Actions)
 - [x] Render service paused with no traffic loss
-- [ ] All 20 audit issues marked closed (pending phase 01 completion)
+- [x] All 20 audit issues marked closed (all phases complete; Vercel deployment active since 2026-04-26)
 
 ## Unresolved Questions
 1. Phase 01 (Vercel monorepo config) — status unclear (pending). Blocks phase completion. Need to verify vercel.json + turbo.json config.
