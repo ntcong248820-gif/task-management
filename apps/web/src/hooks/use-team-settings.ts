@@ -23,7 +23,10 @@ export interface WorkspaceMember {
 async function fetchMembers(organizationId: string): Promise<WorkspaceMember[]> {
   const result = await authClient.organization.listMembers({ query: { organizationId } })
   if (result.error) throw new Error(result.error.message ?? "Failed to fetch members")
-  return (result.data ?? []) as unknown as WorkspaceMember[]
+  // listMembers returns { members: WorkspaceMember[], total: number } — extract the array
+  const raw = result.data as unknown as { members: WorkspaceMember[] } | WorkspaceMember[] | null
+  if (!raw) return []
+  return (Array.isArray(raw) ? raw : raw.members) as WorkspaceMember[]
 }
 
 export function useTeamSettings() {

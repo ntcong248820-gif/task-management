@@ -12,12 +12,9 @@ interface IntegrationStatus {
   syncError?: string | null
 }
 
-interface IntegrationStatusResponse {
-  success: boolean
-  data: {
-    gsc: IntegrationStatus
-    ga4: IntegrationStatus
-  }
+interface IntegrationStatusData {
+  gsc: IntegrationStatus
+  ga4: IntegrationStatus
 }
 
 interface Site {
@@ -33,13 +30,14 @@ interface Property {
 
 export function useIntegrationStatus(projectId: string | null) {
   const key = projectId ? getApiUrl(`/api/integrations/status?projectId=${projectId}`) : null
-  const { data, error, isLoading, mutate } = useSWR<IntegrationStatusResponse>(
+  // fetcher already strips json.data — SWR receives { gsc, ga4 } directly
+  const { data, error, isLoading, mutate } = useSWR<IntegrationStatusData>(
     key,
     fetcher,
     { revalidateOnFocus: false }
   )
   return {
-    status: data?.data,
+    status: data,
     loading: isLoading,
     error,
     mutate,

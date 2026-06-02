@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
 import { auth } from '@repo/auth-config';
-import { db, ga4Connections, ga4Data, eq, sql, and } from '@repo/db';
+import { db, ga4Connections, ga4Data, projects, eq, sql, and } from '@repo/db';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
@@ -214,7 +214,19 @@ app.get('/callback', async (c) => {
 
         const client = new GA4Client(tokens.access_token, tokens.refresh_token);
         const properties = await client.listProperties();
-        const selectedProperty = properties[0] ?? { propertyId: '', propertyName: null };
+
+        // Pick property by matching project domain in property name, then first
+        const [projectRow] = await db
+            .select({ domain: projects.domain })
+            .from(projects)
+            .where(eq(projects.id, stateData.projectId))
+            .limit(1);
+        const projectDomain = projectRow?.domain ?? '';
+        const domainMatch = projectDomain
+            ? properties.find((p) => p.propertyName?.toLowerCase().includes(projectDomain.toLowerCase()))
+            : null;
+        const selectedProperty = domainMatch ?? properties[0] ?? { propertyId: '', propertyName: null };
+
         const existingConnection = await findProjectConnection(stateData.projectId, stateData.workspaceId, selectedProperty.propertyId);
 
         const connectionData = {

@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { google } from 'googleapis';
 import type { Auth } from 'googleapis';
 import { auth } from '@repo/auth-config';
-import { db, gscConnections, gscData, gscDataAggregated, eq, sql, and } from '@repo/db';
+import { db, gscConnections, gscData, gscDataAggregated, projects, eq, sql, and } from '@repo/db';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
@@ -233,7 +233,21 @@ app.get('/callback', async (c) => {
 
         const client = new GSCClient(tokens.access_token, tokens.refresh_token);
         const sites = await client.listSites();
-        const selectedSite = sites.find((site: any) => site.siteUrl?.startsWith('sc-domain:')) || sites[0];
+
+        // Pick site by matching project domain, then prefer sc-domain: property, then first
+        const [projectRow] = await db
+            .select({ domain: projects.domain })
+            .from(projects)
+            .where(eq(projects.id, stateData.projectId))
+            .limit(1);
+        const projectDomain = projectRow?.domain ?? '';
+        const domainMatch = projectDomain
+            ? sites.find((s: any) => s.siteUrl?.includes(projectDomain))
+            : null;
+        const selectedSite = domainMatch
+            || sites.find((site: any) => site.siteUrl?.startsWith('sc-domain:'))
+            || sites[0];
+
         const existingConnection = await findProjectConnection(stateData.projectId, stateData.workspaceId);
 
         const connectionData = {
