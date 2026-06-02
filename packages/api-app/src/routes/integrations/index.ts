@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { db, gscConnections, ga4Connections, eq, and } from '@repo/db';
+import { db, gscConnections, ga4Connections, eq, and, desc } from '@repo/db';
 import { logger } from '../../utils/logger';
 
 type AppVariables = {
@@ -30,12 +30,14 @@ app.get('/status', async (c) => {
             .select()
             .from(gscConnections)
             .where(and(eq(gscConnections.projectId, projectId), eq(gscConnections.workspaceId, workspaceId)))
+            .orderBy(desc(gscConnections.updatedAt))
             .limit(1);
 
         const [ga4Connection] = await db
             .select()
             .from(ga4Connections)
             .where(and(eq(ga4Connections.projectId, projectId), eq(ga4Connections.workspaceId, workspaceId)))
+            .orderBy(desc(ga4Connections.updatedAt))
             .limit(1);
 
         return c.json({

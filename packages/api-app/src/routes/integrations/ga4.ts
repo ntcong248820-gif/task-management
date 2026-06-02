@@ -421,9 +421,10 @@ app.post('/sync', async (c) => {
             totalInserted += rows.length;
         }
 
+        // Update propertyId to reflect which property was actually synced
         await db
             .update(ga4Connections)
-            .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+            .set({ propertyId, lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
             .where(eq(ga4Connections.id, tokenRecord.id));
 
         return c.json({
@@ -434,7 +435,21 @@ app.post('/sync', async (c) => {
         });
     } catch (syncError: any) {
         log.error('GA4 sync error', syncError);
-        return c.json({ success: false, error: 'Failed to sync GA4 data' }, 500);
+        // Update connection sync status to error so UI reflects the failure
+        try {
+            const { projectId, propertyId } = await c.req.json().catch(() => ({})) as any;
+            if (projectId && isUuid(projectId)) {
+                const workspaceId = c.get('workspaceId');
+                const conn = await findProjectConnection(projectId, workspaceId, propertyId)
+                    ?? await findProjectConnection(projectId, workspaceId);
+                if (conn) {
+                    await db.update(ga4Connections)
+                        .set({ syncStatus: 'error', syncError: syncError.message ?? 'Sync failed', updatedAt: new Date() })
+                        .where(eq(ga4Connections.id, conn.id));
+                }
+            }
+        } catch (_) { /* best-effort */ }
+        return c.json({ success: false, error: syncError.message ?? 'Failed to sync GA4 data' }, 500);
     }
 });
 

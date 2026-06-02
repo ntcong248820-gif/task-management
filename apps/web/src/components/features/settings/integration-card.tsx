@@ -72,10 +72,6 @@ export function IntegrationCard({
     setSuccessMsg(null)
     setIsSyncing(true)
     try {
-      // Save the selection first
-      await mutations.discoverResources(provider, projectId, true)
-
-      // Then sync
       const result = await mutations.sync(provider, projectId, resourceId, selectedDays)
       setSuccessMsg(`Synced ${result.rowsSynced} rows (${result.dateRange.start} to ${result.dateRange.end})`)
       onResourceSelect?.(resourceId)
