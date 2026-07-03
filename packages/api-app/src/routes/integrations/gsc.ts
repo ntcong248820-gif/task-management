@@ -305,53 +305,8 @@ app.get('/sites', async (c) => {
         const client = new GSCClient(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
         const sites = await client.listSites();
 
-        if (save === 'true' && sites.length > 0) {
-            const existingConnections = await db
-                .select()
-                .from(gscConnections)
-                .where(and(
-                    eq(gscConnections.projectId, projectId),
-                    eq(gscConnections.workspaceId, workspaceId)
-                ));
-
-            const existingByUrl = new Map(
-                existingConnections.map((conn) => [conn.siteUrl, conn])
-            );
-
-            const commonData = {
-                workspaceId,
-                authorizedByUserId: c.get('userId'),
-                accountEmail: tokenRecord.accountEmail,
-                accessToken: tokenRecord.accessToken,
-                refreshToken: tokenRecord.refreshToken,
-                tokenExpiresAt: tokenRecord.tokenExpiresAt,
-                syncStatus: 'idle' as const,
-                syncError: null,
-                updatedAt: new Date(),
-            };
-
-            for (const site of sites) {
-                if (!site.siteUrl) continue;
-                const existing = existingByUrl.get(site.siteUrl);
-
-                const connectionData = {
-                    ...commonData,
-                    siteUrl: site.siteUrl,
-                    permissionLevel: site.permissionLevel || null,
-                };
-
-                if (existing) {
-                    await db
-                        .update(gscConnections)
-                        .set(connectionData)
-                        .where(eq(gscConnections.id, existing.id));
-                } else {
-                    await db.insert(gscConnections).values({
-                        projectId,
-                        ...connectionData,
-                    });
-                }
-            }
+        if (save === 'true') {
+            return c.json({ success: false, error: 'Bulk saving discovered GSC sites is disabled. Select and sync one site instead.' }, 400);
         }
 
         return c.json({
@@ -361,7 +316,7 @@ app.get('/sites', async (c) => {
                     siteUrl: site.siteUrl,
                     permissionLevel: site.permissionLevel,
                 })),
-                saved: save === 'true',
+                saved: false,
             },
         });
     } catch (siteError: any) {

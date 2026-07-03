@@ -3,6 +3,7 @@ import { app } from '@repo/api-app';
 
 // Node.js runtime required — route handlers use googleapis, drizzle-postgres (not Edge-compatible)
 export const runtime = 'nodejs';
+export const preferredRegion = 'sin1';
 
 export const GET = handle(app);
 export const POST = handle(app);

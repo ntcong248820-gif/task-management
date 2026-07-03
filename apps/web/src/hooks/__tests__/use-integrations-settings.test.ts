@@ -7,9 +7,9 @@ function buildAuthorizeUrl(provider: 'gsc' | 'ga4', projectId: string): string {
   return `/api/integrations/${provider}/authorize?projectId=${projectId}`;
 }
 
-function buildDiscoverUrl(provider: 'gsc' | 'ga4', projectId: string, save: boolean = false): string {
+function buildDiscoverUrl(provider: 'gsc' | 'ga4', projectId: string): string {
   const resource = provider === 'gsc' ? 'sites' : 'properties';
-  return `/api/integrations/${provider}/${resource}?projectId=${projectId}${save ? '&save=true' : ''}`;
+  return `/api/integrations/${provider}/${resource}?projectId=${projectId}`;
 }
 
 function buildSyncBody(
@@ -42,21 +42,9 @@ describe('useIntegrationMutations — URL construction', () => {
     );
   });
 
-  it('builds GSC sites discover URL with save=true', () => {
-    expect(buildDiscoverUrl('gsc', 'proj-1', true)).toBe(
-      '/api/integrations/gsc/sites?projectId=proj-1&save=true'
-    );
-  });
-
   it('builds GA4 properties discover URL without save flag', () => {
     expect(buildDiscoverUrl('ga4', 'proj-1')).toBe(
       '/api/integrations/ga4/properties?projectId=proj-1'
-    );
-  });
-
-  it('builds GA4 properties discover URL with save=true', () => {
-    expect(buildDiscoverUrl('ga4', 'proj-1', true)).toBe(
-      '/api/integrations/ga4/properties?projectId=proj-1&save=true'
     );
   });
 });

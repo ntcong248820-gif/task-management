@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { DashboardShell } from "./dashboard-shell"
 
 export const runtime = "nodejs"
+export const preferredRegion = "sin1"
 
 export default async function DashboardLayout({
   children,

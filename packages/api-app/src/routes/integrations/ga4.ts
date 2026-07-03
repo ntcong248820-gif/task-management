@@ -284,60 +284,15 @@ app.get('/properties', async (c) => {
         const client = new GA4Client(validAccessToken, decryptTokenValue(tokenRecord.refreshToken));
         const properties = await client.listProperties();
 
-        if (save === 'true' && properties.length > 0) {
-            const existingConnections = await db
-                .select()
-                .from(ga4Connections)
-                .where(and(
-                    eq(ga4Connections.projectId, projectId),
-                    eq(ga4Connections.workspaceId, workspaceId)
-                ));
-
-            const existingById = new Map(
-                existingConnections.map((conn) => [conn.propertyId, conn])
-            );
-
-            const commonData = {
-                workspaceId,
-                authorizedByUserId: c.get('userId'),
-                accountEmail: tokenRecord.accountEmail,
-                accessToken: tokenRecord.accessToken,
-                refreshToken: tokenRecord.refreshToken,
-                tokenExpiresAt: tokenRecord.tokenExpiresAt,
-                syncStatus: 'idle' as const,
-                syncError: null,
-                updatedAt: new Date(),
-            };
-
-            for (const property of properties) {
-                if (!property.propertyId) continue;
-                const existing = existingById.get(property.propertyId);
-
-                const connectionData = {
-                    ...commonData,
-                    propertyId: property.propertyId,
-                    propertyName: property.propertyName,
-                };
-
-                if (existing) {
-                    await db
-                        .update(ga4Connections)
-                        .set(connectionData)
-                        .where(eq(ga4Connections.id, existing.id));
-                } else {
-                    await db.insert(ga4Connections).values({
-                        projectId,
-                        ...connectionData,
-                    });
-                }
-            }
+        if (save === 'true') {
+            return c.json({ success: false, error: 'Bulk saving discovered GA4 properties is disabled. Select and sync one property instead.' }, 400);
         }
 
         return c.json({
             success: true,
             data: {
                 properties,
-                saved: save === 'true',
+                saved: false,
             },
         });
     } catch (propertyError: any) {

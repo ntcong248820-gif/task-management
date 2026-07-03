@@ -45,9 +45,11 @@ app.get('/status', async (c) => {
             data: {
                 gsc: gscConnection ? {
                     connected: true,
-                    lastSync: gscConnection.lastSyncedAt ?? gscConnection.createdAt,
+                    lastSync: gscConnection.lastSyncedAt,
                     scopes: [],
                     accountEmail: gscConnection.accountEmail,
+                    siteUrl: gscConnection.siteUrl,
+                    permissionLevel: gscConnection.permissionLevel,
                     syncStatus: gscConnection.syncStatus,
                     syncError: gscConnection.syncError,
                 } : {
@@ -55,9 +57,12 @@ app.get('/status', async (c) => {
                 },
                 ga4: ga4Connection ? {
                     connected: true,
-                    lastSync: ga4Connection.lastSyncedAt ?? ga4Connection.createdAt,
+                    lastSync: ga4Connection.lastSyncedAt,
                     scopes: [],
                     accountEmail: ga4Connection.accountEmail,
+                    propertyId: ga4Connection.propertyId,
+                    propertyName: ga4Connection.propertyName,
+                    measurementId: ga4Connection.measurementId,
                     syncStatus: ga4Connection.syncStatus,
                     syncError: ga4Connection.syncError,
                 } : {

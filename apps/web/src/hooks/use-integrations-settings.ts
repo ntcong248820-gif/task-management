@@ -7,7 +7,12 @@ import { getApiUrl } from "@/lib/config"
 interface IntegrationStatus {
   connected: boolean
   accountEmail?: string
-  lastSync?: string
+  lastSync?: string | null
+  siteUrl?: string
+  permissionLevel?: string | null
+  propertyId?: string
+  propertyName?: string | null
+  measurementId?: string | null
   syncStatus?: string
   syncError?: string | null
 }
@@ -59,10 +64,9 @@ export function useIntegrationMutations() {
 
   async function discoverResources(
     provider: "gsc" | "ga4",
-    projectId: string,
-    save: boolean = false
+    projectId: string
   ): Promise<{ sites?: Site[]; properties?: Property[] }> {
-    const endpoint = `/api/integrations/${provider}/${provider === "gsc" ? "sites" : "properties"}?projectId=${projectId}${save ? "&save=true" : ""}`
+    const endpoint = `/api/integrations/${provider}/${provider === "gsc" ? "sites" : "properties"}?projectId=${projectId}`
     const res = await fetch(getApiUrl(endpoint), {
       credentials: "include",
     })

@@ -32,6 +32,11 @@ export function IntegrationCard({
   const providerName = provider === "gsc" ? "Google Search Console" : "Google Analytics 4"
   const isConnected = provider === "gsc" ? status?.gsc.connected : status?.ga4.connected
   const integration = provider === "gsc" ? status?.gsc : status?.ga4
+  const currentResource = selectedResource ?? (
+    provider === "gsc"
+      ? integration?.siteUrl
+      : integration?.propertyName || integration?.propertyId
+  )
 
   const handleAuthorize = async () => {
     if (!projectId) {
@@ -143,15 +148,21 @@ export function IntegrationCard({
               </div>
             </div>
 
-            {provider === "gsc" && selectedResource && (
-              <div className="text-sm">
-                <p className="text-gray-600">Site: <span className="font-medium">{selectedResource}</span></p>
+            {provider === "gsc" && (
+              <div className="rounded-md border bg-gray-50 p-3 text-sm">
+                <p className="text-gray-600">Site: <span className="font-medium">{currentResource || "Not selected"}</span></p>
+                {integration?.permissionLevel && (
+                  <p className="mt-1 text-xs text-gray-500">Permission: {integration.permissionLevel}</p>
+                )}
               </div>
             )}
 
-            {provider === "ga4" && selectedResource && (
-              <div className="text-sm">
-                <p className="text-gray-600">Property: <span className="font-medium">{selectedResource}</span></p>
+            {provider === "ga4" && (
+              <div className="rounded-md border bg-gray-50 p-3 text-sm">
+                <p className="text-gray-600">Property: <span className="font-medium">{currentResource || "Not selected"}</span></p>
+                {integration?.propertyId && (
+                  <p className="mt-1 text-xs text-gray-500">ID: {integration.propertyId}</p>
+                )}
               </div>
             )}
 

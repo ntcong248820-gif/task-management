@@ -7,6 +7,14 @@ const log = logger.child('Correlation');
 
 type AppVariables = { workspaceId: string };
 const app = new Hono<{ Variables: AppVariables }>();
+const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseDateOnly(value: string): Date | null {
+    if (!dateOnlyPattern.test(value)) return null;
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(parsed.getTime())) return null;
+    return parsed.toISOString().split('T')[0] === value ? parsed : null;
+}
 
 /**
  * GET /api/correlation?projectId=X&days=90&url=X (optional)
@@ -158,16 +166,23 @@ app.get('/impact-window', async (c) => {
         if (!projectId || !from || !to) {
             return c.json({ success: false, error: 'projectId, from, and to are required' }, 400);
         }
+        const fromDate = parseDateOnly(from);
+        const toDate = parseDateOnly(to);
+        if (!fromDate || !toDate) {
+            return c.json({ success: false, error: 'from and to must be valid YYYY-MM-DD dates' }, 400);
+        }
+        if (fromDate > toDate) {
+            return c.json({ success: false, error: 'from must be before or equal to to' }, 400);
+        }
+
         const access = await requireProjectInWorkspace(projectId, c.get('workspaceId'));
         if (!access.ok) return c.json({ success: false, error: access.error }, access.status);
 
         const decodedUrl = url ? decodeURIComponent(url) : null;
-        const fromDate = new Date(from);
-        const toDate = new Date(to);
-        const rangeDays = Math.ceil((toDate.getTime() - fromDate.getTime()) / 86400000);
+        const rangeDays = Math.floor((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
 
         const priorTo = new Date(fromDate.getTime() - 86400000);
-        const priorFrom = new Date(priorTo.getTime() - rangeDays * 86400000);
+        const priorFrom = new Date(priorTo.getTime() - (rangeDays - 1) * 86400000);
 
         const priorFromStr = priorFrom.toISOString().split('T')[0];
         const priorToStr = priorTo.toISOString().split('T')[0];
