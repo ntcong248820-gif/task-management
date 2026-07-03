@@ -156,7 +156,8 @@ In production (Vercel), Better Auth email/password is handled by `apps/web/src/a
 - Weekly digest: Monday mornings via `/api/cron/weekly-digest` (Phase 06)
 - Triggered by `.github/workflows/cron-sync.yml`
 - Requires `CRON_SECRET` env var (Bearer token auth)
-- Response includes `{ synced: number, errors: string[] }` for monitoring
+- Response includes `{ synced: number, errors: string[] }` for monitoring; sync routes return non-2xx when business errors are present.
+- GitHub Actions fails on non-empty sync `errors`; alert and digest jobs run only after upstream sync/alert steps succeed.
 - `last_synced_at` updated on success; errors surfaced in response
 
 **Local Development:**

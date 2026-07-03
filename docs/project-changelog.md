@@ -1,5 +1,22 @@
 # Project Changelog
 
+## 2026-07-03
+
+### Fixed
+- Pinned DB-backed Vercel Node route segments to `sin1` to align runtime with Singapore Supabase.
+- Changed GSC/GA4 cron routes to return failure when sync jobs produce business errors.
+- Updated GitHub Actions cron workflow to fail on `ok=false` or non-empty `errors`, and to skip alerts/digest after failed sync.
+- Extended integration status with selected GSC site/permission and GA4 property metadata.
+- Removed frontend `save=true` discovery usage and disabled backend bulk-save discovery path.
+- Added server-side date validation for `/api/correlation/impact-window`.
+
+### Validation
+- `npm run type-check` -> pass
+- `npm run lint` -> pass
+- `npm --workspace @seo-impact-os/web run test` -> 44/44 pass
+- `npm run build` -> blocked without required local env vars; pass with placeholder required env
+- `npm run test` -> web pass, API task tests blocked by local DB schema missing `tasks.target_url`
+
 ## 2026-05-28
 
 ### Added
