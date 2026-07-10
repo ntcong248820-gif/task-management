@@ -66,7 +66,7 @@ class GSCClient {
         while (true) {
             const batch = await this.fetchSearchAnalytics({ ...options, rowLimit, startRow });
             if (batch.length === 0) break;
-            allData.push(...batch);
+            for (const row of batch) allData.push(row);
             if (batch.length < rowLimit) break;
             startRow += rowLimit;
             pageNumber++;
@@ -110,7 +110,7 @@ class GSCClient {
                 startDate: chunk.startDate,
                 endDate: chunk.endDate,
             });
-            allData.push(...chunkData);
+            for (const row of chunkData) allData.push(row);
         }
 
         return allData;

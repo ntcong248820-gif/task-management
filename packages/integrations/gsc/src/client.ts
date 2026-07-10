@@ -152,7 +152,7 @@ export class GSCClient {
                 break;
             }
 
-            allData.push(...batch);
+            for (const row of batch) allData.push(row);
             console.log(`[GSC Client] Page ${pageNumber}: ${batch.length} rows (Total: ${allData.length})`);
 
             // If we got fewer rows than the limit, we've reached the end
@@ -236,7 +236,7 @@ export class GSCClient {
                     endDate: chunk.endDate,
                 });
 
-                allData.push(...chunkData);
+                for (const row of chunkData) allData.push(row);
                 console.log(`[GSC Client] Chunk ${i + 1} complete: ${chunkData.length} rows (Total: ${allData.length})`);
             } catch (error: any) {
                 console.error(`[GSC Client] Error fetching chunk ${i + 1}:`, error.message);

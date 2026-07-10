@@ -116,7 +116,7 @@ class GSCClient {
 
             if (batch.length === 0) break;
 
-            allData.push(...batch);
+            for (const row of batch) allData.push(row);
 
             if (batch.length < rowLimit) break;
 
