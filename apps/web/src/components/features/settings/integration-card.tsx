@@ -189,6 +189,22 @@ export function IntegrationCard({
             <div className="space-y-2 border-t pt-3">
               {!showResourcePicker ? (
                 <div className="space-y-2">
+                  {currentResource && (
+                    <Button
+                      onClick={() => handleSelectAndSync(currentResource)}
+                      className="w-full"
+                      disabled={isSyncing}
+                    >
+                      {isSyncing ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Syncing...
+                        </>
+                      ) : (
+                        "Sync Now"
+                      )}
+                    </Button>
+                  )}
                   <Button
                     onClick={handleDiscoverAndSync}
                     variant="outline"
