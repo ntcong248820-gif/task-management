@@ -113,9 +113,9 @@ Hono standalone (port 3001, optional)
 | `workspace_digests` | Weekly SEO digest per workspace; `UNIQUE(workspaceId, weekStart)` |
 | `gsc_connections` | Encrypted GSC tokens, site URL, permission level, sync status |
 | `ga4_connections` | Encrypted GA4 tokens, property metadata, sync status |
-| `gsc_data` | Raw GSC rows with UUID `project_id`; no direct workspace column; Phase 07 indexes: (project_id, query, date DESC), (project_id, page, date DESC) |
+| `gsc_data` | Raw GSC rows with UUID `project_id`; no direct workspace column; nullable `site_url` provenance column (Data Trust Phase 2), `NULL` = legacy/unprovenanced row; unique index includes `site_url`; Phase 07 indexes: (project_id, query, date DESC), (project_id, page, date DESC) |
 | `gsc_data_aggregated` | Daily aggregated GSC metrics with numeric CTR/position |
-| `ga4_data` | GA4 sessions, users, engagement rate, conversions, source/medium/device data; Phase 07 index: (project_id, session_source, date DESC) |
+| `ga4_data` | GA4 sessions, users, engagement rate, conversions, source/medium/device data; nullable `property_id` provenance column (Data Trust Phase 2), `NULL` = legacy/unprovenanced row; unique index includes `property_id`; Phase 07 index: (project_id, session_source, date DESC) |
 
 Better Auth adds its own managed tables for user, session, account, verification, organization, member, and invitation data.
 

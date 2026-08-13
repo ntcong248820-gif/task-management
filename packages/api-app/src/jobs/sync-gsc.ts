@@ -198,6 +198,7 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                         query: row.query,
                         country: row.country,
                         device: row.device,
+                        siteUrl,
                         clicks: row.clicks,
                         impressions: row.impressions,
                         ctr: row.ctr.toString(),
@@ -210,6 +211,7 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                         .onConflictDoUpdate({
                             target: [
                                 gscData.projectId,
+                                gscData.siteUrl,
                                 gscData.date,
                                 gscData.page,
                                 gscData.query,

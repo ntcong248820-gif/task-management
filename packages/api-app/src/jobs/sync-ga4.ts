@@ -179,6 +179,7 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                         source: row.source,
                         medium: row.medium,
                         deviceCategory: row.deviceCategory,
+                        propertyId,
                     }));
 
                     await db
@@ -187,6 +188,7 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                         .onConflictDoUpdate({
                             target: [
                                 ga4Data.projectId,
+                                ga4Data.propertyId,
                                 ga4Data.date,
                                 ga4Data.source,
                                 ga4Data.medium,

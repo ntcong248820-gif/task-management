@@ -18,11 +18,13 @@ export const ga4Data = pgTable('ga4_data', {
   source: varchar('source', { length: 255 }).notNull().default('(direct)'),
   medium: varchar('medium', { length: 100 }).notNull().default('(none)'),
   deviceCategory: varchar('device_category', { length: 50 }).notNull().default('desktop'),
+  propertyId: varchar('property_id', { length: 100 }),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  uniqueEntry: uniqueIndex('ga4_data_unique_idx').on(
+  uniqueEntry: uniqueIndex('ga4_data_unique_v2_idx').on(
     table.projectId,
+    table.propertyId,
     table.date,
     table.source,
     table.medium,

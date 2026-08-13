@@ -356,10 +356,11 @@ app.post('/sync', async (c) => {
                 source: row.source,
                 medium: row.medium,
                 deviceCategory: row.deviceCategory,
+                propertyId,
             }));
 
             await db.insert(ga4Data).values(rows).onConflictDoUpdate({
-                target: [ga4Data.projectId, ga4Data.date, ga4Data.source, ga4Data.medium, ga4Data.deviceCategory],
+                target: [ga4Data.projectId, ga4Data.propertyId, ga4Data.date, ga4Data.source, ga4Data.medium, ga4Data.deviceCategory],
                 set: {
                     sessions: sql`EXCLUDED.sessions`,
                     users: sql`EXCLUDED.users`,

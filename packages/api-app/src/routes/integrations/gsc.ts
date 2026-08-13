@@ -375,6 +375,7 @@ app.post('/sync', async (c) => {
                 query: row.query,
                 country: row.country,
                 device: row.device,
+                siteUrl,
                 clicks: row.clicks,
                 impressions: row.impressions,
                 ctr: row.ctr.toString(),
@@ -382,7 +383,7 @@ app.post('/sync', async (c) => {
             }));
 
             await db.insert(gscData).values(rows).onConflictDoUpdate({
-                target: [gscData.projectId, gscData.date, gscData.page, gscData.query, gscData.country, gscData.device],
+                target: [gscData.projectId, gscData.siteUrl, gscData.date, gscData.page, gscData.query, gscData.country, gscData.device],
                 set: {
                     clicks: sql`EXCLUDED.clicks`,
                     impressions: sql`EXCLUDED.impressions`,

@@ -11,6 +11,7 @@ export const gscData = pgTable('gsc_data', {
   query: varchar('query', { length: 500 }).notNull(),
   country: varchar('country', { length: 10 }).notNull().default('all'),
   device: varchar('device', { length: 20 }).notNull().default('all'),
+  siteUrl: varchar('site_url', { length: 500 }),
   clicks: integer('clicks').notNull().default(0),
   impressions: integer('impressions').notNull().default(0),
   ctr: numeric('ctr', { precision: 5, scale: 4 }).notNull().default('0'),
@@ -18,8 +19,9 @@ export const gscData = pgTable('gsc_data', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }, (table) => ({
-  uniqueEntry: uniqueIndex('gsc_data_unique_idx').on(
+  uniqueEntry: uniqueIndex('gsc_data_unique_v2_idx').on(
     table.projectId,
+    table.siteUrl,
     table.date,
     table.page,
     table.query,

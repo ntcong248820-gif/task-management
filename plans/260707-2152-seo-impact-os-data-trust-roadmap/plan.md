@@ -1,7 +1,7 @@
 ---
 title: "SEO Impact OS Data Trust and Operator Roadmap"
 description: "Make SEO Impact OS trustworthy for analytics and task management before adding more SEO market features."
-status: pending
+status: in-progress
 priority: P1
 effort: "12-16d"
 branch: "main"
@@ -88,7 +88,7 @@ Implement the post-debugger roadmap from the July 2026 reports. The goal is not 
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | [Production Truth Check](./phase-01-production-truth-check.md) | Pass w/ Concerns (F1 region + OAuth verify blocked) |
-| 2 | [Data Provenance Schema](./phase-02-data-provenance-schema.md) | Pending |
+| 2 | [Data Provenance Schema](./phase-02-data-provenance-schema.md) | Completed (2026-08-13) |
 | 3 | [Sync Health Source Management](./phase-03-sync-health-source-management.md) | Pending |
 | 4 | [Analytics Freshness UI](./phase-04-analytics-freshness-ui.md) | Pending |
 | 5 | [Alert To Task Workflow](./phase-05-alert-to-task-workflow.md) | Pending |
