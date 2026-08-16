@@ -6,6 +6,7 @@ import { db, gscConnections, gscData, gscDataAggregated, projects, eq, sql, and 
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
+import { isInvalidGrantError } from '../../utils/integration-health';
 import { createSignedOAuthState, verifySignedOAuthState } from '../../utils/signed-oauth-state';
 import { isUuid, projectBelongsToWorkspace } from '../../utils/project-access';
 
@@ -136,6 +137,7 @@ async function findProjectConnection(projectId: string, workspaceId: string, sit
     const conditions = [
         eq(gscConnections.projectId, projectId),
         eq(gscConnections.workspaceId, workspaceId),
+        eq(gscConnections.isActive, true),
     ];
 
     if (siteUrl) conditions.push(eq(gscConnections.siteUrl, siteUrl));
@@ -144,6 +146,20 @@ async function findProjectConnection(projectId: string, workspaceId: string, sit
         .select()
         .from(gscConnections)
         .where(and(...conditions))
+        .limit(1);
+
+    return connection ?? null;
+}
+
+async function findConnectionBySite(projectId: string, workspaceId: string, siteUrl: string) {
+    const [connection] = await db
+        .select()
+        .from(gscConnections)
+        .where(and(
+            eq(gscConnections.projectId, projectId),
+            eq(gscConnections.workspaceId, workspaceId),
+            eq(gscConnections.siteUrl, siteUrl)
+        ))
         .limit(1);
 
     return connection ?? null;
@@ -248,33 +264,46 @@ app.get('/callback', async (c) => {
             || sites.find((site: any) => site.siteUrl?.startsWith('sc-domain:'))
             || sites[0];
 
-        const existingConnection = await findProjectConnection(stateData.projectId, stateData.workspaceId);
+        const resolvedSiteUrl = selectedSite?.siteUrl || '';
+        const existingResourceConnection = await findConnectionBySite(stateData.projectId, stateData.workspaceId, resolvedSiteUrl);
 
         const connectionData = {
             workspaceId: stateData.workspaceId,
             authorizedByUserId: stateData.userId,
             accountEmail,
-            siteUrl: selectedSite?.siteUrl || '',
+            siteUrl: resolvedSiteUrl,
             permissionLevel: selectedSite?.permissionLevel || null,
             accessToken: encryptToken(tokens.access_token),
             refreshToken: encryptToken(tokens.refresh_token),
             tokenExpiresAt: new Date(tokens.expiry_date ?? Date.now() + 3600_000),
+            isActive: true,
             syncStatus: 'idle' as const,
             syncError: null,
             updatedAt: new Date(),
         };
 
-        if (existingConnection) {
+        if (existingResourceConnection) {
             await db
                 .update(gscConnections)
                 .set(connectionData)
-                .where(eq(gscConnections.id, existingConnection.id));
+                .where(eq(gscConnections.id, existingResourceConnection.id));
         } else {
             await db.insert(gscConnections).values({
                 projectId: stateData.projectId,
                 ...connectionData,
             });
         }
+
+        // Only one active GSC source per project: deactivate any other active rows.
+        await db
+            .update(gscConnections)
+            .set({ isActive: false, updatedAt: new Date() })
+            .where(and(
+                eq(gscConnections.projectId, stateData.projectId),
+                eq(gscConnections.workspaceId, stateData.workspaceId),
+                eq(gscConnections.isActive, true),
+                sql`${gscConnections.siteUrl} != ${resolvedSiteUrl}`
+            ));
 
         return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?success=gsc_connected`);
     } catch (callbackError) {
@@ -326,8 +355,9 @@ app.get('/sites', async (c) => {
 });
 
 app.post('/sync', async (c) => {
+    const startedAt = Date.now();
     try {
-        const { projectId, siteUrl, days: rawDays = 30 } = await c.req.json();
+        const { projectId, siteUrl, days: rawDays = 30, confirmSourceChange = false } = await c.req.json();
 
         if (!projectId || !isUuid(projectId) || !siteUrl) {
             return c.json({ success: false, error: 'Valid projectId and siteUrl are required' }, 400);
@@ -337,17 +367,31 @@ app.post('/sync', async (c) => {
         if (!(await projectBelongsToWorkspace(projectId, workspaceId))) {
             return c.json({ success: false, error: 'Project not found' }, 404);
         }
-        const tokenRecord = await findProjectConnection(projectId, workspaceId, siteUrl)
-            ?? await findProjectConnection(projectId, workspaceId);
+        const tokenRecord = await findProjectConnection(projectId, workspaceId);
 
         if (!tokenRecord) {
             return c.json({ success: false, error: 'GSC not connected' }, 404);
         }
 
+        const isSourceChange = Boolean(tokenRecord.siteUrl) && tokenRecord.siteUrl !== siteUrl;
+        if (isSourceChange && !confirmSourceChange) {
+            return c.json({
+                success: false,
+                error: 'source_change_confirmation_required',
+                requiresConfirmation: true,
+                data: { currentSource: tokenRecord.siteUrl, newSource: siteUrl },
+            }, 409);
+        }
+
         await db
             .update(gscConnections)
-            .set({ syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
+            .set({ lastAttemptedAt: new Date(), syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
             .where(eq(gscConnections.id, tokenRecord.id));
+
+        if (isSourceChange && confirmSourceChange) {
+            await db.delete(gscData).where(eq(gscData.projectId, projectId));
+            await db.delete(gscDataAggregated).where(eq(gscDataAggregated.projectId, projectId));
+        }
 
         const days = Math.min(Math.max(parseInt(String(rawDays)) || 30, 1), 365);
         const validAccessToken = await getValidAccessToken(tokenRecord, 'gsc');
@@ -426,10 +470,18 @@ app.post('/sync', async (c) => {
             });
         }
 
-        // Update siteUrl to reflect which site was actually synced
+        // siteUrl already matches tokenRecord unless a confirmed source change happened above
         await db
             .update(gscConnections)
-            .set({ siteUrl, lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+            .set({
+                siteUrl,
+                lastSyncedAt: new Date(),
+                lastRowsSynced: totalInserted,
+                lastDurationMs: Date.now() - startedAt,
+                syncStatus: 'idle',
+                syncError: null,
+                updatedAt: new Date(),
+            })
             .where(eq(gscConnections.id, tokenRecord.id));
 
         return c.json({
@@ -447,8 +499,15 @@ app.post('/sync', async (c) => {
                 const conn = await findProjectConnection(projectId, workspaceId, siteUrl)
                     ?? await findProjectConnection(projectId, workspaceId);
                 if (conn) {
+                    const errorMessage = syncError.message ?? 'Sync failed';
                     await db.update(gscConnections)
-                        .set({ syncStatus: 'error', syncError: syncError.message ?? 'Sync failed', updatedAt: new Date() })
+                        .set({
+                            syncStatus: 'error',
+                            syncError: isInvalidGrantError(syncError) ? 'invalid_grant: Google authorization revoked or expired' : errorMessage,
+                            lastRowsSynced: 0,
+                            lastDurationMs: Date.now() - startedAt,
+                            updatedAt: new Date(),
+                        })
                         .where(eq(gscConnections.id, conn.id));
                 }
             }

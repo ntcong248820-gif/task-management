@@ -5,6 +5,7 @@ import { db, ga4Connections, ga4Data, eq, sql } from '@repo/db';
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
+import { isInvalidGrantError } from '../utils/integration-health';
 
 const log = logger.child('GA4-Cron');
 
@@ -116,10 +117,11 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
     const result = { synced: 0, errors: [] as string[] };
 
     try {
-        // Get all GA4 connections
+        // Get all active GA4 connections
         const connections = await db
             .select()
-            .from(ga4Connections);
+            .from(ga4Connections)
+            .where(eq(ga4Connections.isActive, true));
 
         log.info(`Found ${connections.length} GA4 connections`);
 
@@ -129,8 +131,14 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
         const dateStr = yesterday.toISOString().split('T')[0];
 
         for (const connection of connections) {
+            const startedAt = Date.now();
             try {
                 log.info(`Syncing project ${connection.projectId}...`);
+
+                await db
+                    .update(ga4Connections)
+                    .set({ lastAttemptedAt: new Date(), syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
+                    .where(eq(ga4Connections.id, connection.id));
 
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection, 'ga4');
@@ -142,6 +150,10 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                 if (!propertyId) {
                     result.errors.push(`connection ${connection.id}: no propertyId`);
                     log.error(`No propertyId configured for connection ${connection.id}. Skipping.`);
+                    await db
+                        .update(ga4Connections)
+                        .set({ syncStatus: 'error', syncError: 'no propertyId configured', lastRowsSynced: 0, lastDurationMs: Date.now() - startedAt, updatedAt: new Date() })
+                        .where(eq(ga4Connections.id, connection.id));
                     continue;
                 }
 
@@ -156,6 +168,10 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                 if (data.length === 0) {
                     result.errors.push(`project ${connection.projectId}: no data for ${dateStr}`);
                     log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
+                    await db
+                        .update(ga4Connections)
+                        .set({ lastSyncedAt: new Date(), lastRowsSynced: 0, lastDurationMs: Date.now() - startedAt, syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                        .where(eq(ga4Connections.id, connection.id));
                     continue;
                 }
 
@@ -213,7 +229,14 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
                 // Always update lastSyncedAt on success
                 await db
                     .update(ga4Connections)
-                    .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                    .set({
+                        lastSyncedAt: new Date(),
+                        lastRowsSynced: totalInserted,
+                        lastDurationMs: Date.now() - startedAt,
+                        syncStatus: 'idle',
+                        syncError: null,
+                        updatedAt: new Date(),
+                    })
                     .where(eq(ga4Connections.id, connection.id));
 
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
@@ -222,7 +245,13 @@ export const runGA4Sync = async (): Promise<{ synced: number; errors: string[] }
             } catch (error: any) {
                 await db
                     .update(ga4Connections)
-                    .set({ syncStatus: 'error', syncError: error.message, updatedAt: new Date() })
+                    .set({
+                        syncStatus: 'error',
+                        syncError: isInvalidGrantError(error) ? 'invalid_grant: Google authorization revoked or expired' : error.message,
+                        lastRowsSynced: 0,
+                        lastDurationMs: Date.now() - startedAt,
+                        updatedAt: new Date(),
+                    })
                     .where(eq(ga4Connections.id, connection.id));
                 result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);

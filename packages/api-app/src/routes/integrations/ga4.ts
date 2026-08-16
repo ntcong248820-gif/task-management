@@ -6,6 +6,7 @@ import { db, ga4Connections, ga4Data, projects, eq, sql, and } from '@repo/db';
 import { getValidAccessToken } from '../../utils/token-refresh';
 import { encryptToken, decryptTokenValue } from '../../utils/crypto-tokens';
 import { logger } from '../../utils/logger';
+import { isInvalidGrantError } from '../../utils/integration-health';
 import { createSignedOAuthState, verifySignedOAuthState } from '../../utils/signed-oauth-state';
 import { isUuid, projectBelongsToWorkspace } from '../../utils/project-access';
 
@@ -117,6 +118,7 @@ async function findProjectConnection(projectId: string, workspaceId: string, pro
     const conditions = [
         eq(ga4Connections.projectId, projectId),
         eq(ga4Connections.workspaceId, workspaceId),
+        eq(ga4Connections.isActive, true),
     ];
 
     if (propertyId) conditions.push(eq(ga4Connections.propertyId, propertyId));
@@ -125,6 +127,20 @@ async function findProjectConnection(projectId: string, workspaceId: string, pro
         .select()
         .from(ga4Connections)
         .where(and(...conditions))
+        .limit(1);
+
+    return connection ?? null;
+}
+
+async function findConnectionByProperty(projectId: string, workspaceId: string, propertyId: string) {
+    const [connection] = await db
+        .select()
+        .from(ga4Connections)
+        .where(and(
+            eq(ga4Connections.projectId, projectId),
+            eq(ga4Connections.workspaceId, workspaceId),
+            eq(ga4Connections.propertyId, propertyId)
+        ))
         .limit(1);
 
     return connection ?? null;
@@ -227,7 +243,7 @@ app.get('/callback', async (c) => {
             : null;
         const selectedProperty = domainMatch ?? properties[0] ?? { propertyId: '', propertyName: null };
 
-        const existingConnection = await findProjectConnection(stateData.projectId, stateData.workspaceId, selectedProperty.propertyId);
+        const existingResourceConnection = await findConnectionByProperty(stateData.projectId, stateData.workspaceId, selectedProperty.propertyId);
 
         const connectionData = {
             workspaceId: stateData.workspaceId,
@@ -238,22 +254,34 @@ app.get('/callback', async (c) => {
             accessToken: encryptToken(tokens.access_token),
             refreshToken: encryptToken(tokens.refresh_token),
             tokenExpiresAt: new Date(tokens.expiry_date ?? Date.now() + 3600_000),
+            isActive: true,
             syncStatus: 'idle' as const,
             syncError: null,
             updatedAt: new Date(),
         };
 
-        if (existingConnection) {
+        if (existingResourceConnection) {
             await db
                 .update(ga4Connections)
                 .set(connectionData)
-                .where(eq(ga4Connections.id, existingConnection.id));
+                .where(eq(ga4Connections.id, existingResourceConnection.id));
         } else {
             await db.insert(ga4Connections).values({
                 projectId: stateData.projectId,
                 ...connectionData,
             });
         }
+
+        // Only one active GA4 source per project: deactivate any other active rows.
+        await db
+            .update(ga4Connections)
+            .set({ isActive: false, updatedAt: new Date() })
+            .where(and(
+                eq(ga4Connections.projectId, stateData.projectId),
+                eq(ga4Connections.workspaceId, stateData.workspaceId),
+                eq(ga4Connections.isActive, true),
+                sql`${ga4Connections.propertyId} != ${selectedProperty.propertyId}`
+            ));
 
         return c.redirect(`${getFrontendUrl()}/dashboard/settings/integrations?success=ga4_connected`);
     } catch (callbackError) {
@@ -302,8 +330,9 @@ app.get('/properties', async (c) => {
 });
 
 app.post('/sync', async (c) => {
+    const startedAt = Date.now();
     try {
-        const { projectId, propertyId, days: rawDays = 30 } = await c.req.json();
+        const { projectId, propertyId, days: rawDays = 30, confirmSourceChange = false } = await c.req.json();
 
         if (!projectId || !isUuid(projectId) || !propertyId) {
             return c.json({ success: false, error: 'Valid projectId and propertyId are required' }, 400);
@@ -313,17 +342,30 @@ app.post('/sync', async (c) => {
         if (!(await projectBelongsToWorkspace(projectId, workspaceId))) {
             return c.json({ success: false, error: 'Project not found' }, 404);
         }
-        const tokenRecord = await findProjectConnection(projectId, workspaceId, propertyId)
-            ?? await findProjectConnection(projectId, workspaceId);
+        const tokenRecord = await findProjectConnection(projectId, workspaceId);
 
         if (!tokenRecord) {
             return c.json({ success: false, error: 'GA4 not connected' }, 404);
         }
 
+        const isSourceChange = Boolean(tokenRecord.propertyId) && tokenRecord.propertyId !== propertyId;
+        if (isSourceChange && !confirmSourceChange) {
+            return c.json({
+                success: false,
+                error: 'source_change_confirmation_required',
+                requiresConfirmation: true,
+                data: { currentSource: tokenRecord.propertyId, newSource: propertyId },
+            }, 409);
+        }
+
         await db
             .update(ga4Connections)
-            .set({ syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
+            .set({ lastAttemptedAt: new Date(), syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
             .where(eq(ga4Connections.id, tokenRecord.id));
+
+        if (isSourceChange && confirmSourceChange) {
+            await db.delete(ga4Data).where(eq(ga4Data.projectId, projectId));
+        }
 
         const days = Math.min(Math.max(parseInt(String(rawDays)) || 30, 1), 365);
         const validAccessToken = await getValidAccessToken(tokenRecord, 'ga4');
@@ -377,10 +419,18 @@ app.post('/sync', async (c) => {
             totalInserted += rows.length;
         }
 
-        // Update propertyId to reflect which property was actually synced
+        // propertyId already matches tokenRecord unless a confirmed source change happened above
         await db
             .update(ga4Connections)
-            .set({ propertyId, lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+            .set({
+                propertyId,
+                lastSyncedAt: new Date(),
+                lastRowsSynced: totalInserted,
+                lastDurationMs: Date.now() - startedAt,
+                syncStatus: 'idle',
+                syncError: null,
+                updatedAt: new Date(),
+            })
             .where(eq(ga4Connections.id, tokenRecord.id));
 
         return c.json({
@@ -399,8 +449,15 @@ app.post('/sync', async (c) => {
                 const conn = await findProjectConnection(projectId, workspaceId, propertyId)
                     ?? await findProjectConnection(projectId, workspaceId);
                 if (conn) {
+                    const errorMessage = syncError.message ?? 'Sync failed';
                     await db.update(ga4Connections)
-                        .set({ syncStatus: 'error', syncError: syncError.message ?? 'Sync failed', updatedAt: new Date() })
+                        .set({
+                            syncStatus: 'error',
+                            syncError: isInvalidGrantError(syncError) ? 'invalid_grant: Google authorization revoked or expired' : errorMessage,
+                            lastRowsSynced: 0,
+                            lastDurationMs: Date.now() - startedAt,
+                            updatedAt: new Date(),
+                        })
                         .where(eq(ga4Connections.id, conn.id));
                 }
             }

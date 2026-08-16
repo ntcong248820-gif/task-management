@@ -5,6 +5,7 @@ import { db, gscConnections, gscData, gscDataAggregated, projects, eq, sql } fro
 import { getValidAccessToken } from '../utils/token-refresh';
 import { decryptTokenValue } from '../utils/crypto-tokens';
 import { logger } from '../utils/logger';
+import { isInvalidGrantError } from '../utils/integration-health';
 
 const log = logger.child('GSC-Cron');
 
@@ -142,10 +143,11 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
     const result = { synced: 0, errors: [] as string[] };
 
     try {
-        // Get all GSC connections
+        // Get all active GSC connections
         const connections = await db
             .select()
-            .from(gscConnections);
+            .from(gscConnections)
+            .where(eq(gscConnections.isActive, true));
 
         log.info(`Found ${connections.length} GSC connections`);
 
@@ -155,8 +157,14 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
         const dateStr = syncDate.toISOString().split('T')[0];
 
         for (const connection of connections) {
+            const startedAt = Date.now();
             try {
                 log.info(`Syncing project ${connection.projectId}...`);
+
+                await db
+                    .update(gscConnections)
+                    .set({ lastAttemptedAt: new Date(), syncStatus: 'syncing', syncError: null, updatedAt: new Date() })
+                    .where(eq(gscConnections.id, connection.id));
 
                 // Get valid access token (auto-refresh if expired)
                 const validAccessToken = await getValidAccessToken(connection, 'gsc');
@@ -168,6 +176,10 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                 if (!siteUrl) {
                     result.errors.push(`connection ${connection.id}: no siteUrl`);
                     log.error(`No siteUrl configured for connection ${connection.id}. Skipping.`);
+                    await db
+                        .update(gscConnections)
+                        .set({ syncStatus: 'error', syncError: 'no siteUrl configured', lastRowsSynced: 0, lastDurationMs: Date.now() - startedAt, updatedAt: new Date() })
+                        .where(eq(gscConnections.id, connection.id));
                     continue;
                 }
 
@@ -182,6 +194,10 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                 if (data.length === 0) {
                     result.errors.push(`project ${connection.projectId}: no data for ${dateStr}`);
                     log.warn(`No data available for project ${connection.projectId} on ${dateStr}`);
+                    await db
+                        .update(gscConnections)
+                        .set({ lastSyncedAt: new Date(), lastRowsSynced: 0, lastDurationMs: Date.now() - startedAt, syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                        .where(eq(gscConnections.id, connection.id));
                     continue;
                 }
 
@@ -266,7 +282,14 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
                 // Always update lastSyncedAt on success
                 await db
                     .update(gscConnections)
-                    .set({ lastSyncedAt: new Date(), syncStatus: 'idle', syncError: null, updatedAt: new Date() })
+                    .set({
+                        lastSyncedAt: new Date(),
+                        lastRowsSynced: totalInserted,
+                        lastDurationMs: Date.now() - startedAt,
+                        syncStatus: 'idle',
+                        syncError: null,
+                        updatedAt: new Date(),
+                    })
                     .where(eq(gscConnections.id, connection.id));
 
                 log.info(`Synced ${totalInserted} rows for project ${connection.projectId}`);
@@ -275,7 +298,13 @@ export const runGSCSync = async (): Promise<{ synced: number; errors: string[] }
             } catch (error: any) {
                 await db
                     .update(gscConnections)
-                    .set({ syncStatus: 'error', syncError: error.message, updatedAt: new Date() })
+                    .set({
+                        syncStatus: 'error',
+                        syncError: isInvalidGrantError(error) ? 'invalid_grant: Google authorization revoked or expired' : error.message,
+                        lastRowsSynced: 0,
+                        lastDurationMs: Date.now() - startedAt,
+                        updatedAt: new Date(),
+                    })
                     .where(eq(gscConnections.id, connection.id));
                 result.errors.push(`project ${connection.projectId}: ${error.message}`);
                 log.error(`Error syncing project ${connection.projectId}:`, error);

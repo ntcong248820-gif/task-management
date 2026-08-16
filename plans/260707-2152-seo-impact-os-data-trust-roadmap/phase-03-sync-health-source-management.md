@@ -1,7 +1,7 @@
 ---
 phase: 3
 title: "Sync Health Source Management"
-status: pending
+status: completed
 priority: P1
 effort: "2-3d"
 dependencies: [1, 2]
@@ -108,24 +108,24 @@ Source switch policy:
 
 ## Todo List
 
-- [ ] Connection health migration.
-- [ ] Active-source migration/backfill.
-- [ ] Cron and manual sync update health fields.
-- [ ] Status endpoint returns derived health.
-- [ ] UI shows health states.
-- [ ] Source change requires confirmation.
-- [ ] Source change deletes old provider analytics data.
-- [ ] Tests cover `invalid_grant -> needs_reconnect`.
-- [ ] `lastRowsSynced` is real row count from provider write path.
+- [x] Connection health migration.
+- [x] Active-source migration/backfill.
+- [x] Cron and manual sync update health fields.
+- [x] Status endpoint returns derived health.
+- [x] UI shows health states.
+- [x] Source change requires confirmation.
+- [x] Source change deletes old provider analytics data.
+- [x] Tests cover `invalid_grant -> needs_reconnect`.
+- [x] `lastRowsSynced` is real row count from provider write path.
 
 ## Success Criteria
 
-- [ ] Exactly one active GSC source and one active GA4 source per project.
-- [ ] Settings card makes stale/error/reconnect visible without reading logs.
-- [ ] Cron green cannot hide provider errors.
-- [ ] User can change source intentionally.
-- [ ] After source change, reports only use freshly synced active-source rows.
-- [ ] Tests pass.
+- [x] Exactly one active GSC source and one active GA4 source per project.
+- [x] Settings card makes stale/error/reconnect visible without reading logs.
+- [x] Cron green cannot hide provider errors.
+- [x] User can change source intentionally.
+- [x] After source change, reports only use freshly synced active-source rows.
+- [x] Tests pass.
 
 ## Risk Assessment
 

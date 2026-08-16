@@ -65,24 +65,24 @@ No schema changes. Use existing production deployment, GitHub Actions workflow, 
 
 ## Todo List
 
-- [x] Verify deployment contains `preferredRegion='sin1'`. — present in route.ts; but live compute = iad1 (CONCERN, F1 ineffective on current Vercel plan).
+- [x] Verify deployment contains `preferredRegion='sin1'`. — present in route.ts; but live compute = iad1 (CONCERN, F1 ineffective on current Vercel plan). Verified 2026-07-10.
 - [ ] Reconnect GSC in production. — BLOCKED: Google device/passkey + Testing-mode consent.
 - [ ] Reconnect GA4 in production. — BLOCKED: same OAuth blocker.
 - [ ] Run manual GSC sync and record rows. — BLOCKED on reconnect.
 - [ ] Run manual GA4 sync and record rows. — BLOCKED on reconnect.
 - [ ] Trigger GitHub Actions workflow manually. — BLOCKED: needs Actions dispatch + prod CRON_SECRET/APP_URL. Logic verified statically.
-- [x] Verify sync business errors fail workflow. — cron-sync.yml exits 1 on body.errors>0 / ok:false.
-- [x] Verify no alert/digest after failed sync. — run-alerts needs [sync-gsc,sync-ga4] no if:always(); digest needs run-alerts.
+- [x] Verify sync business errors fail workflow. — cron-sync.yml exits 1 on body.errors>0 / ok:false. Verified 2026-07-10.
+- [x] Verify no alert/digest after failed sync. — run-alerts needs [sync-gsc,sync-ga4] no if:always(); digest needs run-alerts. Verified 2026-07-10.
 - [ ] Verify integration status/card source display. — BLOCKED on live connected source.
-- [x] Verify local/test DB schema can run root API tests or document blocker. — type-check 8/8, lint clean, web 44/44; root test deferred (needs tasks.target_url in test DB).
+- [x] Verify local/test DB schema can run root API tests or document blocker. — type-check 8/8, lint clean, web 44/44; root test deferred (needs tasks.target_url in test DB). Verified 2026-07-10.
 
 ## Success Criteria
 
-- [ ] `invalid_grant` gone after reconnect, or blocker documented with exact Google error.
-- [ ] GSC and GA4 sync import > 0 rows for at least one real project, or no-data reason is source-confirmed.
-- [ ] Cron workflow result matches business result, not only HTTP code.
-- [ ] `x-vercel-id` confirms DB-backed runtime is in intended region, or Vercel limitation documented.
-- [ ] Acceptance runbook has exact final state.
+- [ ] `invalid_grant` gone after reconnect, or blocker documented with exact Google error. BLOCKED: passkey + Testing-mode consent (documented 260710-phase-01-production-truth-check.md).
+- [ ] GSC and GA4 sync import > 0 rows for at least one real project, or no-data reason is source-confirmed. BLOCKED: depends on OAuth reconnect.
+- [x] Cron workflow result matches business result, not only HTTP code. Verified 2026-07-10: exits 1 on body.errors>0 or ok:false.
+- [x] `x-vercel-id` confirms DB-backed runtime is in intended region, or Vercel limitation documented. CONCERN 2026-07-10: x-vercel-id shows iad1 (not sin1), preferredRegion ignored on current Vercel plan.
+- [x] Acceptance runbook has exact final state. Verified: `docs/runbooks/phase-01-production-truth-check-acceptance.md` (2026-07-10).
 
 ## Risk Assessment
 

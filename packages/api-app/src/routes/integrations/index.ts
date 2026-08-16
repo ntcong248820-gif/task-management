@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { db, gscConnections, ga4Connections, eq, and, desc } from '@repo/db';
 import { logger } from '../../utils/logger';
+import { deriveHealthState } from '../../utils/integration-health';
 
 type AppVariables = {
     userId: string;
@@ -29,14 +30,22 @@ app.get('/status', async (c) => {
         const [gscConnection] = await db
             .select()
             .from(gscConnections)
-            .where(and(eq(gscConnections.projectId, projectId), eq(gscConnections.workspaceId, workspaceId)))
+            .where(and(
+                eq(gscConnections.projectId, projectId),
+                eq(gscConnections.workspaceId, workspaceId),
+                eq(gscConnections.isActive, true)
+            ))
             .orderBy(desc(gscConnections.updatedAt))
             .limit(1);
 
         const [ga4Connection] = await db
             .select()
             .from(ga4Connections)
-            .where(and(eq(ga4Connections.projectId, projectId), eq(ga4Connections.workspaceId, workspaceId)))
+            .where(and(
+                eq(ga4Connections.projectId, projectId),
+                eq(ga4Connections.workspaceId, workspaceId),
+                eq(ga4Connections.isActive, true)
+            ))
             .orderBy(desc(ga4Connections.updatedAt))
             .limit(1);
 
@@ -45,7 +54,16 @@ app.get('/status', async (c) => {
             data: {
                 gsc: gscConnection ? {
                     connected: true,
+                    isActive: gscConnection.isActive,
+                    lastAttemptedAt: gscConnection.lastAttemptedAt,
                     lastSync: gscConnection.lastSyncedAt,
+                    lastRowsSynced: gscConnection.lastRowsSynced,
+                    healthState: deriveHealthState({
+                        syncStatus: gscConnection.syncStatus,
+                        syncError: gscConnection.syncError,
+                        lastSyncedAt: gscConnection.lastSyncedAt,
+                        lastAttemptedAt: gscConnection.lastAttemptedAt,
+                    }),
                     scopes: [],
                     accountEmail: gscConnection.accountEmail,
                     siteUrl: gscConnection.siteUrl,
@@ -57,7 +75,16 @@ app.get('/status', async (c) => {
                 },
                 ga4: ga4Connection ? {
                     connected: true,
+                    isActive: ga4Connection.isActive,
+                    lastAttemptedAt: ga4Connection.lastAttemptedAt,
                     lastSync: ga4Connection.lastSyncedAt,
+                    lastRowsSynced: ga4Connection.lastRowsSynced,
+                    healthState: deriveHealthState({
+                        syncStatus: ga4Connection.syncStatus,
+                        syncError: ga4Connection.syncError,
+                        lastSyncedAt: ga4Connection.lastSyncedAt,
+                        lastAttemptedAt: ga4Connection.lastAttemptedAt,
+                    }),
                     scopes: [],
                     accountEmail: ga4Connection.accountEmail,
                     propertyId: ga4Connection.propertyId,

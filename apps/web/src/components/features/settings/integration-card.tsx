@@ -3,8 +3,30 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { AlertCircle, CheckCircle, Loader2, LogOut } from "lucide-react"
-import { useIntegrationStatus, useIntegrationMutations } from "@/hooks/use-integrations-settings"
+import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { AlertCircle, CheckCircle, Clock, Loader2, LogOut, RefreshCw, XCircle } from "lucide-react"
+import {
+  useIntegrationStatus,
+  useIntegrationMutations,
+  SourceChangeRequiredError,
+  type IntegrationHealthState,
+} from "@/hooks/use-integrations-settings"
+
+const HEALTH_BADGE: Record<IntegrationHealthState, { label: string; className: string; icon: typeof CheckCircle }> = {
+  healthy: { label: "Healthy", className: "bg-green-50 text-green-700 border-green-200", icon: CheckCircle },
+  syncing: { label: "Syncing", className: "bg-blue-50 text-blue-700 border-blue-200", icon: Loader2 },
+  stale: { label: "Stale", className: "bg-yellow-50 text-yellow-700 border-yellow-200", icon: Clock },
+  needs_reconnect: { label: "Needs reconnect", className: "bg-orange-50 text-orange-700 border-orange-200", icon: RefreshCw },
+  error: { label: "Error", className: "bg-red-50 text-red-700 border-red-200", icon: XCircle },
+}
 
 interface IntegrationCardProps {
   provider: "gsc" | "ga4"
@@ -28,6 +50,11 @@ export function IntegrationCard({
   const [showResourcePicker, setShowResourcePicker] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [pendingSourceChange, setPendingSourceChange] = useState<{
+    resourceId: string
+    currentSource: string | null
+    newSource: string
+  } | null>(null)
 
   const providerName = provider === "gsc" ? "Google Search Console" : "Google Analytics 4"
   const isConnected = provider === "gsc" ? status?.gsc.connected : status?.ga4.connected
@@ -70,20 +97,29 @@ export function IntegrationCard({
     }
   }
 
-  const handleSelectAndSync = async (resourceId: string) => {
+  const handleSelectAndSync = async (resourceId: string, confirmSourceChange: boolean = false) => {
     if (!projectId) return
 
     setError(null)
     setSuccessMsg(null)
     setIsSyncing(true)
     try {
-      const result = await mutations.sync(provider, projectId, resourceId, selectedDays)
+      const result = await mutations.sync(provider, projectId, resourceId, selectedDays, confirmSourceChange)
       setSuccessMsg(`Synced ${result.rowsSynced} rows (${result.dateRange.start} to ${result.dateRange.end})`)
       onResourceSelect?.(resourceId)
       setShowResourcePicker(false)
+      setPendingSourceChange(null)
       await mutate()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not sync data")
+      if (err instanceof SourceChangeRequiredError) {
+        setPendingSourceChange({
+          resourceId,
+          currentSource: err.currentSource,
+          newSource: err.newSource,
+        })
+      } else {
+        setError(err instanceof Error ? err.message : "Could not sync data")
+      }
     } finally {
       setIsSyncing(false)
     }
@@ -107,8 +143,13 @@ export function IntegrationCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          {provider === "gsc" ? "🔍" : "📊"} {providerName}
+        <CardTitle className="flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2">
+            {provider === "gsc" ? "🔍" : "📊"} {providerName}
+          </span>
+          {isConnected && integration?.healthState && (
+            <HealthBadge state={integration.healthState} />
+          )}
         </CardTitle>
         <CardDescription>Connect and manage {providerName} data</CardDescription>
       </CardHeader>
@@ -173,10 +214,18 @@ export function IntegrationCard({
               </div>
             )}
 
-            {integration?.lastSync && integration?.syncStatus !== "syncing" && (
-              <p className="text-xs text-gray-600">
-                Last sync: {new Date(integration.lastSync).toLocaleDateString()}
-              </p>
+            {integration?.syncStatus !== "syncing" && (integration?.lastSync || integration?.lastAttemptedAt) && (
+              <div className="text-xs text-gray-600 space-y-0.5">
+                {integration?.lastSync && (
+                  <p>
+                    Last success: {new Date(integration.lastSync).toLocaleString()}
+                    {typeof integration.lastRowsSynced === "number" && ` — ${integration.lastRowsSynced} rows`}
+                  </p>
+                )}
+                {integration?.lastAttemptedAt && (
+                  <p>Last attempt: {new Date(integration.lastAttemptedAt).toLocaleString()}</p>
+                )}
+              </div>
             )}
 
             {integration?.syncError && (
@@ -288,6 +337,51 @@ export function IntegrationCard({
           </div>
         )}
       </CardContent>
+
+      <Dialog open={pendingSourceChange !== null} onOpenChange={(open) => !open && setPendingSourceChange(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change {provider === "gsc" ? "site" : "property"}?</DialogTitle>
+            <DialogDescription>
+              This project is currently synced from{" "}
+              <span className="font-medium">{pendingSourceChange?.currentSource || "an existing source"}</span>.
+              Switching to <span className="font-medium">{pendingSourceChange?.newSource}</span> will permanently
+              delete all {providerName} data previously synced for this project. Tasks, settings, and other
+              integrations are not affected.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingSourceChange(null)} disabled={isSyncing}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={isSyncing}
+              onClick={() => pendingSourceChange && handleSelectAndSync(pendingSourceChange.resourceId, true)}
+            >
+              {isSyncing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Switching...
+                </>
+              ) : (
+                "Delete old data & switch"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+  )
+}
+
+function HealthBadge({ state }: { state: IntegrationHealthState }) {
+  const config = HEALTH_BADGE[state]
+  const Icon = config.icon
+  return (
+    <Badge variant="outline" className={`gap-1 font-normal ${config.className}`}>
+      <Icon className={`h-3 w-3 ${state === "syncing" ? "animate-spin" : ""}`} />
+      {config.label}
+    </Badge>
   )
 }
