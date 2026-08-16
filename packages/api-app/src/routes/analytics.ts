@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, gscData, gscConnections, ga4Data, gscDataAggregated, tasks, eq, sql, and, gte, lte, desc } from '@repo/db';
+import { db, gscData, gscConnections, ga4Data, gscDataAggregated, tasks, eq, sql, and, gte, lte, desc, isNotNull } from '@repo/db';
 import { logger } from '../utils/logger';
 import { requireProjectInWorkspace } from '../utils/project-access';
 
@@ -115,12 +115,13 @@ app.get('/overview', async (c) => {
                 impressions: sql<number>`SUM(impressions)`,
             })
             .from(gscData)
-            .where(and(eq(gscData.projectId, projectId), gte(gscData.date, start), lte(gscData.date, end)))
+            .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), gte(gscData.date, start), lte(gscData.date, end)))
             .groupBy(gscData.date)
             .orderBy(gscData.date);
 
         const ga4WhereConditions: any[] = [
             eq(ga4Data.projectId, projectId),
+            isNotNull(ga4Data.propertyId),
             gte(ga4Data.date, start),
             lte(ga4Data.date, end),
         ];
@@ -168,6 +169,7 @@ app.get('/overview', async (c) => {
                 SUM(impressions) FILTER (WHERE date >= ${start} AND date <= ${end})::text       AS cur_impressions
             FROM gsc_data
             WHERE project_id = ${projectId}
+              AND site_url IS NOT NULL
               AND date >= ${prevStart} AND date <= ${end}
             GROUP BY query
             HAVING SUM(clicks) FILTER (WHERE date >= ${start} AND date <= ${end}) >= 1
@@ -204,6 +206,7 @@ app.get('/overview', async (c) => {
             .where(and(...ga4WhereConditions));
         const ga4PrevConditions: any[] = [
             eq(ga4Data.projectId, projectId),
+            isNotNull(ga4Data.propertyId),
             gte(ga4Data.date, prevStart),
             lte(ga4Data.date, prevEnd),
         ];
@@ -300,6 +303,7 @@ app.get('/keywords', async (c) => {
             SELECT COUNT(DISTINCT query)::text AS cnt
             FROM gsc_data
             WHERE project_id = ${projectId}
+              AND site_url IS NOT NULL
               AND date >= ${start} AND date <= ${end}
               ${searchFilter}
         `);
@@ -319,6 +323,7 @@ app.get('/keywords', async (c) => {
                 )::text AS pos_change
             FROM gsc_data
             WHERE project_id = ${projectId}
+              AND site_url IS NOT NULL
               AND date >= ${prevStart} AND date <= ${end}
               ${searchFilter}
             GROUP BY query
@@ -381,7 +386,7 @@ app.get('/keywords/:keyword', async (c) => {
                 impressions: sql<number>`SUM(${gscData.impressions})`,
             })
                 .from(gscData)
-                .where(and(eq(gscData.projectId, projectId), eq(gscData.query, keyword), gte(gscData.date, start), lte(gscData.date, end)))
+                .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), eq(gscData.query, keyword), gte(gscData.date, start), lte(gscData.date, end)))
                 .groupBy(gscData.date)
                 .orderBy(gscData.date),
             db.select({
@@ -391,7 +396,7 @@ app.get('/keywords/:keyword', async (c) => {
                 avgPosition: sql<number>`AVG(${gscData.position})`,
             })
                 .from(gscData)
-                .where(and(eq(gscData.projectId, projectId), eq(gscData.query, keyword), gte(gscData.date, start), lte(gscData.date, end)))
+                .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), eq(gscData.query, keyword), gte(gscData.date, start), lte(gscData.date, end)))
                 .groupBy(gscData.page)
                 .orderBy(sql`SUM(${gscData.clicks}) DESC`)
                 .limit(10),
@@ -471,6 +476,7 @@ app.get('/pages', async (c) => {
             SELECT COUNT(DISTINCT page)::text AS cnt
             FROM gsc_data
             WHERE project_id = ${projectId}
+              AND site_url IS NOT NULL
               AND date >= ${start} AND date <= ${end}
               ${searchFilter}
         `);
@@ -503,6 +509,7 @@ app.get('/pages', async (c) => {
                 AVG(ctr)         FILTER (WHERE date >= ${start} AND date <= ${end})::text     AS cur_ctr
             FROM gsc_data
             WHERE project_id = ${projectId}
+              AND site_url IS NOT NULL
               AND date >= ${prevStart} AND date <= ${end}
               ${searchFilter}
             GROUP BY page
@@ -568,7 +575,7 @@ app.get('/pages/detail', async (c) => {
                 position: sql<number>`AVG(${gscData.position})`,
             })
                 .from(gscData)
-                .where(and(eq(gscData.projectId, projectId), eq(gscData.page, decodedUrl), gte(gscData.date, start), lte(gscData.date, end)))
+                .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), eq(gscData.page, decodedUrl), gte(gscData.date, start), lte(gscData.date, end)))
                 .groupBy(gscData.date)
                 .orderBy(gscData.date),
             db.select({
@@ -578,7 +585,7 @@ app.get('/pages/detail', async (c) => {
                 avgPosition: sql<number>`AVG(${gscData.position})`,
             })
                 .from(gscData)
-                .where(and(eq(gscData.projectId, projectId), eq(gscData.page, decodedUrl), gte(gscData.date, start), lte(gscData.date, end)))
+                .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), eq(gscData.page, decodedUrl), gte(gscData.date, start), lte(gscData.date, end)))
                 .groupBy(gscData.query)
                 .orderBy(sql`SUM(${gscData.clicks}) DESC`)
                 .limit(10),

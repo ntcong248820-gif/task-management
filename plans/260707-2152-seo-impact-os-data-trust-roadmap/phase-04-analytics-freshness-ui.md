@@ -1,10 +1,11 @@
 ---
 phase: 4
 title: "Analytics Freshness UI"
-status: pending
+status: completed
 priority: P2
 effort: "2d"
 dependencies: [2, 3]
+completedDate: "2026-08-16"
 ---
 
 # Phase 4: Analytics Freshness UI

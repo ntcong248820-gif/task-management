@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/ui/page-header';
 import { PagesTable } from '@/components/features/analytics/pages-table';
 import { PageDetailPanel } from '@/components/features/analytics/page-detail-panel';
+import { DataSourceBanner } from '@/components/features/analytics/data-source-banner';
 import { useAnalyticsPages } from '@/hooks/use-analytics';
 import { useProjectStore } from '@/stores/use-project-store';
 import { useWorkspaceStore } from '@/stores/use-workspace-store';
@@ -60,7 +61,8 @@ export default function AnalyticsPagesPage() {
         description="URL-level traffic, decay status, and keyword breakdown."
       />
 
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 space-y-6">
+        <DataSourceBanner projectId={projectId} />
         <PagesTable
           pages={data?.pages ?? []}
           total={data?.total ?? 0}

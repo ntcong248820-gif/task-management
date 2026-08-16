@@ -11,6 +11,7 @@ import { CrossSourceInsightCard } from '@/components/features/analytics/cross-so
 import { CorrelationChartV2 } from '@/components/features/analytics/correlation-chart-v2';
 import { ImpactWindowPicker } from '@/components/features/analytics/impact-window-picker';
 import { ImpactSummaryPanel } from '@/components/features/analytics/impact-summary-panel';
+import { DataSourceBanner } from '@/components/features/analytics/data-source-banner';
 import { useAnalyticsOverview } from '@/hooks/use-analytics';
 import { useImpactWindow } from '@/hooks/use-correlation';
 import { useProjectStore } from '@/stores/use-project-store';
@@ -81,6 +82,8 @@ export default function AnalyticsPage() {
       />
 
       <div className="p-4 sm:p-6 space-y-6">
+        <DataSourceBanner projectId={projectId} />
+
         {/* KPI Cards */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

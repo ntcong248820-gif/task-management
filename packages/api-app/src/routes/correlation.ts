@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { db, gscData, ga4Data, tasks, eq, and, gte, lte, sql } from '@repo/db';
+import { db, gscData, ga4Data, tasks, eq, and, gte, lte, sql, isNotNull } from '@repo/db';
 import { logger } from '../utils/logger';
 import { requireProjectInWorkspace } from '../utils/project-access';
 
@@ -37,6 +37,7 @@ app.get('/', async (c) => {
         // GSC daily data (optionally filtered by URL)
         const gscWhere: any[] = [
             eq(gscData.projectId, projectId),
+            isNotNull(gscData.siteUrl),
             gte(gscData.date, start),
             lte(gscData.date, end),
         ];
@@ -60,7 +61,7 @@ app.get('/', async (c) => {
                 sessions: sql<number>`COALESCE(SUM(${ga4Data.sessions}), 0)`,
             })
             .from(ga4Data)
-            .where(and(eq(ga4Data.projectId, projectId), gte(ga4Data.date, start), lte(ga4Data.date, end)))
+            .where(and(eq(ga4Data.projectId, projectId), isNotNull(ga4Data.propertyId), gte(ga4Data.date, start), lte(ga4Data.date, end)))
             .groupBy(ga4Data.date)
             .orderBy(ga4Data.date);
 
@@ -141,7 +142,7 @@ app.get('/urls', async (c) => {
                 clicks: sql<number>`SUM(${gscData.clicks})`,
             })
             .from(gscData)
-            .where(and(eq(gscData.projectId, projectId), gte(gscData.date, cutoff)))
+            .where(and(eq(gscData.projectId, projectId), isNotNull(gscData.siteUrl), gte(gscData.date, cutoff)))
             .groupBy(gscData.page)
             .orderBy(sql`SUM(${gscData.clicks}) DESC`)
             .limit(100);
@@ -190,6 +191,7 @@ app.get('/impact-window', async (c) => {
         const buildWhere = (startStr: string, endStr: string) => {
             const conds: any[] = [
                 eq(gscData.projectId, projectId),
+                isNotNull(gscData.siteUrl),
                 gte(gscData.date, startStr),
                 lte(gscData.date, endStr),
             ];

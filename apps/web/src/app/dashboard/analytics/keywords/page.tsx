@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { PageHeader } from '@/components/ui/page-header';
 import { KeywordsTable } from '@/components/features/analytics/keywords-table';
 import { KeywordDetailPanel } from '@/components/features/analytics/keyword-detail-panel';
+import { DataSourceBanner } from '@/components/features/analytics/data-source-banner';
 import { useAnalyticsKeywords } from '@/hooks/use-analytics';
 import { useProjectStore } from '@/stores/use-project-store';
 import { useWorkspaceStore } from '@/stores/use-workspace-store';
@@ -54,7 +55,8 @@ export default function AnalyticsKeywordsPage() {
         description="Keyword rankings, click trends, and position movement."
       />
 
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 space-y-6">
+        <DataSourceBanner projectId={projectId} />
         <KeywordsTable
           keywords={data?.keywords ?? []}
           total={data?.total ?? 0}
