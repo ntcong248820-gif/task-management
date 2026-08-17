@@ -1,7 +1,13 @@
 import { Hono } from 'hono';
-import { db, alerts, alertReads, eq, and, isNull, sql, desc } from '@repo/db';
+import { db, alerts, alertReads, tasks, eq, and, isNull, sql, desc } from '@repo/db';
 import { logger } from '../utils/logger';
 import { isUuid } from '../utils/project-access';
+
+const SEVERITY_TO_PRIORITY: Record<string, string> = {
+  critical: 'urgent',
+  warning: 'high',
+  info: 'medium',
+};
 
 const log = logger.child('Alerts');
 type AppVariables = { userId: string; workspaceId: string };
@@ -12,9 +18,10 @@ app.get('/', async (c) => {
   try {
     const workspaceId = c.get('workspaceId');
     const userId = c.get('userId');
-    const { projectId, severity, type, unreadOnly, limit = '50', offset = '0' } = c.req.query();
+    const { projectId, severity, type, status, unreadOnly, limit = '50', offset = '0' } = c.req.query();
 
     const VALID_TYPES = ['traffic_drop','ranking_drop','content_decay','anomaly','recommendation','correlated_drop','source_discrepancy'];
+    const VALID_STATUSES = ['new', 'accepted', 'dismissed', 'task_created'];
     const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
     const parsedOffset = Math.max(parseInt(offset, 10) || 0, 0);
 
@@ -28,6 +35,9 @@ app.get('/', async (c) => {
     }
     if (type && VALID_TYPES.includes(type)) {
       conditions.push(eq(alerts.type, type as any));
+    }
+    if (status && VALID_STATUSES.includes(status)) {
+      conditions.push(eq(alerts.status, status as any));
     }
     if (unreadOnly === 'true') {
       conditions.push(isNull(alertReads.id));
@@ -44,6 +54,12 @@ app.get('/', async (c) => {
         body: alerts.body,
         metadata: alerts.metadata,
         createdAt: alerts.createdAt,
+        status: alerts.status,
+        acceptedBy: alerts.acceptedBy,
+        acceptedAt: alerts.acceptedAt,
+        dismissedBy: alerts.dismissedBy,
+        dismissedAt: alerts.dismissedAt,
+        linkedTaskId: alerts.linkedTaskId,
         readAt: alertReads.readAt,
       })
       .from(alerts)
@@ -164,6 +180,107 @@ app.delete('/:id', async (c) => {
   } catch (err) {
     log.error('Error deleting alert', err);
     return c.json({ success: false, error: 'Failed to delete alert' }, 500);
+  }
+});
+
+// PATCH /api/alerts/:id/status — accept or dismiss an alert
+app.patch('/:id/status', async (c) => {
+  try {
+    const workspaceId = c.get('workspaceId');
+    const userId = c.get('userId');
+    const { id } = c.req.param();
+
+    if (!isUuid(id)) return c.json({ success: false, error: 'Invalid alert id' }, 400);
+
+    const body = await c.req.json().catch(() => ({}));
+    const { status } = body as { status?: string };
+    if (status !== 'accepted' && status !== 'dismissed') {
+      return c.json({ success: false, error: 'status must be "accepted" or "dismissed"' }, 400);
+    }
+
+    const now = new Date();
+    const patch =
+      status === 'accepted'
+        ? { status, acceptedBy: userId, acceptedAt: now }
+        : { status, dismissedBy: userId, dismissedAt: now };
+
+    const [updated] = await db
+      .update(alerts)
+      .set(patch)
+      .where(and(eq(alerts.id, id), eq(alerts.workspaceId, workspaceId)))
+      .returning();
+
+    if (!updated) return c.json({ success: false, error: 'Alert not found' }, 404);
+    return c.json({ success: true, data: updated });
+  } catch (err) {
+    log.error('Error updating alert status', err);
+    return c.json({ success: false, error: 'Failed to update alert status' }, 500);
+  }
+});
+
+// POST /api/alerts/:id/create-task — convert an alert into a trackable task
+app.post('/:id/create-task', async (c) => {
+  try {
+    const workspaceId = c.get('workspaceId');
+    const userId = c.get('userId');
+    const { id } = c.req.param();
+
+    if (!isUuid(id)) return c.json({ success: false, error: 'Invalid alert id' }, 400);
+
+    const [alert] = await db
+      .select()
+      .from(alerts)
+      .where(and(eq(alerts.id, id), eq(alerts.workspaceId, workspaceId)))
+      .limit(1);
+
+    if (!alert) return c.json({ success: false, error: 'Alert not found' }, 404);
+
+    if (alert.linkedTaskId) {
+      const [existingTask] = await db
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, alert.linkedTaskId), eq(tasks.workspaceId, workspaceId)))
+        .limit(1);
+      if (existingTask) return c.json({ success: true, data: existingTask }, 200);
+    }
+
+    if (!alert.projectId) {
+      return c.json({ success: false, error: 'Alert has no associated project' }, 400);
+    }
+
+    const metadata = (alert.metadata as Record<string, unknown> | null) ?? {};
+    const targetUrl =
+      typeof metadata.page === 'string'
+        ? metadata.page
+        : Array.isArray(metadata.topPages) && typeof metadata.topPages[0] === 'string'
+          ? (metadata.topPages[0] as string)
+          : null;
+
+    const [task] = await db
+      .insert(tasks)
+      .values({
+        workspaceId,
+        projectId: alert.projectId,
+        reporterId: userId,
+        assigneeId: null,
+        title: alert.title,
+        description: alert.body,
+        taskType: null,
+        priority: SEVERITY_TO_PRIORITY[alert.severity] ?? 'medium',
+        targetUrl,
+        tags: [alert.type],
+      })
+      .returning();
+
+    await db
+      .update(alerts)
+      .set({ status: 'task_created', linkedTaskId: task.id })
+      .where(and(eq(alerts.id, id), eq(alerts.workspaceId, workspaceId)));
+
+    return c.json({ success: true, data: task }, 201);
+  } catch (err) {
+    log.error('Error creating task from alert', err);
+    return c.json({ success: false, error: 'Failed to create task from alert' }, 500);
   }
 });
 

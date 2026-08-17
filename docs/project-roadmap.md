@@ -61,6 +61,11 @@
 ### Phase 06 Delivery Notes (2026-05-24)
 - **Alert Engine:** Z-score anomaly detection (day-of-week normalized, 8-week same-DoW history, `MIN_DATA_POINTS=4`), content decay (30% impression drop over 7-day windows via set-based SQL), cross-source correlated drop + source discrepancy (GSC+GA4 z-score), rule-based recommendations (4 rules: optimize_meta, refresh_content, audit_decaying_pages, build_links)
 - **API Routes:** `GET/PATCH/DELETE /api/alerts` with per-user read state via `alert_reads` join table; `GET /api/digest/latest` for weekly digest; cron routes `/api/cron/run-alerts` and `/api/cron/weekly-digest` guarded by `verifyCronSecret`
+
+### Phase 5 (Data Trust Roadmap) Delivery Notes (2026-08-22)
+- **Alert Lifecycle:** `alerts.status` (`new`/`accepted`/`dismissed`/`task_created`) replaces hard-delete for the normal dismiss flow; `linkedTaskId` FK (`ON DELETE SET NULL`) links an alert to at most one created task
+- **API Routes:** `PATCH /api/alerts/:id/status` (accept/dismiss, stamps `acceptedBy`/`acceptedAt` or `dismissedBy`/`dismissedAt`); `POST /api/alerts/:id/create-task` (idempotent — returns the existing linked task on repeat calls instead of duplicating, maps severity→priority and metadata→targetUrl/tags); legacy `DELETE /api/alerts/:id` unchanged, admin/cleanup only
+- **Frontend:** `AlertCard` gained Accept/Dismiss/Create Task (or Open Task) actions and a status badge; alerts page filter gained a status dimension
 - **Schema:** New `workspace_digests` table with `UNIQUE(workspaceId, weekStart)`; `alerts` type constraint extended with `correlated_drop` + `source_discrepancy`
 - **Frontend:** Alerts page with severity/type/unread filters; `AlertCard` with expand/collapse metadata; `NotificationBell` with 30s polling; dashboard `WeeklyDigestCard` with WoW % badges and keyword deltas; `AlertsOverviewCard` unread count
 - **Review Fixes:** C1 — weekly digest GSC queries scoped to workspace project IDs (cross-tenant isolation); C2 — `unreadOnly` pushed to SQL `WHERE isNull(alertReads.id)` instead of in-memory filter after LIMIT; H1 — `PATCH /read-all` capped at 500 rows; H2 — limit/offset sanitized with `Math.min/max`

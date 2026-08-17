@@ -91,7 +91,7 @@ Thin dev-only server wrapper — imports `app` from `@repo/api-app` and serves i
 | `src/hooks/use-tasks.ts` | Phase 04 SWR hooks: `useTasks()`, `useTask()`, `useTaskStats()`, `useTaskTemplates()` |
 | `src/hooks/use-goals.ts` | Phase 05 SWR hooks and mutations for goals |
 | `src/hooks/use-sprints.ts` | Phase 05 SWR hooks and mutations for sprints |
-| `src/hooks/use-alerts.ts` | Phase 06 SWR hooks: `useAlerts()`, `useAlertCount()` (30s refresh), `useLatestDigest()`; mutation helpers `markAlertRead`, `markAllAlertsRead`, `dismissAlert` |
+| `src/hooks/use-alerts.ts` | Phase 06 SWR hooks: `useAlerts()`, `useAlertCount()` (30s refresh), `useLatestDigest()`; mutation helpers `markAlertRead`, `markAllAlertsRead`, `updateAlertStatus` (Phase 5 data-trust: accept/dismiss), `createTaskFromAlert` (Phase 5 data-trust: idempotent alert→task) |
 | `src/hooks/use-analytics.ts` | Phase 07 SWR hooks: `useAnalyticsOverview()`, `useKeywordsData()`, `useKeywordDetail()`, `usePagesData()`, `usePageDetail()` |
 | `src/hooks/use-correlation.ts` | Phase 07 SWR hooks: `useCorrelationChart()`, `useCorrelationUrls()`, `useImpactWindow()` |
 | `src/hooks/use-projects-settings.ts` | Settings plan phase 02: `useProjects()` SWR + `useProjectMutations()` (create/update/delete) |

@@ -21,9 +21,18 @@ const TYPES = [
   { value: "anomaly", label: "Anomaly" },
 ] as const
 
+const STATUSES = [
+  { value: "", label: "All statuses" },
+  { value: "new", label: "New" },
+  { value: "accepted", label: "Accepted" },
+  { value: "dismissed", label: "Dismissed" },
+  { value: "task_created", label: "Task created" },
+] as const
+
 export interface AlertFilterState {
   severity: string
   type: string
+  status: string
   unreadOnly: boolean
 }
 
@@ -76,6 +85,17 @@ export function AlertFilters({ filters, onChange, onMarkAllRead, unreadCount }: 
       >
         {TYPES.map((t) => (
           <option key={t.value} value={t.value}>{t.label}</option>
+        ))}
+      </select>
+
+      {/* Status select */}
+      <select
+        value={filters.status}
+        onChange={(e) => onChange({ ...filters, status: e.target.value })}
+        className="rounded-md border bg-background px-3 py-1.5 text-xs text-foreground"
+      >
+        {STATUSES.map((s) => (
+          <option key={s.value} value={s.value}>{s.label}</option>
         ))}
       </select>
 

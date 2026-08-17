@@ -123,6 +123,8 @@ export interface GA4Connection extends IntegrationConnection {
   measurementId?: string | null;
 }
 
+export type AlertStatus = 'new' | 'accepted' | 'dismissed' | 'task_created';
+
 export interface Alert {
   id: EntityId;
   workspaceId: string;
@@ -134,6 +136,12 @@ export interface Alert {
   metadata?: Record<string, unknown> | null;
   createdAt: Date;
   isRead?: boolean; // injected by API via alert_reads join
+  status: AlertStatus;
+  acceptedBy?: string | null;
+  acceptedAt?: Date | string | null;
+  dismissedBy?: string | null;
+  dismissedAt?: Date | string | null;
+  linkedTaskId?: EntityId | null;
 }
 
 export interface DigestData {

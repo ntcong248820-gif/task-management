@@ -1,12 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, ChevronDown, ChevronUp, Info, Trash2 } from "lucide-react"
+import Link from "next/link"
+import { AlertTriangle, ChevronDown, ChevronUp, Info, CheckCircle2, XCircle, ListPlus } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { markAlertRead, dismissAlert } from "@/hooks/use-alerts"
+import { markAlertRead, updateAlertStatus, createTaskFromAlert } from "@/hooks/use-alerts"
 import type { Alert } from "@repo/types"
+
+const STATUS_LABELS: Record<string, string> = {
+  accepted: "Accepted",
+  dismissed: "Dismissed",
+  task_created: "Task created",
+}
 
 const SEVERITY_CONFIG = {
   critical: { icon: AlertTriangle, color: "text-destructive", badge: "destructive" as const, dot: "bg-destructive" },
@@ -42,6 +49,7 @@ interface AlertCardProps {
 
 export function AlertCard({ alert, onMutate }: AlertCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const [actionPending, setActionPending] = useState(false)
   const config = SEVERITY_CONFIG[alert.severity] ?? SEVERITY_CONFIG.info
   const SeverityIcon = config.icon
 
@@ -52,8 +60,24 @@ export function AlertCard({ alert, onMutate }: AlertCardProps) {
     }
   }
 
+  const handleAccept = async () => {
+    setActionPending(true)
+    await updateAlertStatus(alert.id, "accepted")
+    setActionPending(false)
+    onMutate()
+  }
+
   const handleDismiss = async () => {
-    await dismissAlert(alert.id)
+    setActionPending(true)
+    await updateAlertStatus(alert.id, "dismissed")
+    setActionPending(false)
+    onMutate()
+  }
+
+  const handleCreateTask = async () => {
+    setActionPending(true)
+    await createTaskFromAlert(alert.id)
+    setActionPending(false)
     onMutate()
   }
 
@@ -77,6 +101,11 @@ export function AlertCard({ alert, onMutate }: AlertCardProps) {
             <Badge variant={config.badge} className="text-[10px]">
               {TYPE_LABELS[alert.type] ?? alert.type}
             </Badge>
+            {alert.status !== "new" && (
+              <Badge variant="outline" className="text-[10px]">
+                {STATUS_LABELS[alert.status] ?? alert.status}
+              </Badge>
+            )}
             {!alert.isRead && (
               <span className="inline-block h-2 w-2 rounded-full bg-primary" aria-label="unread" />
             )}
@@ -121,15 +150,51 @@ export function AlertCard({ alert, onMutate }: AlertCardProps) {
             Mark read
           </Button>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="ml-auto h-7 text-xs text-muted-foreground hover:text-destructive"
-          onClick={() => void handleDismiss()}
-          aria-label="Dismiss alert"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+        <div className="ml-auto flex items-center gap-1">
+          {alert.status === "new" && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs"
+                disabled={actionPending}
+                onClick={() => void handleAccept()}
+              >
+                <CheckCircle2 className="mr-1 h-3 w-3" />
+                Accept
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                disabled={actionPending}
+                onClick={() => void handleDismiss()}
+              >
+                <XCircle className="mr-1 h-3 w-3" />
+                Dismiss
+              </Button>
+            </>
+          )}
+          {alert.status === "task_created" && alert.linkedTaskId ? (
+            <Button variant="ghost" size="sm" className="h-7 text-xs" asChild>
+              <Link href="/dashboard/tasks">
+                <ListPlus className="mr-1 h-3 w-3" />
+                Open Task
+              </Link>
+            </Button>
+          ) : alert.status !== "dismissed" ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs"
+              disabled={actionPending}
+              onClick={() => void handleCreateTask()}
+            >
+              <ListPlus className="mr-1 h-3 w-3" />
+              Create Task
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   )

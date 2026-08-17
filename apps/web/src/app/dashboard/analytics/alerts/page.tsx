@@ -13,12 +13,14 @@ export default function AnalyticsAlertsPage() {
   const [filters, setFilters] = useState<AlertFilterState>({
     severity: "",
     type: "",
+    status: "",
     unreadOnly: false,
   })
 
   const { alerts, loading, mutate } = useAlerts({
     severity: filters.severity || undefined,
     type: filters.type || undefined,
+    status: filters.status || undefined,
     unreadOnly: filters.unreadOnly || undefined,
   })
 
