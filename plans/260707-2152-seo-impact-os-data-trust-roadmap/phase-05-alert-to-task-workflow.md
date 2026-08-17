@@ -1,10 +1,11 @@
 ---
 phase: 5
 title: "Alert To Task Workflow"
-status: pending
+status: completed
 priority: P2
 effort: "2-3d"
 dependencies: [3]
+completedDate: "2026-08-22"
 ---
 
 # Phase 5: Alert To Task Workflow
@@ -89,22 +90,22 @@ Add API endpoints:
 
 ## Todo List
 
-- [ ] Alert lifecycle schema.
-- [ ] Alert status API.
-- [ ] Alert create-task API.
-- [ ] Shared types updated.
-- [ ] Alert UI actions.
-- [ ] Lifecycle filters.
-- [ ] Tests for idempotency and workspace scope.
+- [x] Alert lifecycle schema.
+- [x] Alert status API.
+- [x] Alert create-task API.
+- [x] Shared types updated.
+- [x] Alert UI actions.
+- [x] Lifecycle filters.
+- [x] Tests for idempotency and workspace scope.
 
 ## Success Criteria
 
-- [ ] User can turn an alert into a task in under 2 minutes.
-- [ ] Double-click create task does not create duplicates.
-- [ ] Dismissed alerts remain auditable or recoverable per chosen UX.
-- [ ] Alert-to-task works without team assignment/routing.
-- [ ] Alert list shows workflow status.
-- [ ] Tests pass.
+- [x] User can turn an alert into a task in under 2 minutes.
+- [x] Double-click create task does not create duplicates.
+- [x] Dismissed alerts remain auditable or recoverable per chosen UX.
+- [x] Alert-to-task works without team assignment/routing.
+- [x] Alert list shows workflow status.
+- [x] Tests pass.
 
 ## Risk Assessment
 

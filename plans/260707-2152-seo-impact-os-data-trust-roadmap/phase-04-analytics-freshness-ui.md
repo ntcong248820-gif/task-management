@@ -89,20 +89,20 @@ This can be embedded in `/api/analytics/overview` first and reused in hooks, or 
 
 ## Todo List
 
-- [ ] Analytics source/freshness API contract.
-- [ ] Active-source helper.
-- [ ] Legacy unknown rows excluded from analytics queries.
-- [ ] `DataSourceBanner` component.
-- [ ] Banner on overview, keywords, pages, correlation.
-- [ ] Tests for healthy/stale/error/source states and legacy exclusion.
+- [x] Analytics source/freshness API contract.
+- [x] Active-source helper.
+- [x] Legacy unknown rows excluded from analytics queries.
+- [x] `DataSourceBanner` component.
+- [x] Banner on overview, keywords, pages, correlation.
+- [x] Tests for healthy/stale/error/source states and legacy exclusion.
 
 ## Success Criteria
 
-- [ ] Every analytics page shows source and last successful sync.
-- [ ] Needs reconnect is visible before user trusts charts.
-- [ ] Legacy unknown data is excluded from dashboards/reports/exports.
-- [ ] No visible layout regression on mobile.
-- [ ] Tests pass.
+- [x] Every analytics page shows source and last successful sync.
+- [x] Needs reconnect is visible before user trusts charts.
+- [x] Legacy unknown data is excluded from dashboards/reports/exports.
+- [x] No visible layout regression on mobile.
+- [x] Tests pass.
 
 ## Risk Assessment
 

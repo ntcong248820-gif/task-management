@@ -91,7 +91,7 @@ Implement the post-debugger roadmap from the July 2026 reports. The goal is not 
 | 2 | [Data Provenance Schema](./phase-02-data-provenance-schema.md) | Completed (2026-08-13) |
 | 3 | [Sync Health Source Management](./phase-03-sync-health-source-management.md) | Completed |
 | 4 | [Analytics Freshness UI](./phase-04-analytics-freshness-ui.md) | Completed (2026-08-16) |
-| 5 | [Alert To Task Workflow](./phase-05-alert-to-task-workflow.md) | Pending |
+| 5 | [Alert To Task Workflow](./phase-05-alert-to-task-workflow.md) | Completed (2026-08-22; schema + APIs + UI + tests live) |
 | 6 | [Operator Reporting](./phase-06-operator-reporting.md) | Pending |
 | 7 | [Team Ops Expansion Gates](./phase-07-team-ops-expansion-gates.md) | Pending |
 
